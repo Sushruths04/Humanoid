@@ -43,16 +43,39 @@ export PYTHONUNBUFFERED=1
 
 cd "$GR00T_DIR"
 
+if ! "$PYTHON_BIN" - <<'PY' >/dev/null 2>&1
+import torchcodec
+from torchcodec.decoders import VideoDecoder
+PY
+then
+  {
+    echo "## Installing FFmpeg runtime"
+    echo
+    echo "torchcodec is installed but cannot load its FFmpeg runtime libraries. Installing the OS FFmpeg packages required by the demo video decoder."
+  } | md_log "02-gr00t-demo" "STEP 02 install FFmpeg runtime"
+  if sudo -n true >/dev/null 2>&1; then
+    sudo apt-get update
+    sudo apt-get install -y --no-install-recommends ffmpeg libavdevice60
+  else
+    echo "torchcodec cannot load and passwordless sudo is unavailable for installing ffmpeg/libavdevice60." | md_log "02-gr00t-demo" "STEP 02 blocked"
+    exit 1
+  fi
+fi
+
 "$PYTHON_BIN" - <<'PY' | tee "$WORKSPACE_DIR/thesis/logs/02_gr00t_preflight.log"
 import torch
 import gr00t
+import torchcodec
 from gr00t.policy.gr00t_policy import Gr00tPolicy
+from torchcodec.decoders import VideoDecoder
 from huggingface_hub import HfFolder
 print("torch", torch.__version__)
 print("cuda_available", torch.cuda.is_available())
 print("cuda_device", torch.cuda.get_device_name(0) if torch.cuda.is_available() else "none")
 print("gr00t_import", "ok")
 print("policy_import", Gr00tPolicy.__name__)
+print("torchcodec_import", getattr(torchcodec, "__version__", "unknown"))
+print("video_decoder", VideoDecoder.__name__)
 print("hf_token_present", bool(HfFolder.get_token()))
 PY
 
@@ -120,3 +143,4 @@ fi
 
 test -s "$PLOT_FILE"
 test -s "$SUMMARY_FILE"
+exit 0

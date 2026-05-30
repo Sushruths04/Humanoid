@@ -1,8 +1,8 @@
 {
-  "current_step": "02_gr00t_demo",
-  "status": "waiting",
+  "current_step": "04_gr00t_finetune",
+  "status": "failed",
   "phase": 0,
   "started_at": null,
-  "last_checkpoint": "2026-05-30T19:19:49Z",
+  "last_checkpoint": "2026-05-30T19:33:51Z",
   "notes": "CPU-first thesis execution scaffold. Run thesis/run_thesis.sh --cpu-prep before switching to GPU."
 }
