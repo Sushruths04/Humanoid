@@ -19,3 +19,12 @@
 - 2026-05-30T19:19:49Z | 02-gr00t-demo | STEP 02 result
 - 2026-05-30T19:19:49Z | 02-gr00t-demo | STEP 02 waiting on HF auth
 - 2026-05-30T19:19:49Z | 99-collect-results | STEP 99 collect results
+- 2026-05-30T19:28:01Z | 02-gr00t-demo | STEP 02 GR00T GPU demo
+- 2026-05-30T19:28:38Z | 02-gr00t-demo | STEP 02 result
+- 2026-05-30T19:31:11Z | 02-gr00t-demo | STEP 02 GR00T GPU demo
+- 2026-05-30T19:31:39Z | 02-gr00t-demo | STEP 02 result
+- 2026-05-30T19:33:20Z | 02-gr00t-demo | STEP 02 GR00T GPU demo
+- 2026-05-30T19:33:51Z | 02-gr00t-demo | STEP 02 result
+- 2026-05-30T19:33:51Z | 03-gr00t-gendata | STEP 03 GR00T data seed
+- 2026-05-30T19:33:51Z | 04-gr00t-finetune | STEP 04 GR00T finetune command gate
+- 2026-05-30T19:34:28Z | 99-collect-results | STEP 99 collect results
