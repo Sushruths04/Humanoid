@@ -8,9 +8,9 @@ if [ ! -d "$PROJECT" ]; then
   exit 1
 fi
 
-python3 -m compileall -q "$PROJECT/my_humanoid_project"
+"$PYTHON_BIN" -m compileall -q "$PROJECT/my_humanoid_project"
 OUT="$THESIS_DIR/logs/11_language_import.txt"
-PYTHONPATH="$PROJECT" run_cmd_capture "$OUT" python3 -c "from my_humanoid_project.language_commands import COMMANDS, embedding_for_text; print(len(COMMANDS)); print(len(embedding_for_text('pick up the red cube')))"
+PYTHONPATH="$PROJECT" run_cmd_capture "$OUT" "$PYTHON_BIN" -c "from my_humanoid_project.language_commands import COMMANDS, embedding_for_text; print(len(COMMANDS)); print(len(embedding_for_text('pick up the red cube')))"
 
 {
   echo "## Authored package"

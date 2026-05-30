@@ -28,18 +28,23 @@ if [ ! -d Isaac-GR00T ]; then
 fi
 
 cd Isaac-GR00T
-python3 -m pip install -U pip
-python3 -m pip install -e .
+"$PYTHON_BIN" -m pip install -U pip
+"$PYTHON_BIN" -m pip install torch==2.7.1 torchvision==0.22.1 psutil ninja packaging wheel setuptools
+mkdir -p /home/zeus/content/pip-tmp /home/zeus/content/pip-cache
+TMPDIR=/home/zeus/content/pip-tmp PIP_CACHE_DIR=/home/zeus/content/pip-cache CUDA_HOME=/usr/local/cuda \
+  "$PYTHON_BIN" -m pip install flash-attn==2.7.4.post1 --no-build-isolation
+TMPDIR=/home/zeus/content/pip-tmp PIP_CACHE_DIR=/home/zeus/content/pip-cache CUDA_HOME=/usr/local/cuda \
+  "$PYTHON_BIN" -m pip install -e .
 
 OUT="$THESIS_DIR/logs/01_gr00t_import.txt"
-run_cmd_capture "$OUT" python3 -c "import gr00t; print('ok')"
+run_cmd_capture "$OUT" "$PYTHON_BIN" -c "import gr00t; print('ok')"
 
 {
   echo "## Commands"
   echo
   echo '```bash'
   echo "git clone https://github.com/NVIDIA/Isaac-GR00T.git"
-  echo "python3 -m pip install -e ."
+  echo ""$PYTHON_BIN" -m pip install -e ."
   echo "python3 -c \"import gr00t; print('ok')\""
   echo '```'
   echo
