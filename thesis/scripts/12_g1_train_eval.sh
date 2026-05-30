@@ -32,13 +32,11 @@ log_step "Starting language-conditioned G1 training: $TASK ($NUM_ENVS envs, $MAX
 } | md_log "12-g1-train-eval" "STEP 12 G1 language training"
 
 # Run training inside container
-# We resume from the baseline checkpoint if it exists
+# Note: We start from scratch because adding the language embedding 
+# changed the input dimension (123 -> 139), so we can't directly resume 
+# from the stock baseline checkpoint without architecture surgery.
 RESUME_ARGS=""
-LATEST_CKPT=$(docker exec isaac-lab-base find /workspace/isaaclab/logs/rsl_rl -name 'model_*.pt' 2>/dev/null | sort -V | tail -1 || true)
-if [ -n "$LATEST_CKPT" ]; then
-  log_step "Resuming from baseline checkpoint: $LATEST_CKPT"
-  RESUME_ARGS="--resume --checkpoint $LATEST_CKPT"
-fi
+MAX_ITERS=300
 
 set +e
 docker exec -e PYTHONPATH="/workspace/my-humanoid-project:/workspace/isaaclab/source" \

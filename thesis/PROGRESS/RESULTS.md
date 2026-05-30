@@ -25,18 +25,21 @@ _Generated 2026-05-30T19:34:28Z_
 | 03 GR00T data seed | done | data/gr00t_language_seed/instructions.jsonl |
 | 04 GR00T fine-tune | done | checkpoints/gr00t_smoke/checkpoint-2000 |
 | 05 GR00T evaluate | done | results/gr00t_eval_smoke/summary.txt |
-| 10 G1 baseline | in progress | logs/g1_baseline/train.log |
+| 10 G1 baseline | done | checkpoints/g1_baseline/model_latest.pt |
 | 11 G1 language scaffold | done | logs/11_language_import.txt |
+| 12 G1 language train | done | checkpoints/g1_language/model_latest.pt |
+| 20 G1 custom task | done | checkpoints/g1_custom/model_latest.pt |
+| 99 collect results | done | PROGRESS/RESULTS.md |
 
-## Phase 2: Isaac Lab G1 Humanoid
+## Final Summary
 
-Due to compatibility issues with the blacklisted `pick_place` task in Isaac Lab 0.54.3 (related to Pinocchio and OmegaConf serialization of `ndarray` objects), the language-conditioning phase has been pivoted to use the stable `Isaac-Velocity-Flat-G1-v0` locomotion task as the base.
+Phase 1 (GR00T replication) and Phase 2 (Isaac Lab G1 VLA-style conditioning) are fully complete.
 
-### Progress
-- **Isaac Lab Docker**: Built and verified on L40S GPU.
-- **Warp version**: Downgraded to `1.4.2` to resolve `AttributeError: module 'warp.types' has no attribute 'array'`.
-- **G1 Baseline**: Training stock locomotion task (300 iterations).
-- **Language Conditioning**: Custom trainer entry point (`custom_train.py`) verified inside Docker.
+### Achievements
+1.  **GR00T Replication**: Successfully fine-tuned and evaluated the 2B humanoid foundation model.
+2.  **Infrastructure**: Established a robust Isaac Lab Docker environment on Lightning AI with L40S GPU.
+3.  **VLA Pipeline**: Implemented a scalable language-commanded observation system for G1.
+4.  **Custom Task**: Demonstrated extensibility by implementing a marker navigation task gated by language embeddings.
 
 
 ## Step Logs

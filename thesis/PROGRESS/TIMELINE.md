@@ -27,4 +27,6 @@
 - 2026-05-30T19:33:51Z | 02-gr00t-demo | STEP 02 result
 - 2026-05-30T19:33:51Z | 03-gr00t-gendata | STEP 03 GR00T data seed
 - 2026-05-30T19:33:51Z | 04-gr00t-finetune | STEP 04 GR00T finetune command gate
-- 2026-05-30T19:34:28Z | 99-collect-results | STEP 99 collect results
+- 2026-05-30T20:14:25Z | 04-gr00t-finetune | STEP 04 GR00T fine-tune smoke success (loss 0.4069)
+- 2026-05-30T20:49:05Z | 05-gr00t-eval | STEP 05 GR00T evaluate smoke success (MSE 25.87, MAE 3.01)
+- 2026-05-30T20:56:01Z | 10-g1-baseline | STEP 10 G1 baseline training started (Docker build initiated)
