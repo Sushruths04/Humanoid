@@ -11,3 +11,11 @@
 - 2026-05-30T19:04:04Z | 02-gr00t-demo | STEP 02 result
 - 2026-05-30T19:04:04Z | 02-gr00t-demo | STEP 02 waiting on HF auth
 - 2026-05-30T19:05:38Z | 99-collect-results | STEP 99 collect results
+- 2026-05-30T19:18:41Z | 02-gr00t-demo | STEP 02 GR00T GPU demo
+- 2026-05-30T19:18:51Z | 02-gr00t-demo | STEP 02 result
+- 2026-05-30T19:18:51Z | 02-gr00t-demo | STEP 02 waiting on HF auth
+- 2026-05-30T19:18:51Z | 99-collect-results | STEP 99 collect results
+- 2026-05-30T19:19:39Z | 02-gr00t-demo | STEP 02 GR00T GPU demo
+- 2026-05-30T19:19:49Z | 02-gr00t-demo | STEP 02 result
+- 2026-05-30T19:19:49Z | 02-gr00t-demo | STEP 02 waiting on HF auth
+- 2026-05-30T19:19:49Z | 99-collect-results | STEP 99 collect results
