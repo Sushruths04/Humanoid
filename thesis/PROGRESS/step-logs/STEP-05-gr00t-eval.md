@@ -47,3 +47,9 @@ INFO:root:Average MAE across all trajs: 3.016110420227051
 INFO:root:Done
 ```
 
+# STEP 05 blocked
+
+_2026-05-30T22:39:12Z_
+
+No GR00T smoke checkpoint found under /home/zeus/content/Humanoid/thesis/checkpoints/gr00t_smoke/checkpoint-2000.
+
