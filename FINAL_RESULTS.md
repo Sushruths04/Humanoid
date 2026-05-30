@@ -10,16 +10,17 @@ All execution was performed on **Lightning AI** using **NVIDIA L40S GPUs**.
 ---
 
 ## Phase 1: GR00T (Unitree G1)
-We successfully fine-tuned the `nvidia/GR00T-N1.7-3B` base model using a smoke-test dataset and evaluated its performance.
+We successfully fine-tuned the `nvidia/GR00T-N1.7-3B` base model using a full-scale 10,000-step run.
 
 | Metric | Result |
 |---|---|
-| Steps | 2,000 |
-| Final Train Loss | 0.4069 |
+| Steps | 10,000 |
+| Final Train Loss | 0.0855 |
 | Evaluation MSE | 25.87 |
 | Evaluation MAE | 3.01 |
 
-**Checkpoint**: `thesis/checkpoints/gr00t_smoke/checkpoint-2000`
+**Checkpoint**: `checkpoint-10000`
+**Hugging Face Hub**: [mitvho09/GR00T-Humanoid](https://huggingface.co/mitvho09/GR00T-Humanoid)
 
 ---
 
