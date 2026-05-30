@@ -1,0 +1,14 @@
+checkpoints/*
+!checkpoints/.gitkeep
+data/*
+!data/.gitkeep
+logs/*
+!logs/.gitkeep
+*.pt
+*.pth
+*.ckpt
+*.safetensors
+__pycache__/
+*.pyc
+logs/**/events.*
+
