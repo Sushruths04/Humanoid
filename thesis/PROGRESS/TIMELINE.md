@@ -4,3 +4,10 @@
 - 2026-05-30T18:23:06Z | 11-g1-language | STEP 11 G1 language-conditioning code
 - 2026-05-30T18:48:28Z | 01-gr00t-install | STEP 01 GR00T install deferred
 - 2026-05-30T18:58:36Z | 01-gr00t-install | STEP 01 GR00T install
+- 2026-05-30T18:58:36Z | 02-gr00t-demo | STEP 02 GR00T demo command gate
+- 2026-05-30T19:02:02Z | 02-gr00t-demo | STEP 02 GR00T GPU demo
+- 2026-05-30T19:02:31Z | 02-gr00t-demo | STEP 02 result
+- 2026-05-30T19:03:54Z | 02-gr00t-demo | STEP 02 GR00T GPU demo
+- 2026-05-30T19:04:04Z | 02-gr00t-demo | STEP 02 result
+- 2026-05-30T19:04:04Z | 02-gr00t-demo | STEP 02 waiting on HF auth
+- 2026-05-30T19:05:38Z | 99-collect-results | STEP 99 collect results
