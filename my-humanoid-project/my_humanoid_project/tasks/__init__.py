@@ -19,12 +19,13 @@ def register_tasks() -> bool:
     except Exception:
         pass
 
-    from .g1_language_pickplace_cfg import LanguageConditionedG1EnvCfg
-
     gym.register(
         id=LANGUAGE_TASK_ID,
         entry_point="isaaclab.envs:ManagerBasedRLEnv",
-        kwargs={"env_cfg_entry_point": LanguageConditionedG1EnvCfg},
+        kwargs={
+            "env_cfg_entry_point": "my_humanoid_project.tasks.g1_language_pickplace_cfg:LanguageConditionedG1EnvCfg",
+            "rsl_rl_cfg_entry_point": "isaaclab_tasks.manager_based.locomotion.velocity.config.g1.agents.rsl_rl_ppo_cfg:G1FlatPPORunnerCfg",
+        },
         disable_env_checker=True,
     )
     return True

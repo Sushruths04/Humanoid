@@ -25,23 +25,18 @@ _Generated 2026-05-30T19:34:28Z_
 | 03 GR00T data seed | done | data/gr00t_language_seed/instructions.jsonl |
 | 04 GR00T fine-tune | done | checkpoints/gr00t_smoke/checkpoint-2000 |
 | 05 GR00T evaluate | done | results/gr00t_eval_smoke/summary.txt |
+| 10 G1 baseline | in progress | logs/g1_baseline/train.log |
 | 11 G1 language scaffold | done | logs/11_language_import.txt |
 
-## GR00T Evaluation Summary (Smoke)
+## Phase 2: Isaac Lab G1 Humanoid
 
-```text
-# GR00T eval smoke summary
+Due to compatibility issues with the blacklisted `pick_place` task in Isaac Lab 0.54.3 (related to Pinocchio and OmegaConf serialization of `ndarray` objects), the language-conditioning phase has been pivoted to use the stable `Isaac-Velocity-Flat-G1-v0` locomotion task as the base.
 
-Generated: 2026-05-30T20:49:05Z
-Exit status: 0
-Checkpoint: .../checkpoint-2000
-Average MSE: 25.87
-Average MAE: 3.01
-```
-
-## Next Milestone: Isaac Lab G1 Baseline
-
-Phase 1 (GR00T replication) is substantially complete with the successful fine-tune and open-loop evaluation. The next phase involves setting up the G1 humanoid baseline in Isaac Lab.
+### Progress
+- **Isaac Lab Docker**: Built and verified on L40S GPU.
+- **Warp version**: Downgraded to `1.4.2` to resolve `AttributeError: module 'warp.types' has no attribute 'array'`.
+- **G1 Baseline**: Training stock locomotion task (300 iterations).
+- **Language Conditioning**: Custom trainer entry point (`custom_train.py`) verified inside Docker.
 
 
 ## Step Logs
