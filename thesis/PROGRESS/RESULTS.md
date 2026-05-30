@@ -1,6 +1,6 @@
 # Results
 
-_Generated 2026-05-30T19:05:38Z_
+_Generated 2026-05-30T19:19:49Z_
 
 ## Current State
 
@@ -10,7 +10,7 @@ _Generated 2026-05-30T19:05:38Z_
   "status": "waiting",
   "phase": 0,
   "started_at": null,
-  "last_checkpoint": "2026-05-30T19:04:04Z",
+  "last_checkpoint": "2026-05-30T19:19:49Z",
   "notes": "CPU-first thesis execution scaffold. Run thesis/run_thesis.sh --cpu-prep before switching to GPU."
 }
 ```
@@ -29,7 +29,7 @@ _Generated 2026-05-30T19:05:38Z_
 ```text
 # GR00T demo summary
 
-Generated: 2026-05-30T19:04:04Z
+Generated: 2026-05-30T19:19:49Z
 Exit status: 1
 Blocked by gated Hugging Face access: 1
 Log: /home/zeus/content/Humanoid/thesis/logs/02_gr00t_demo.log
@@ -41,14 +41,12 @@ cuda_available True
 cuda_device NVIDIA L4
 gr00t_import ok
 policy_import Gr00tPolicy
-hf_token_present False
+hf_token_present True
 
 ## Key lines
 /home/zeus/content/Humanoid/thesis/logs/02_gr00t_demo.log:Cannot access gated repo for url https://huggingface.co/nvidia/Cosmos-Reason2-2B/resolve/main/config.json.
-/home/zeus/content/Humanoid/thesis/logs/02_gr00t_demo.log:Access to model nvidia/Cosmos-Reason2-2B is restricted. You must have access to it and be authenticated to access it. Please log in.
 /home/zeus/content/Humanoid/thesis/logs/02_gr00t_demo.log:Cannot access gated repo for url https://huggingface.co/nvidia/Cosmos-Reason2-2B/resolve/main/config.json.
-/home/zeus/content/Humanoid/thesis/logs/02_gr00t_demo.log:Access to model nvidia/Cosmos-Reason2-2B is restricted. You must have access to it and be authenticated to access it. Please log in.
-/home/zeus/content/Humanoid/thesis/logs/02_gr00t_preflight.log:hf_token_present False
+/home/zeus/content/Humanoid/thesis/logs/02_gr00t_preflight.log:hf_token_present True
 ```
 
 ## Remaining Blocker
@@ -66,3 +64,4 @@ bash thesis/run_thesis.sh --all --from 02_gr00t_demo --no-autosave
 - [[STEP-01-gr00t-install.md]]
 - [[STEP-02-gr00t-demo.md]]
 - [[STEP-11-g1-language.md]]
+- [[STEP-99-collect-results.md]]
