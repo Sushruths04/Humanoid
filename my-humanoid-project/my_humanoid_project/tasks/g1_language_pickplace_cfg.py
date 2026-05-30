@@ -54,6 +54,43 @@ if ISAACLAB_AVAILABLE:
             self.base_task_id = BASE_TASK_ID
             self.language_embedding_dim = LANGUAGE_EMBEDDING_DIM
 
+
+    @configclass
+    class LanguageConditionedG1CustomTaskCfg(LanguageConditionedG1EnvCfg):
+        """G1 task with language conditioning and visual markers (Red vs Blue)."""
+
+        def __post_init__(self):
+            super().__post_init__()
+
+            # Add markers to scene
+            from isaaclab.sim.spawners.from_files.from_files_cfg import UsdFileCfg
+            from isaaclab.assets import AssetBaseCfg
+            import isaaclab.sim as sim_utils
+
+            # Red marker
+            self.scene.red_marker = AssetBaseCfg(
+                prim_path="{ENV_REGEX_NS}/RedMarker",
+                init_state=AssetBaseCfg.InitialStateCfg(pos=[2.0, 1.0, 0.0]),
+                spawn=sim_utils.SphereCfg(
+                    radius=0.2,
+                    visual_material=sim_utils.PreviewSurfaceCfg(diffuse_color=(1.0, 0.0, 0.0)),
+                ),
+            )
+
+            # Blue marker
+            self.scene.blue_marker = AssetBaseCfg(
+                prim_path="{ENV_REGEX_NS}/BlueMarker",
+                init_state=AssetBaseCfg.InitialStateCfg(pos=[2.0, -1.0, 0.0]),
+                spawn=sim_utils.SphereCfg(
+                    radius=0.2,
+                    visual_material=sim_utils.PreviewSurfaceCfg(diffuse_color=(0.0, 0.0, 1.0)),
+                ),
+            )
+
+            # Add proximity rewards (placeholder for real task logic)
+            # In a full run, we would add RewardTerms here that check distance to markers
+            # and multiply by embedding similarity.
+
 else:
 
     class LanguageConditionedG1EnvCfg:
