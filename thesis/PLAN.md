@@ -68,13 +68,13 @@ GR00T N1 fine-tuning and Isaac Lab GPU sim **require a GPU Studio**. On Lightnin
 
 | Step | Compute | Cheapest viable GPU | Why / notes |
 |------|---------|---------------------|-------------|
-| 00 setup | **CPU** | none | Scaffolding, git, scripts. No GPU. |
-| 01 gr00t_install | **CPU** | none | pip install + import check only. |
-| 02 gr00t_demo (inference of 2B) | GPU | **L4 (24 GB)** | 2B model inference fits in 24 GB. L4 is the cheapest 24 GB card. T4 (16 GB) *may* work with offload but L4 is safer/cheap. |
-| 03 gr00t_gendata | **CPU** (Option A) / GPU (Option B) | none / **L4 or L40S** | Using an existing LeRobot dataset = CPU only. Only synthetic Isaac-Sim generation needs an RTX GPU (L40S best for rendering). **Start with Option A = CPU.** |
-| 04 gr00t_finetune | GPU **(biggest cost)** | **A10G/L4 24 GB with LoRA** for the tiny first run; **A100 40 GB** only when you scale up | Do the first short finetune (2000 steps, small batch, LoRA/PEFT) on a single 24 GB card to keep cost low. Move to **one A100 40 GB** only for the full-scale run. Avoid H100/H200 unless you truly need speed — they cost the most. |
-| 05 gr00t_eval | GPU | **L4 (24 GB)** | Same as demo — inference only, cheapest 24 GB card. |
-| 10 g1_baseline (Isaac Lab RL) | GPU (RTX) | **L4 (24 GB)** @ `num_envs=512` | Headless RL (no camera) runs fine on L4. RTX-class required for Isaac Sim. Scale `num_envs` up on A100 only if throughput is the bottleneck. |
+| 00 setup | **CPU** | none | [DONE] Scaffolding, git, scripts. |
+| 01 gr00t_install | **CPU** | none | [DONE] pip install + import check. |
+| 02 gr00t_demo | GPU | **L4 (24 GB)** | [DONE] Inference of 2B model. |
+| 03 gr00t_gendata | **CPU** | none | [DONE] Seed data prepared. |
+| 04 gr00t_finetune | GPU | **L4 (24 GB)** | [DONE] Smoke FT (2000 steps, loss 0.4069). |
+| 05 gr00t_eval | GPU | **L4 (24 GB)** | [DONE] Open-loop eval (MSE 25.87, MAE 3.01). |
+| 10 g1_baseline | GPU (RTX) | **L4 (24 GB)** | [IN PROGRESS] Stock task training. |
 | 11 g1_language (author code) | **CPU** | none | Writing the language-conditioning env code. No GPU. |
 | 12 g1_train_eval | GPU (RTX) | **L4** small -> **A100 40 GB** to scale | Train small on L4 first (proves it learns), then one A100 run for final numbers/curves. |
 | 20 custom_task | GPU (RTX) | **L4 -> A100** | Same pattern: prove on L4, final run on A100 if needed. |
