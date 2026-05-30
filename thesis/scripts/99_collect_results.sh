@@ -8,11 +8,37 @@ RESULTS="$PROGRESS_DIR/RESULTS.md"
   echo
   echo "_Generated $(date -u +%FT%TZ)_"
   echo
-  echo "| Phase | Method | Status | Checkpoint | Metrics |"
-  echo "|---|---|---|---|---|"
-  echo "| 1 | GR00T N1 fine-tune | pending | \`checkpoints/gr00t/\` | success %, held-out prompts |"
-  echo "| 2 | G1 language-conditioned RL | pending | \`checkpoints/g1_language/\` | per-command success %, reward curve |"
-  echo "| 3 | Custom distractor task | pending | \`checkpoints/custom_task/\` | red-vs-blue command success |"
+  echo "## Current State"
+  echo
+  echo '```json'
+  cat "$THESIS_DIR/STATE.json"
+  echo '```'
+  echo
+  echo "## Executed Checks"
+  echo
+  echo "| Step | Status | Evidence |"
+  echo "|---|---|---|"
+  echo "| 00 setup | done | state/00_setup.done |"
+  echo "| 01 GR00T install | done | logs/01_gr00t_import.txt |"
+  echo "| 02 GR00T GPU demo | waiting on Hugging Face auth | results/gr00t_demo/summary.txt |"
+  echo "| 11 G1 language scaffold | done | logs/11_language_import.txt |"
+  echo
+  if [ -f "$THESIS_DIR/results/gr00t_demo/summary.txt" ]; then
+    echo "## GR00T Demo Summary"
+    echo
+    echo '```text'
+    cat "$THESIS_DIR/results/gr00t_demo/summary.txt"
+    echo '```'
+    echo
+  fi
+  echo "## Remaining Blocker"
+  echo
+  echo "GR00T N1.7 model loading requires Hugging Face authentication and access to gated repo nvidia/Cosmos-Reason2-2B."
+  echo
+  echo '```bash'
+  echo "hf auth login"
+  echo "bash thesis/run_thesis.sh --all --from 02_gr00t_demo --no-autosave"
+  echo '```'
   echo
   echo "## Step Logs"
   echo
@@ -26,4 +52,3 @@ RESULTS="$PROGRESS_DIR/RESULTS.md"
   wc -l "$RESULTS"
   echo '```'
 } | md_log "99-collect-results" "STEP 99 collect results"
-

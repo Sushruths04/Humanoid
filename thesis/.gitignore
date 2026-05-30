@@ -4,6 +4,12 @@ data/*
 !data/.gitkeep
 logs/*
 !logs/.gitkeep
+cache/*
+results/**/*.jpeg
+results/**/*.jpg
+results/**/*.png
+scripts/*.bak-*
+state/.started_from_*
 *.pt
 *.pth
 *.ckpt
@@ -11,4 +17,3 @@ logs/*
 __pycache__/
 *.pyc
 logs/**/events.*
-
