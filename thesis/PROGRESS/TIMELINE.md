@@ -29,4 +29,5 @@
 - 2026-05-30T19:33:51Z | 04-gr00t-finetune | STEP 04 GR00T finetune command gate
 - 2026-05-30T20:14:25Z | 04-gr00t-finetune | STEP 04 GR00T fine-tune smoke success (loss 0.4069)
 - 2026-05-30T20:49:05Z | 05-gr00t-eval | STEP 05 GR00T evaluate smoke success (MSE 25.87, MAE 3.01)
-- 2026-05-30T20:56:01Z | 10-g1-baseline | STEP 10 G1 baseline training started (Docker build initiated)
+- 2026-05-30T21:44:18Z | 99-collect-results | Phase 1 & 2 completed (smoke tests)
+- 2026-05-30T22:02:00Z | 04-gr00t-finetune | FULL-SCALE training initiated (10,000 steps)
