@@ -7,7 +7,7 @@ DATA_DIR="$THESIS_DIR/data/gr00t_language_seed"
 mkdir -p "$DATA_DIR"
 OUT="$DATA_DIR/instructions.jsonl"
 
-python3 - "$OUT" "${GR00T_DATA_TRAJ:-200}" <<'PY'
+"$PYTHON_BIN" - "$OUT" "${GR00T_DATA_TRAJ:-200}" <<'PY'
 import json
 import sys
 

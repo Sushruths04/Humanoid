@@ -9,6 +9,20 @@ export PROGRESS_DIR="$THESIS_DIR/PROGRESS"
 
 mkdir -p "$STATE_DIR" "$PROGRESS_DIR/step-logs" "$PROGRESS_DIR/reading" "$THESIS_DIR/logs"
 
+if [ -f "$THESIS_DIR/config.env" ]; then
+  set -a
+  source "$THESIS_DIR/config.env"
+  set +a
+fi
+
+if [ -z "${PYTHON_BIN:-}" ]; then
+  if [ -x /home/zeus/miniconda3/bin/python ]; then
+    export PYTHON_BIN=/home/zeus/miniconda3/bin/python
+  else
+    export PYTHON_BIN=python3
+  fi
+fi
+
 log_step() {
   printf '[%s] %s\n' "$(date -u +%T)" "$*"
 }
@@ -24,14 +38,14 @@ mark_done() {
 set_state() {
   local step="${1:?step required}"
   local status="${2:?status required}"
-  python3 - "$THESIS_DIR/STATE.json" "$step" "$status" <<'PY'
+  "$PYTHON_BIN" - "$THESIS_DIR/STATE.json" "$step" "$status" <<'PY'
 import datetime
 import json
 import os
 import sys
 
 path, step, status = sys.argv[1:4]
-now = datetime.datetime.now(datetime.UTC).replace(microsecond=0).isoformat().replace("+00:00", "Z")
+now = datetime.datetime.now(datetime.timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
 if os.path.exists(path):
     with open(path, "r", encoding="utf-8") as f:
         data = json.load(f)
