@@ -67,6 +67,9 @@ x-default-isaac-lab-volumes: &default-isaac-lab-volumes
     target: ${DOCKER_ISAACLAB_PATH}/data_storage
     # This volume is used to store the history of the bash shell
   - type: bind
+    source: ../../my-humanoid-project
+    target: /workspace/my-humanoid-project
+  - type: bind
     source: .isaac-lab-docker-history
     target: ${DOCKER_USER_HOME}/.bash_history
 
