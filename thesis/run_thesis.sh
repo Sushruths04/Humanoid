@@ -109,8 +109,10 @@ run_step 05_gr00t_eval "05_gr00t_eval.sh" "Evaluate fine-tuned GR00T"
 run_step 10_g1_baseline "10_g1_baseline_train.sh" "Train G1 baseline"
 run_step 11_g1_language "11_g1_language_cond.sh" "Author G1 language-conditioning code"
 run_step 12_g1_train_eval "12_g1_train_eval.sh" "Train/evaluate language-conditioned G1"
-run_step 20_custom_task "20_custom_task.sh" "Train/evaluate custom task"
+run_step 20_custom_task     "20_custom_task.sh"     "Train/evaluate custom task"
+run_step 25_robust_training "25_robust_training.sh" "Train/evaluate robust task"
 run_step 99_collect_results "99_collect_results.sh" "Collect final results"
+
 
 if [ "$MODE" = "cpu-prep" ]; then
   set_state "gpu_handoff" "waiting"

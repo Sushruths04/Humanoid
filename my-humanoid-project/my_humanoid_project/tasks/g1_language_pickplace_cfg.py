@@ -16,12 +16,14 @@ try:
     from isaaclab.managers import ObservationTermCfg as ObsTerm
     from isaaclab.utils import configclass
     from isaaclab_tasks.manager_based.locomotion.velocity.config.g1.flat_env_cfg import G1FlatEnvCfg
+    from isaaclab_tasks.manager_based.locomotion.velocity.config.g1.rough_env_cfg import G1RoughEnvCfg
 
     ISAACLAB_AVAILABLE = True
 except Exception:
     ObsTerm = None
     configclass = None
     G1FlatEnvCfg = object
+    G1RoughEnvCfg = object
     ISAACLAB_AVAILABLE = False
 
 
@@ -63,7 +65,6 @@ if ISAACLAB_AVAILABLE:
             super().__post_init__()
 
             # Add markers to scene
-            from isaaclab.sim.spawners.from_files.from_files_cfg import UsdFileCfg
             from isaaclab.assets import AssetBaseCfg
             import isaaclab.sim as sim_utils
 
@@ -87,9 +88,43 @@ if ISAACLAB_AVAILABLE:
                 ),
             )
 
-            # Add proximity rewards (placeholder for real task logic)
-            # In a full run, we would add RewardTerms here that check distance to markers
-            # and multiply by embedding similarity.
+    @configclass
+    class LanguageConditionedG1RobustTaskCfg(G1RoughEnvCfg):
+        """G1 task with language conditioning, visual markers, and ROUGH terrain robustness."""
+
+        def __post_init__(self):
+            super().__post_init__()
+
+            # 1. Add Language Command to Observations
+            self.observations.policy.language_command = ObsTerm(func=language_command_embedding)
+
+            # 2. Add Visual Markers
+            from isaaclab.assets import AssetBaseCfg
+            import isaaclab.sim as sim_utils
+
+            self.scene.red_marker = AssetBaseCfg(
+                prim_path="{ENV_REGEX_NS}/RedMarker",
+                init_state=AssetBaseCfg.InitialStateCfg(pos=[2.0, 1.0, 1.0]),
+                spawn=sim_utils.SphereCfg(
+                    radius=0.2,
+                    visual_material=sim_utils.PreviewSurfaceCfg(diffuse_color=(1.0, 0.0, 0.0)),
+                ),
+            )
+            self.scene.blue_marker = AssetBaseCfg(
+                prim_path="{ENV_REGEX_NS}/BlueMarker",
+                init_state=AssetBaseCfg.InitialStateCfg(pos=[2.0, -1.0, 1.0]),
+                spawn=sim_utils.SphereCfg(
+                    radius=0.2,
+                    visual_material=sim_utils.PreviewSurfaceCfg(diffuse_color=(0.0, 0.0, 1.0)),
+                ),
+            )
+
+            # 3. Add Domain Randomization (Sim-to-Real Robustness)
+            if hasattr(self.events, 'randomize_joint_parameters'):
+                self.events.randomize_joint_parameters.params["stiffness_distribution_params"] = (0.75, 1.25)
+                self.events.randomize_joint_parameters.params["damping_distribution_params"] = (0.75, 1.25)
+
+            self.language_task_id = "Humanoid-G1-Robust-VLA-v0"
 
 else:
 
