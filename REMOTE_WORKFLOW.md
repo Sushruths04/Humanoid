@@ -11,6 +11,12 @@ export GITHUB_TOKEN="..."
 export HF_TOKEN="..."
 ```
 
+On this workspace, keep local persistent values in `SECRETS.env`:
+
+```bash
+source SECRETS.env
+```
+
 Use a GitHub fine-grained token with read access to `Sushruths04/Humanoid`. Add write access only when you want the machine to push code/results back.
 
 ## Bootstrap A Fresh Machine

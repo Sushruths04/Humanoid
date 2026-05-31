@@ -1,1 +1,4 @@
 humanoid_full.tar.gz
+SECRETS.env
+.env.secrets
+*.secrets.env
