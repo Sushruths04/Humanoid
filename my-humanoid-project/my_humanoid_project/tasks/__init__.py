@@ -20,6 +20,7 @@ def register_tasks() -> bool:
     except Exception:
         pass
 
+    print(f"DEBUG: Registering {LANGUAGE_TASK_ID}...")
     gym.register(
         id=LANGUAGE_TASK_ID,
         entry_point="isaaclab.envs:ManagerBasedRLEnv",
@@ -30,6 +31,7 @@ def register_tasks() -> bool:
         disable_env_checker=True,
     )
 
+    print(f"DEBUG: Registering {CUSTOM_TASK_ID}...")
     gym.register(
         id=CUSTOM_TASK_ID,
         entry_point="isaaclab.envs:ManagerBasedRLEnv",
@@ -39,6 +41,7 @@ def register_tasks() -> bool:
         },
         disable_env_checker=True,
     )
+    print("DEBUG: Registration complete.")
     return True
 
 
