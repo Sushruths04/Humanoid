@@ -13,6 +13,15 @@ from isaaclab.managers import ObservationTermCfg as ObsTerm
 
 from .g1_language_pickplace_cfg import LanguageConditionedG1CustomTaskCfg
 
+
+def get_camera_rgb(env, sensor_name: str):
+    """Return flattened normalized RGB observations from the camera sensor."""
+
+    camera = env.scene[sensor_name]
+    rgb = camera.data.output["rgb"].float() / 255.0
+    return rgb.reshape(rgb.shape[0], -1)
+
+
 @configclass
 class G1VisionVLAEnvCfg(LanguageConditionedG1CustomTaskCfg):
     """G1 task with both language and vision observations."""
@@ -45,12 +54,6 @@ class G1VisionVLAEnvCfg(LanguageConditionedG1CustomTaskCfg):
         # 2. Add Vision to Policy Observations
         # We add the RGB data as a new observation group
         self.observations.policy.head_camera = ObsTerm(
-            func=self._get_camera_rgb,
+            func=get_camera_rgb,
             params={"sensor_name": "camera"}
         )
-
-    def _get_camera_rgb(self, env, sensor_name: str):
-        """Extract RGB data from the specified camera sensor."""
-        camera = env.scene[sensor_name]
-        # Return flattened or processed RGB tensor
-        return camera.data.output["rgb"]
