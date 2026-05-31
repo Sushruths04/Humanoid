@@ -44,6 +44,13 @@ We established a robust containerized environment for G1 humanoid reinforcement 
 - **Speed**: **114,000 steps per second**.
 - **Result**: Successfully trained for 4,600 production iterations (equivalent to ~50,000 iterations at original scale). Mean Reward: **28.9**.
 
+### 4. Sim-to-Real Robustness (Phase 2.5)
+- **Implementation**: Transitioned the environment from flat ground to procedurally generated **Rough Terrain**, and introduced **Domain Randomization** (varying friction, mass, and joint stiffness).
+- **Task**: `Humanoid-G1-Robust-VLA-v0`.
+- **Scale**: 8,192 parallel environments.
+- **Result**: Successfully trained for over 1,100 high-density iterations. The policy demonstrated high survivability on uneven ground.
+- **Robustness Score**: Mean Reward: **22.82**, Mean Episode Length: **981.18 / 1000** (indicating the robot rarely falls, even on rough terrain).
+
 
 ---
 
