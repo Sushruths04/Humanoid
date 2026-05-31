@@ -35,6 +35,7 @@ log_step "Starting Vision VLA G1 training: $TASK ($NUM_ENVS envs, $MAX_ITERS ite
 } | md_log "30-vision-vla" "STEP 30 Vision VLA smoke test"
 
 # Run training inside container
+# We use the rendering-optimized kit file
 set +e
 docker exec -e PYTHONPATH="/workspace/my-humanoid-project:/workspace/isaaclab/source" \
   isaac-lab-base /workspace/isaaclab/isaaclab.sh -p /workspace/my-humanoid-project/custom_train.py \
@@ -42,6 +43,7 @@ docker exec -e PYTHONPATH="/workspace/my-humanoid-project:/workspace/isaaclab/so
   --headless \
   --num_envs "$NUM_ENVS" \
   --max_iterations "$MAX_ITERS" \
+  --experience /workspace/isaaclab/apps/isaaclab.python.headless.rendering.kit \
   2>&1 | tee "$LOG_DIR/train.log"
 status=${PIPESTATUS[0]}
 set -e
