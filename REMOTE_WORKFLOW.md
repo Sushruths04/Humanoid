@@ -15,20 +15,35 @@ Use a GitHub fine-grained token with read access to `Sushruths04/Humanoid`. Add 
 
 ## Bootstrap A Fresh Machine
 
-```bash
-cd /home/zeus/content
-curl -fsSL https://raw.githubusercontent.com/Sushruths04/Humanoid/main/thesis/scripts/bootstrap_remote_machine.sh | bash
-```
-
-For a private repo, download the script after cloning with your token, or run:
+For a private repo, clone with a temporary askpass helper so the token is not placed in the remote URL:
 
 ```bash
 export GITHUB_TOKEN="..."
-export REPO_URL="https://github.com/Sushruths04/Humanoid.git"
+cd /home/zeus/content
+askpass="$(mktemp)"
+chmod 700 "$askpass"
+cat > "$askpass" <<'EOF'
+#!/usr/bin/env bash
+case "$1" in
+  *Username*) printf '%s\n' "x-access-token" ;;
+  *Password*) printf '%s\n' "$GITHUB_TOKEN" ;;
+  *) printf '\n' ;;
+esac
+EOF
+GIT_ASKPASS="$askpass" GIT_TERMINAL_PROMPT=0 git clone https://github.com/Sushruths04/Humanoid.git
+rm -f "$askpass"
+cd Humanoid
 bash thesis/scripts/bootstrap_remote_machine.sh
 ```
 
 This clones/updates the repo, builds and starts Isaac Lab Docker, installs `vulkan-tools` when needed, pins `warp-lang==1.4.2`, and verifies Vulkan.
+
+If the repo is public temporarily, this shortcut also works:
+
+```bash
+cd /home/zeus/content
+curl -fsSL https://raw.githubusercontent.com/Sushruths04/Humanoid/main/thesis/scripts/bootstrap_remote_machine.sh | bash
+```
 
 ## Run Phase 3
 
