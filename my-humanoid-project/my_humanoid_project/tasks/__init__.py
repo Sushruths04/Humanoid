@@ -5,6 +5,7 @@ from __future__ import annotations
 LANGUAGE_TASK_ID = "Humanoid-G1-Language-PickPlace-v0"
 CUSTOM_TASK_ID = "Humanoid-G1-Custom-MarkerNav-v0"
 VISION_VLA_TASK_ID = "Humanoid-G1-Vision-VLA-v0"
+ROBUST_TASK_ID = "Humanoid-G1-Robust-VLA-v0"
 
 
 def register_tasks() -> bool:
@@ -54,10 +55,21 @@ def register_tasks() -> bool:
         disable_env_checker=True,
     )
 
+    print(f"DEBUG: Registering {ROBUST_TASK_ID}...")
+    gym.register(
+        id=ROBUST_TASK_ID,
+        entry_point="isaaclab.envs:ManagerBasedRLEnv",
+        kwargs={
+            "env_cfg_entry_point": "my_humanoid_project.tasks.g1_language_pickplace_cfg:LanguageConditionedG1RobustTaskCfg",
+            "rsl_rl_cfg_entry_point": "isaaclab_tasks.manager_based.locomotion.velocity.config.g1.agents.rsl_rl_ppo_cfg:G1FlatPPORunnerCfg",
+        },
+        disable_env_checker=True,
+    )
+
     print("DEBUG: Registration complete.")
     return True
 
 
 register_tasks()
 
-__all__ = ["LANGUAGE_TASK_ID", "CUSTOM_TASK_ID", "VISION_VLA_TASK_ID", "register_tasks"]
+__all__ = ["LANGUAGE_TASK_ID", "CUSTOM_TASK_ID", "VISION_VLA_TASK_ID", "ROBUST_TASK_ID", "register_tasks"]
