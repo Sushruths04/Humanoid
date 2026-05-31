@@ -20,9 +20,9 @@ log_step "Starting Isaac Lab container..."
 python3 docker/container.py start
 
 # Verify task exists and run training
-TASK="${G1_TASK_ID:-Isaac-PickPlace-Locomanipulation-G1-Abs-v0}"
-NUM_ENVS="${G1_NUM_ENVS:-512}"
-MAX_ITERS="${G1_MAX_ITERS:-300}"
+TASK="${G1_TASK_ID:-Isaac-Velocity-Flat-G1-v0}"
+NUM_ENVS="${G1_NUM_ENVS:-2048}"
+MAX_ITERS=1000
 
 log_step "Starting G1 baseline training: $TASK ($NUM_ENVS envs, $MAX_ITERS iters)"
 

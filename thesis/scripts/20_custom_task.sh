@@ -14,8 +14,20 @@ log_step "Ensuring Isaac Lab Docker is running..."
 python3 docker/container.py start
 
 TASK="Humanoid-G1-Custom-MarkerNav-v0"
-NUM_ENVS="${G1_NUM_ENVS:-512}"
-MAX_ITERS=300
+NUM_ENVS="${G1_NUM_ENVS:-8192}"
+MAX_ITERS="${G1_MAX_ITERS:-15000}"
+
+log_step "Checking for checkpoints to resume..."
+RESUME_ARGS=""
+# We look for the most recent model in the specific experiment folder
+LATEST_CKPT=$(docker exec isaac-lab-base find /workspace/isaaclab/logs/rsl_rl -name 'model_*.pt' 2>/dev/null | sort -V | tail -1 || true)
+if [ -n "$LATEST_CKPT" ]; then
+  # Example: /workspace/isaaclab/logs/rsl_rl/g1_custom/2026-05-31_01-10-00/model_300.pt
+  RUN_NAME=$(echo "$LATEST_CKPT" | awk -F'/' '{print $(NF-1)}')
+  MODEL_FILE=$(basename "$LATEST_CKPT")
+  log_step "Resuming from run: $RUN_NAME, checkpoint: $MODEL_FILE"
+  RESUME_ARGS="--resume --load_run $RUN_NAME --checkpoint $MODEL_FILE"
+fi
 
 log_step "Starting custom G1 task training: $TASK ($NUM_ENVS envs, $MAX_ITERS iters)"
 
@@ -27,7 +39,7 @@ log_step "Starting custom G1 task training: $TASK ($NUM_ENVS envs, $MAX_ITERS it
   echo "- Max Iters: $MAX_ITERS"
   echo
   echo '```bash'
-  echo "docker exec -e PYTHONPATH=/workspace/my-humanoid-project:/workspace/isaaclab/source isaac-lab-base /workspace/isaaclab/isaaclab.sh -p /workspace/my-humanoid-project/custom_train.py --task $TASK --headless --num_envs $NUM_ENVS --max_iterations $MAX_ITERS"
+  echo "docker exec -e PYTHONPATH=/workspace/my-humanoid-project:/workspace/isaaclab/source isaac-lab-base /workspace/isaaclab/isaaclab.sh -p /workspace/my-humanoid-project/custom_train.py --task $TASK --headless --num_envs $NUM_ENVS --max_iterations $MAX_ITERS $RESUME_ARGS"
   echo '```'
 } | md_log "20-custom-task" "STEP 20 custom task training"
 
@@ -39,6 +51,7 @@ docker exec -e PYTHONPATH="/workspace/my-humanoid-project:/workspace/isaaclab/so
   --headless \
   --num_envs "$NUM_ENVS" \
   --max_iterations "$MAX_ITERS" \
+  $RESUME_ARGS \
   2>&1 | tee "$LOG_DIR/train.log"
 status=${PIPESTATUS[0]}
 set -e

@@ -14,8 +14,8 @@ log_step "Ensuring Isaac Lab Docker is running..."
 python3 docker/container.py start
 
 TASK="${G1_LANGUAGE_TASK_ID:-Humanoid-G1-Language-PickPlace-v0}"
-NUM_ENVS="${G1_NUM_ENVS:-512}"
-MAX_ITERS="${G1_MAX_ITERS:-300}"
+NUM_ENVS="${G1_NUM_ENVS:-2048}"
+MAX_ITERS="${G1_MAX_ITERS:-15000}"
 
 log_step "Starting language-conditioned G1 training: $TASK ($NUM_ENVS envs, $MAX_ITERS iters)"
 
