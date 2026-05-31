@@ -35,7 +35,7 @@ fi
 '
 
 log_step "Checking Vulkan graphics access inside Isaac Lab container..."
-docker exec isaac-lab-base vulkaninfo --summary
+docker exec isaac-lab-base /usr/bin/vulkaninfo --summary
 
 log_step "Ensuring warp-lang is pinned to 1.4.2 inside the container..."
 docker exec isaac-lab-base bash -lc '
