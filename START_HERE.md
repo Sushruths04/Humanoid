@@ -9,6 +9,7 @@ Use it when you:
 - reuse the prebuilt Docker image
 - run the Vision-VLA smoke test
 - decide where code and large files should go
+- need the organized documentation map
 
 ## What Goes Where
 
@@ -142,6 +143,8 @@ Typical examples:
 
 ## Useful Files
 
+- [Documentation index](./docs/README.md)
+- [Lightning SSH setup](./docs/setup/LIGHTNING_SSH_SETUP.md)
 - [README.md](./README.md)
 - [DOCKER_IMAGE_REUSE.md](./DOCKER_IMAGE_REUSE.md)
 - [REMOTE_WORKFLOW.md](./REMOTE_WORKFLOW.md)
