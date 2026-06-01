@@ -17,10 +17,8 @@ This repository contains the Isaac Lab humanoid thesis work, including the langu
 - `thesis/scripts/30_vision_vla.sh` - vision smoke/training launcher.
 - `thesis/scripts/machine_switch.sh` - remote machine workflow helper.
 - `thesis/scripts/docker_image_portability.sh` - Docker save/load/push/pull helper.
-- `DOCKER_IMAGE_REUSE.md` - Docker portability notes.
-- `REMOTE_WORKFLOW.md` - remote GPU workflow notes.
-- `MACHINE_SWITCH_QUICK_REF.md` - short operational cheat sheet.
-- `CPU_TO_GPU_MACHINE_SWITCH.md` - CPU-first setup and GPU handoff.
+- `docs/README.md` - organized documentation index.
+- `docs/setup/LIGHTNING_SSH_SETUP.md` - SSH setup and recovery guide.
 
 ## Recommended Workflow
 
@@ -97,7 +95,9 @@ bash thesis/scripts/docker_image_portability.sh load
 
 ## Files To Read First
 
-- [START_HERE.md](./START_HERE.md)
-- [DOCKER_IMAGE_REUSE.md](./DOCKER_IMAGE_REUSE.md)
-- [REMOTE_WORKFLOW.md](./REMOTE_WORKFLOW.md)
-- [MACHINE_SWITCH_QUICK_REF.md](./MACHINE_SWITCH_QUICK_REF.md)
+- [Documentation index](./docs/README.md)
+- [Start Here](./START_HERE.md)
+- [Lightning SSH setup](./docs/setup/LIGHTNING_SSH_SETUP.md)
+- [Docker image reuse](./DOCKER_IMAGE_REUSE.md)
+- [Remote workflow](./REMOTE_WORKFLOW.md)
+- [Machine switch quick reference](./MACHINE_SWITCH_QUICK_REF.md)
