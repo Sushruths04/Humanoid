@@ -4,6 +4,8 @@ Use this when moving between Lightning/GPU machines. The goal is to avoid local 
 
 For sudden GPU-machine changes, shutdowns, or handoff under time pressure, use `MACHINE_CHANGE_RUNBOOK.md`.
 
+For a short command reference, use `MACHINE_SWITCH_QUICK_REF.md`.
+
 ## Source Of Truth
 
 Do not treat the local Windows workspace as the project source of truth.
