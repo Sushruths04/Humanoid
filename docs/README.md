@@ -8,6 +8,7 @@ Use this page instead of browsing the root for every note and runbook.
 
 - [Lightning SSH setup](./setup/LIGHTNING_SSH_SETUP.md)
 - [Start Here](../START_HERE.md)
+- [Lightning backup workflow](../LIGHTNING_BACKUP_WORKFLOW.md)
 - [CPU to GPU machine switch](../CPU_TO_GPU_MACHINE_SWITCH.md)
 - [Setup status](../SETUP-STATUS.md)
 
@@ -40,7 +41,7 @@ Use this page instead of browsing the root for every note and runbook.
 - GitHub: code, scripts, and short markdown notes.
 - Hugging Face: large checkpoints, logs, rollout videos, and dataset-sized artifacts.
 - GHCR: the reusable Docker image.
-- Lightning machine: only temporary runtime state.
+- Lightning machine: temporary runtime state and disposable compute.
 
 ## Suggested Reading Order
 
@@ -49,4 +50,3 @@ Use this page instead of browsing the root for every note and runbook.
 3. [Lightning SSH setup](./setup/LIGHTNING_SSH_SETUP.md)
 4. [Docker image reuse](../DOCKER_IMAGE_REUSE.md)
 5. [Vision VLA CNN runbook](../VISION_VLA_CNN_RUNBOOK.md)
-

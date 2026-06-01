@@ -46,6 +46,7 @@ python3 thesis/scripts/hf_download.py
 
 - GitHub: code, shell scripts, docs, config
 - Hugging Face: checkpoints, logs, rollouts, large artifacts
+- Lightning backup machine: fallback compute and recovery point
 - Remote GPU machine: execution only
 
 ## When To Stop
