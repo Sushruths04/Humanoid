@@ -4,19 +4,7 @@ import argparse
 import os
 from pathlib import Path
 
-import gymnasium as gym
-import torch
-
 from isaaclab.app import AppLauncher
-from isaaclab.envs import DirectMARLEnv, multi_agent_to_single_agent
-from isaaclab_rl.rsl_rl import RslRlVecEnvWrapper
-from isaaclab_tasks.utils import parse_env_cfg
-from rsl_rl.runners import OnPolicyRunner
-
-from my_humanoid_project.tasks.g1_vla_vision_cfg import G1VisionVLACnnRunnerCfg
-
-# Import task registration before env construction.
-import my_humanoid_project.tasks  # noqa: F401
 
 
 def _latest_checkpoint(log_root: Path) -> Path:
@@ -53,6 +41,18 @@ def main() -> None:
 
     app_launcher = AppLauncher(args)
     simulation_app = app_launcher.app
+
+    import gymnasium as gym
+    import torch
+
+    from isaaclab.envs import DirectMARLEnv, multi_agent_to_single_agent
+    from isaaclab_rl.rsl_rl import RslRlVecEnvWrapper
+    from isaaclab_tasks.utils import parse_env_cfg
+    from rsl_rl.runners import OnPolicyRunner
+
+    # Import task registration only after the simulator is up.
+    import my_humanoid_project.tasks  # noqa: F401
+    from my_humanoid_project.tasks.g1_vla_vision_cfg import G1VisionVLACnnRunnerCfg
 
     env_cfg = parse_env_cfg(
         args.task,
