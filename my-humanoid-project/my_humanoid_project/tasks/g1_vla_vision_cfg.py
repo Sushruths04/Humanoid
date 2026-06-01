@@ -60,7 +60,6 @@ class G1VisionVLAImageObsCfg(ObsGroup):
 
     def __post_init__(self):
         self.enable_corruption = False
-        self.concatenate_terms = False
 
 
 @configclass
