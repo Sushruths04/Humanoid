@@ -33,3 +33,11 @@
 - 2026-05-30T22:02:00Z | 04-gr00t-finetune | FULL-SCALE training initiated (10,000 steps)
 - 2026-05-30T22:39:09Z | 04-gr00t-finetune | FULL-SCALE training complete (Loss: 0.0855)
 - 2026-05-30T22:45:00Z | 99-collect-results | Large checkpoints uploaded to Hugging Face Hub
+- 2026-05-31T22:49:47Z | 30-vision-vla | STEP 30 Vision VLA smoke test
+- 2026-05-31T22:52:58Z | 30-vision-vla | STEP 30 Vision VLA smoke test
+- 2026-05-31T22:56:12Z | 30-vision-vla | STEP 30 Vision VLA smoke test
+- 2026-05-31T23:01:18Z | 30-vision-vla | STEP 30 Vision VLA smoke test
+- 2026-05-31T23:29:49Z | 30-vision-vla | STEP 30 Vision VLA smoke test
+- 2026-06-01T07:22:59Z | 30-vision-vla | STEP 30 Vision VLA smoke test
+- 2026-06-01T09:02:33Z | 30-vision-vla | STEP 30 Vision VLA smoke test
+- 2026-06-01T09:24:33Z | 30-vision-vla | STEP 30 Vision VLA smoke test
