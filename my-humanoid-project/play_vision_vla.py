@@ -81,7 +81,11 @@ def main() -> None:
     env = RslRlVecEnvWrapper(env)
 
     runner_cfg = G1VisionVLACnnRunnerCfg()
-    runner = OnPolicyRunner(env, runner_cfg.to_dict(), log_dir=None, device=runner_cfg.device)
+    runner_cfg_dict = runner_cfg.to_dict()
+    for model_key in ("actor", "critic"):
+        for deprecated_key in ("stochastic", "init_noise_std", "noise_std_type", "state_dependent_std"):
+            runner_cfg_dict[model_key].pop(deprecated_key, None)
+    runner = OnPolicyRunner(env, runner_cfg_dict, log_dir=None, device=runner_cfg.device)
     runner.load(str(checkpoint))
     policy = runner.get_inference_policy(device=args.device)
 
