@@ -36,13 +36,28 @@ require_registry_image() {
   fi
 }
 
+resolve_source_image() {
+  local candidate
+  for candidate in "$IMAGE_NAME" "$IMAGE_TAG"; do
+    if docker image inspect "$candidate" >/dev/null 2>&1; then
+      echo "$candidate"
+      return 0
+    fi
+  done
+
+  echo "Could not find a source image. Tried: $IMAGE_NAME, $IMAGE_TAG" >&2
+  exit 1
+}
+
 case "${1:-}" in
   tag)
-    docker tag "$IMAGE_NAME" "$IMAGE_TAG"
+    source_image="$(resolve_source_image)"
+    docker tag "$source_image" "$IMAGE_TAG"
     docker image ls "$IMAGE_TAG"
     ;;
   save)
-    docker tag "$IMAGE_NAME" "$IMAGE_TAG"
+    source_image="$(resolve_source_image)"
+    docker tag "$source_image" "$IMAGE_TAG"
     docker save "$IMAGE_TAG" -o "$ARCHIVE_PATH"
     ls -lh "$ARCHIVE_PATH"
     ;;
@@ -52,7 +67,8 @@ case "${1:-}" in
     ;;
   push)
     require_registry_image
-    docker tag "$IMAGE_NAME" "$REGISTRY_IMAGE"
+    source_image="$(resolve_source_image)"
+    docker tag "$source_image" "$REGISTRY_IMAGE"
     docker push "$REGISTRY_IMAGE"
     ;;
   pull)
