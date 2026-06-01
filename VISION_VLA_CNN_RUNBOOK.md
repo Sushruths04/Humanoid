@@ -50,6 +50,16 @@ VISION_VLA_CHECKPOINT=/path/to/checkpoint.pt bash thesis/scripts/32_vision_vla_p
 - Large checkpoints, videos, and training artifacts: Hugging Face or the Lightning machine as a temporary cache
 - Docker image reuse: GHCR
 
+## Current artifact state
+
+While the longer `NUM_ENVS=256` run is still executing on Lightning, the current checkpoint set and rollout video are staged on the remote host at:
+
+- `/home/zeus/content/Humanoid/thesis/artifacts/vision_vla/current_run/2026-06-01_19-19-20`
+- `/home/zeus/content/Humanoid/thesis/artifacts/vision_vla/current_run/rl-video-step-0.mp4`
+- `/home/zeus/content/Humanoid/thesis/artifacts/vision_vla/current_run/train.log`
+
+These are the files to mirror into Hugging Face once a repo with write/create access is available.
+
 ## When to update the Docker image
 
 Update the image only when you change:
