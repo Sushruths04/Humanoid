@@ -53,3 +53,12 @@ python3 thesis/scripts/hf_download.py
 - Keep the run alive if it is printing iteration metrics and reward/loss values.
 - Stop about 30 minutes before the machine window ends.
 - Sync to Hugging Face before deleting or switching machines.
+
+## TODO: Docker Portability
+
+Make the Isaac Lab image portable for future machines:
+
+- export or save the built Docker image
+- load it on the next GPU machine instead of rebuilding from scratch
+- optionally push a prebuilt image to a registry if the workflow supports it
+- verify the image still starts `isaac-lab-base` and launches `custom_train.py`

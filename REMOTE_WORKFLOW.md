@@ -6,6 +6,13 @@ For sudden GPU-machine changes, shutdowns, or handoff under time pressure, use `
 
 For a short command reference, use `MACHINE_SWITCH_QUICK_REF.md`.
 
+## TODO
+
+- Export or save the built Isaac Lab Docker image so the next GPU machine can reuse it.
+- Load the image on the next machine instead of rebuilding from scratch when possible.
+- If a registry is available, push a prebuilt image there and document the pull command.
+- Re-verify `isaac-lab-base` starts and `custom_train.py` launches from the restored image.
+
 ## Source Of Truth
 
 Do not treat the local Windows workspace as the project source of truth.
