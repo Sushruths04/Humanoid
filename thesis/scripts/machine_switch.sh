@@ -48,7 +48,11 @@ case "$ACTION" in
       ps -ef | grep -E 'custom_train.py|30_vision_vla.sh' | grep -v grep || true
       echo
       echo "GPU:"
-      nvidia-smi --query-gpu=name,memory.used,utilization.gpu,power.draw --format=csv,noheader || true
+      if command -v nvidia-smi >/dev/null 2>&1; then
+        nvidia-smi --query-gpu=name,memory.used,utilization.gpu,power.draw --format=csv,noheader || true
+      else
+        echo "nvidia-smi not available on this machine"
+      fi
       echo
       echo "Latest log tail:"
       tail -n 40 thesis/logs/g1_vision/nohup.out 2>/dev/null || true
