@@ -7,9 +7,25 @@ PROJECT_DIR="${PROJECT_DIR:-$WORKSPACE_DIR/Humanoid}"
 
 clone_or_update_repo() {
   mkdir -p "$WORKSPACE_DIR"
+  local git_pull_cmd=(git -C "$PROJECT_DIR" pull --ff-only)
   if [ -d "$PROJECT_DIR/.git" ]; then
     echo "[bootstrap] Updating $PROJECT_DIR"
-    git -C "$PROJECT_DIR" pull --ff-only
+    if [ -n "${GITHUB_TOKEN:-}" ]; then
+      askpass="$(mktemp)"
+      chmod 700 "$askpass"
+      cat > "$askpass" <<'EOF'
+#!/usr/bin/env bash
+case "$1" in
+  *Username*) printf '%s\n' "x-access-token" ;;
+  *Password*) printf '%s\n' "$GITHUB_TOKEN" ;;
+  *) printf '\n' ;;
+esac
+EOF
+      GIT_ASKPASS="$askpass" GIT_TERMINAL_PROMPT=0 "${git_pull_cmd[@]}"
+      rm -f "$askpass"
+    else
+      "${git_pull_cmd[@]}"
+    fi
     return
   fi
 
