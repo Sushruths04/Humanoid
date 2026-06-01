@@ -40,6 +40,12 @@ Save:
 bash thesis/scripts/docker_image_portability.sh save
 ```
 
+On the current Lightning machine, a tarball has already been saved here:
+
+```bash
+/home/zeus/content/humanoid-isaaclab-latest.tar
+```
+
 Load:
 
 ```bash
