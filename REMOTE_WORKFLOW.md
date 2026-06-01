@@ -51,7 +51,7 @@ EOF
 GIT_ASKPASS="$askpass" GIT_TERMINAL_PROMPT=0 git clone https://github.com/Sushruths04/Humanoid.git
 rm -f "$askpass"
 cd Humanoid
-bash thesis/scripts/bootstrap_remote_machine.sh
+bash thesis/scripts/machine_switch.sh bootstrap
 ```
 
 This clones/updates the repo, builds and starts Isaac Lab Docker, installs `vulkan-tools` when needed, pins `warp-lang==1.4.2`, and verifies Vulkan.
@@ -63,11 +63,19 @@ cd /home/zeus/content
 curl -fsSL https://raw.githubusercontent.com/Sushruths04/Humanoid/main/thesis/scripts/bootstrap_remote_machine.sh | bash
 ```
 
+For a single entry point on a prepared machine:
+
+```bash
+bash thesis/scripts/machine_switch.sh status
+bash thesis/scripts/machine_switch.sh train
+bash thesis/scripts/machine_switch.sh sync
+```
+
 ## Run Phase 3
 
 ```bash
 cd /home/zeus/content/Humanoid
-bash thesis/scripts/30_vision_vla.sh
+bash thesis/scripts/machine_switch.sh train
 ```
 
 ## Upload Results Back To Hugging Face
@@ -75,7 +83,7 @@ bash thesis/scripts/30_vision_vla.sh
 ```bash
 export HF_TOKEN="..."
 export HF_REPO_ID="mitvho09/Humanoid-VLA-Artifacts"
-bash thesis/scripts/sync_phase3_artifacts.sh
+bash thesis/scripts/machine_switch.sh sync
 ```
 
 This collects `thesis/logs`, `thesis/checkpoints`, and Isaac Lab container logs, then uploads them under `phase3/` in the Hugging Face repo.
@@ -84,7 +92,7 @@ After any successful remote run, upload artifacts before stopping/deleting the m
 
 ```bash
 source SECRETS.env  # or use Lightning secrets
-bash thesis/scripts/sync_phase3_artifacts.sh
+bash thesis/scripts/machine_switch.sh sync
 ```
 
 Then commit only code/doc/config changes to GitHub:

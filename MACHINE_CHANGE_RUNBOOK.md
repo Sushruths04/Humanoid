@@ -24,7 +24,7 @@ Save large run artifacts to Hugging Face:
 ```bash
 export HF_TOKEN="..."
 export HF_REPO_ID="mitvho09/Humanoid-VLA-Artifacts"
-bash thesis/scripts/sync_phase3_artifacts.sh
+bash thesis/scripts/machine_switch.sh sync
 ```
 
 Commit and push code/docs/config changes to GitHub:
@@ -95,7 +95,7 @@ If it does not stop:
 docker exec isaac-lab-base bash -lc "pkill -KILL -f custom_train.py || true"
 ```
 
-Then upload artifacts with `sync_phase3_artifacts.sh`.
+Then upload artifacts with `machine_switch.sh sync`.
 
 ## Starting A New Machine
 
@@ -138,7 +138,7 @@ cd Humanoid
 Bootstrap Docker/Isaac Lab:
 
 ```bash
-bash thesis/scripts/bootstrap_remote_machine.sh
+bash thesis/scripts/machine_switch.sh bootstrap
 ```
 
 If prior artifacts are needed, download them from Hugging Face:
@@ -153,7 +153,7 @@ For the current Vision VLA smoke run:
 
 ```bash
 cd /home/zeus/content/Humanoid
-bash thesis/scripts/30_vision_vla.sh
+bash thesis/scripts/machine_switch.sh train
 ```
 
 If the 32-env smoke test succeeds, increase `NUM_ENVS` in `thesis/scripts/30_vision_vla.sh` based on VRAM:
@@ -163,6 +163,14 @@ If the 32-env smoke test succeeds, increase `NUM_ENVS` in `thesis/scripts/30_vis
 - Stop increasing when GPU memory is close to full or training becomes unstable.
 
 After scaling, increase `MAX_ITERS` from `300` to a production value such as `2000` or more.
+
+For the current L40S run, the working production setting is:
+
+```bash
+export NUM_ENVS=2048
+export MAX_ITERS=5000
+bash thesis/scripts/machine_switch.sh train
+```
 
 ## End Of Session Checklist
 
