@@ -2,6 +2,8 @@
 
 Use this when the current GPU machine may stop soon, or when moving from one Lightning/GPU machine to another.
 
+If the current Lightning machine is gone, use [Lightning backup workflow](./LIGHTNING_BACKUP_WORKFLOW.md) to recover on the next machine.
+
 ## Rule
 
 Do not depend on local files or a running GPU machine for handoff.

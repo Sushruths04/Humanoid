@@ -10,12 +10,14 @@ Use it when you:
 - run the Vision-VLA smoke test
 - decide where code and large files should go
 - need the organized documentation map
+- recover on a backup Lightning machine
 
 ## What Goes Where
 
 - GitHub: code, scripts, small markdown docs, runbooks.
 - Hugging Face: large checkpoints, datasets, result artifacts that are too big or awkward for GitHub.
 - Docker registry: the reusable Isaac Lab image.
+- Lightning machine: temporary runtime state and disposable compute.
 - Local machine: only temporary runtime state.
 
 ## One-Time Setup On A New Machine
@@ -76,6 +78,8 @@ When moving to another machine:
 5. Pull the Docker image.
 6. Run the smoke test.
 7. Resume the longer training job only after the smoke test passes.
+
+If the old Lightning machine is gone, follow the backup flow in [Lightning backup workflow](./LIGHTNING_BACKUP_WORKFLOW.md).
 
 ## Docker Image Reuse
 
@@ -145,6 +149,7 @@ Typical examples:
 
 - [Documentation index](./docs/README.md)
 - [Lightning SSH setup](./docs/setup/LIGHTNING_SSH_SETUP.md)
+- [Lightning backup workflow](./LIGHTNING_BACKUP_WORKFLOW.md)
 - [README.md](./README.md)
 - [DOCKER_IMAGE_REUSE.md](./DOCKER_IMAGE_REUSE.md)
 - [REMOTE_WORKFLOW.md](./REMOTE_WORKFLOW.md)

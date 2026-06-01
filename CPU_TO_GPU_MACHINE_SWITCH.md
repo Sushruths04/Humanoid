@@ -13,6 +13,7 @@ Use the CPU machine to:
 - prepare Docker and Hugging Face access
 
 Do not expect useful Vision-VLA training on CPU. The actual Isaac Lab runs need a GPU machine.
+If the current GPU machine is unavailable, use the Lightning backup workflow and then switch to GPU once the new machine is ready.
 
 ## Step 1. SSH in
 
@@ -95,6 +96,8 @@ After a run:
 - rollout videos go to the artifact folder
 - upload the final folder to Hugging Face
 - update the markdown runbook with the final artifact path and result summary
+
+If the machine changes again, repeat the backup flow in [Lightning backup workflow](./LIGHTNING_BACKUP_WORKFLOW.md).
 
 ## Fast rule
 

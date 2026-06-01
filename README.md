@@ -19,6 +19,7 @@ This repository contains the Isaac Lab humanoid thesis work, including the langu
 - `thesis/scripts/docker_image_portability.sh` - Docker save/load/push/pull helper.
 - `docs/README.md` - organized documentation index.
 - `docs/setup/LIGHTNING_SSH_SETUP.md` - SSH setup and recovery guide.
+- `LIGHTNING_BACKUP_WORKFLOW.md` - Lightning fallback machine workflow.
 
 ## Recommended Workflow
 
@@ -90,6 +91,7 @@ bash thesis/scripts/docker_image_portability.sh load
 - Do not commit GitHub, Docker, or Hugging Face tokens.
 - Use GitHub for code and small text artifacts.
 - Use Hugging Face for large checkpoints or result files.
+- Use Lightning as disposable compute, not as the only copy of anything.
 - Rebuilds are expensive; prefer pulling the prebuilt Docker image first.
 - The vision trainer now fails fast if camera env counts are too large unless explicitly overridden.
 
@@ -98,6 +100,7 @@ bash thesis/scripts/docker_image_portability.sh load
 - [Documentation index](./docs/README.md)
 - [Start Here](./START_HERE.md)
 - [Lightning SSH setup](./docs/setup/LIGHTNING_SSH_SETUP.md)
+- [Lightning backup workflow](./LIGHTNING_BACKUP_WORKFLOW.md)
 - [Docker image reuse](./DOCKER_IMAGE_REUSE.md)
 - [Remote workflow](./REMOTE_WORKFLOW.md)
 - [Machine switch quick reference](./MACHINE_SWITCH_QUICK_REF.md)
