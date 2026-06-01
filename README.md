@@ -20,6 +20,7 @@ This repository contains the Isaac Lab humanoid thesis work, including the langu
 - `DOCKER_IMAGE_REUSE.md` - Docker portability notes.
 - `REMOTE_WORKFLOW.md` - remote GPU workflow notes.
 - `MACHINE_SWITCH_QUICK_REF.md` - short operational cheat sheet.
+- `CPU_TO_GPU_MACHINE_SWITCH.md` - CPU-first setup and GPU handoff.
 
 ## Recommended Workflow
 
