@@ -2,7 +2,7 @@
 set -euo pipefail
 
 PROJECT_DIR="${PROJECT_DIR:-/home/zeus/content/Humanoid}"
-HF_REPO_ID="${HF_REPO_ID:-mitvho09/Humanoid-VLA-Artifacts}"
+HF_REPO_ID="${HF_REPO_ID:-<your-hf-namespace>/Humanoid-VLA-Artifacts}"
 ARTIFACT_DIR="$PROJECT_DIR/thesis/artifacts/phase3"
 export HF_REPO_ID ARTIFACT_DIR
 
