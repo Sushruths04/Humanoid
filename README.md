@@ -96,7 +96,7 @@ bash thesis/scripts/docker_image_portability.sh load
 
 ## Files To Read First
 
+- [START_HERE.md](./START_HERE.md)
 - [DOCKER_IMAGE_REUSE.md](./DOCKER_IMAGE_REUSE.md)
 - [REMOTE_WORKFLOW.md](./REMOTE_WORKFLOW.md)
 - [MACHINE_SWITCH_QUICK_REF.md](./MACHINE_SWITCH_QUICK_REF.md)
-
