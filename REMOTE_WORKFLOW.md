@@ -91,7 +91,7 @@ bash thesis/scripts/machine_switch.sh train
 
 ```bash
 export HF_TOKEN="..."
-export HF_REPO_ID="mitvho09/Humanoid-VLA-Artifacts"
+export HF_REPO_ID="<your-hf-namespace>/Humanoid-VLA-Artifacts"
 bash thesis/scripts/machine_switch.sh sync
 ```
 

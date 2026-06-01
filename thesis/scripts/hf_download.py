@@ -8,7 +8,7 @@ import sys
 
 def main() -> int:
     parser = argparse.ArgumentParser(description="Download Humanoid artifacts from Hugging Face.")
-    parser.add_argument("--repo-id", default=os.environ.get("HF_REPO_ID", "mitvho09/Humanoid-VLA-Artifacts"))
+    parser.add_argument("--repo-id", default=os.environ.get("HF_REPO_ID", "<your-hf-namespace>/Humanoid-VLA-Artifacts"))
     parser.add_argument("--path-in-repo", default=os.environ.get("HF_PATH_IN_REPO", "phase3"))
     parser.add_argument("--local-dir", default=os.environ.get("HF_LOCAL_DIR", "thesis/artifacts/phase3_download"))
     args = parser.parse_args()

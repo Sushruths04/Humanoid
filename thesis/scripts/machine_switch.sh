@@ -17,7 +17,7 @@ Environment:
   PROJECT_DIR   Remote repo path, default /home/zeus/content/Humanoid
   GITHUB_TOKEN  Needed for private GitHub clone/pull/push
   HF_TOKEN      Needed for Hugging Face upload/download
-  HF_REPO_ID    Defaults to mitvho09/Humanoid-VLA-Artifacts
+  HF_REPO_ID    Defaults to <your-hf-namespace>/Humanoid-VLA-Artifacts
   NUM_ENVS      Overrides the Phase 3 env count
   MAX_ITERS     Overrides the Phase 3 iteration count
 EOF
