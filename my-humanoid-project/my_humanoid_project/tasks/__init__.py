@@ -50,7 +50,7 @@ def register_tasks() -> bool:
         entry_point="isaaclab.envs:ManagerBasedRLEnv",
         kwargs={
             "env_cfg_entry_point": "my_humanoid_project.tasks.g1_vla_vision_cfg:G1VisionVLAEnvCfg",
-            "rsl_rl_cfg_entry_point": "isaaclab_tasks.manager_based.locomotion.velocity.config.g1.agents.rsl_rl_ppo_cfg:G1FlatPPORunnerCfg",
+            "rsl_rl_cfg_entry_point": "my_humanoid_project.tasks.g1_vla_vision_cfg:G1VisionVLACnnRunnerCfg",
         },
         disable_env_checker=True,
     )
