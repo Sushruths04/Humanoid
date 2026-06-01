@@ -146,6 +146,7 @@ Typical examples:
 - [DOCKER_IMAGE_REUSE.md](./DOCKER_IMAGE_REUSE.md)
 - [REMOTE_WORKFLOW.md](./REMOTE_WORKFLOW.md)
 - [MACHINE_SWITCH_QUICK_REF.md](./MACHINE_SWITCH_QUICK_REF.md)
+- [CPU_TO_GPU_MACHINE_SWITCH.md](./CPU_TO_GPU_MACHINE_SWITCH.md)
 
 ## Current Known Good State
 
@@ -153,4 +154,3 @@ Typical examples:
 - Lightning has the reusable Docker image saved and pushed to GHCR.
 - The Vision-VLA smoke test has already reached PPO successfully.
 - The current image tag is `ghcr.io/sushruths04/humanoid-isaaclab:latest`.
-
