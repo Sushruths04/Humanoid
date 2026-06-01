@@ -16,9 +16,9 @@ python3 docker/container.py start
 # For vision, we need to ensure the container has vulkan/rendering support
 # The L40S and our base image already support this in headless mode.
 
-TASK="Humanoid-G1-Vision-VLA-v0"
-NUM_ENVS=32 # Vision is HEAVY, start small
-MAX_ITERS=300 # Smoke test
+TASK="${TASK:-Humanoid-G1-Vision-VLA-v0}"
+NUM_ENVS="${NUM_ENVS:-32}"
+MAX_ITERS="${MAX_ITERS:-300}"
 PYTHONPATH_IN_CONTAINER="/workspace/my-humanoid-project:/workspace/isaaclab/source"
 RENDERING_EXPERIENCE="/workspace/isaaclab/apps/isaaclab.python.headless.rendering.kit"
 
