@@ -3,3 +3,8 @@ SECRETS.env
 .env.secrets
 *.secrets.env
 thesis/artifacts/
+
+# P0 hygiene: never track compiled python or model weights (weights go to Hugging Face)
+__pycache__/
+*.pyc
+*.pt
