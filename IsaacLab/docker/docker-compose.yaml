@@ -70,6 +70,9 @@ x-default-isaac-lab-volumes: &default-isaac-lab-volumes
     source: ../../my-humanoid-project
     target: /workspace/my-humanoid-project
   - type: bind
+    source: ../../programs
+    target: /workspace/programs
+  - type: bind
     source: .isaac-lab-docker-history
     target: ${DOCKER_USER_HOME}/.bash_history
 
