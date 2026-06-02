@@ -8,3 +8,6 @@ thesis/artifacts/
 __pycache__/
 *.pyc
 *.pt
+
+# run logs
+*.log
