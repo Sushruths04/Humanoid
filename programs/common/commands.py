@@ -51,3 +51,28 @@ def sample_marker_positions(
 def target_id_to_onehot(target_id: torch.Tensor, num_markers: int) -> torch.Tensor:
     """One-hot encode commanded marker ids as (N, num_markers) float for obs."""
     return torch.nn.functional.one_hot(target_id, num_classes=num_markers).float()
+
+
+def velocity_command_to_target(
+    robot_xy: torch.Tensor,
+    robot_yaw: torch.Tensor,
+    target_xy: torch.Tensor,
+    speed: float = 1.0,
+    yaw_gain: float = 1.0,
+    max_yaw_rate: float = 1.0,
+) -> torch.Tensor:
+    """Base-frame velocity command (vx, vy, wz) that steers toward target_xy.
+
+    Turn toward the target (wz proportional to heading error, clamped) and walk
+    forward only in proportion to how much the robot already faces it. Returns
+    (N, 3). robot_xy/target_xy are (N, 2) world-frame; robot_yaw is (N,).
+    """
+    delta = target_xy - robot_xy
+    desired_heading = torch.atan2(delta[..., 1], delta[..., 0])
+    # Shortest signed angle error, wrapped to [-pi, pi].
+    diff = desired_heading - robot_yaw
+    yaw_err = torch.atan2(torch.sin(diff), torch.cos(diff))
+    vx = speed * torch.clamp(torch.cos(yaw_err), min=0.0, max=1.0)
+    vy = torch.zeros_like(vx)
+    wz = torch.clamp(yaw_gain * yaw_err, min=-max_yaw_rate, max=max_yaw_rate)
+    return torch.stack([vx, vy, wz], dim=-1)

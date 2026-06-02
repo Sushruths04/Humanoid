@@ -53,3 +53,40 @@ def test_target_id_to_onehot_is_valid_one_hot():
     assert oh.shape == (3, 3)
     assert torch.allclose(oh.sum(dim=-1), torch.ones(3))
     assert torch.equal(oh.argmax(dim=-1), target_id)
+
+
+from programs.common.commands import velocity_command_to_target
+
+
+def test_velocity_command_straight_ahead():
+    cmd = velocity_command_to_target(
+        robot_xy=torch.tensor([[0.0, 0.0]]),
+        robot_yaw=torch.tensor([0.0]),
+        target_xy=torch.tensor([[5.0, 0.0]]),
+        speed=1.0, yaw_gain=1.0, max_yaw_rate=2.0,
+    )
+    assert cmd.shape == (1, 3)
+    assert abs(float(cmd[0, 0]) - 1.0) < 1e-5   # full forward
+    assert abs(float(cmd[0, 2])) < 1e-5         # no turn needed
+
+
+def test_velocity_command_target_to_left_turns_left():
+    cmd = velocity_command_to_target(
+        robot_xy=torch.tensor([[0.0, 0.0]]),
+        robot_yaw=torch.tensor([0.0]),
+        target_xy=torch.tensor([[0.0, 5.0]]),
+        speed=1.0, yaw_gain=1.0, max_yaw_rate=2.0,
+    )
+    assert abs(float(cmd[0, 0])) < 1e-5         # not facing target -> no forward
+    assert float(cmd[0, 2]) > 0.5              # positive yaw rate (turn left)
+
+
+def test_velocity_command_target_behind_no_forward_max_turn():
+    cmd = velocity_command_to_target(
+        robot_xy=torch.tensor([[0.0, 0.0]]),
+        robot_yaw=torch.tensor([0.0]),
+        target_xy=torch.tensor([[-5.0, 0.0]]),
+        speed=1.0, yaw_gain=1.0, max_yaw_rate=2.0,
+    )
+    assert abs(float(cmd[0, 0])) < 1e-5         # facing away -> no forward
+    assert abs(float(cmd[0, 2])) > 1.9         # near max yaw rate to turn around
