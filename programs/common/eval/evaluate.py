@@ -126,10 +126,10 @@ def main() -> None:
     # Write under the repo (mounted at /workspace); fall back to cwd.
     target = Path("/workspace") / args.out
     try:
-        write_results_markdown(metrics, str(target), title="P0 Command-Nav Baseline")
+        write_results_markdown(metrics, str(target), title=f"Eval: {args.task}")
         print(f"[eval] wrote {target}")
     except Exception as exc:  # noqa: BLE001
-        write_results_markdown(metrics, args.out, title="P0 Command-Nav Baseline")
+        write_results_markdown(metrics, args.out, title=f"Eval: {args.task}")
         print(f"[eval] wrote {args.out} ({exc})")
 
     env.close()
