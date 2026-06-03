@@ -48,7 +48,6 @@ def main() -> None:
     import my_humanoid_project.tasks  # noqa: F401  (registers tasks)
     from programs.common.eval.metrics import compute_episode_metrics, success_rate_by_command
     from programs.common.eval.report import write_results_markdown
-    from my_humanoid_project.tasks.g1_command_nav_cfg import NUM_MARKERS
 
     env_cfg = parse_env_cfg(args.task, device=args.device, num_envs=args.num_envs)
     checkpoint = Path(args.checkpoint) if args.checkpoint else _latest_checkpoint(Path(args.log_root))
@@ -117,7 +116,8 @@ def main() -> None:
         reached_t, torch.tensor(out["fell"]),
         torch.tensor(out["final_distance"]), torch.tensor(out["episode_length"]),
     )
-    by_cmd = success_rate_by_command(reached_t, torch.tensor(out["command"]), NUM_MARKERS)
+    num_markers = int(base._nav_markers_xy.shape[1])
+    by_cmd = success_rate_by_command(reached_t, torch.tensor(out["command"]), num_markers)
     metrics["success_by_command"] = [round(float(x), 3) for x in by_cmd]
     metrics["checkpoint"] = str(checkpoint)
 
