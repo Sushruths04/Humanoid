@@ -54,3 +54,19 @@ def commanded_target_reward(
     bonus_term = reached * reach_bonus
 
     return progress_term - penalty_term + bonus_term
+
+
+def collision_penalty(
+    robot_xy: torch.Tensor,
+    obstacles_xy: torch.Tensor,
+    collision_radius: float = 0.4,
+    penalty_scale: float = 1.0,
+) -> torch.Tensor:
+    """Negative reward for being within collision_radius of any obstacle.
+
+    Smoothly ramps from 0 (at/beyond the radius) to -penalty_scale per obstacle
+    at zero distance. robot_xy (N, 2), obstacles_xy (N, K, 2). Returns (N,).
+    """
+    dist = (robot_xy.unsqueeze(1) - obstacles_xy).norm(dim=-1)  # (N, K)
+    intrusion = torch.clamp(1.0 - dist / collision_radius, min=0.0)  # (N, K)
+    return -penalty_scale * intrusion.sum(dim=-1)

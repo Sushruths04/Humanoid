@@ -82,3 +82,39 @@ def test_batched_envs_are_independent():
     assert reward.shape == (2,)
     assert reward[0].item() > 0.0   # env0 moved toward its commanded marker
     assert reward[1].item() < 0.0   # env1 moved away from its commanded marker
+
+
+from programs.common.rewards import collision_penalty
+
+
+def test_collision_penalty_zero_when_far():
+    p = collision_penalty(
+        robot_xy=torch.tensor([[0.0, 0.0]]),
+        obstacles_xy=torch.tensor([[[5.0, 5.0]]]),
+        collision_radius=0.4, penalty_scale=1.0,
+    )
+    assert p.shape == (1,)
+    assert abs(float(p[0])) < 1e-6
+
+
+def test_collision_penalty_max_at_contact():
+    p = collision_penalty(
+        robot_xy=torch.tensor([[0.0, 0.0]]),
+        obstacles_xy=torch.tensor([[[0.0, 0.0]]]),
+        collision_radius=0.4, penalty_scale=2.0,
+    )
+    assert abs(float(p[0]) - (-2.0)) < 1e-6   # full intrusion -> -penalty_scale
+
+
+def test_collision_penalty_batched_and_multi_obstacle():
+    p = collision_penalty(
+        robot_xy=torch.tensor([[0.0, 0.0], [0.0, 0.0]]),
+        obstacles_xy=torch.tensor([
+            [[0.2, 0.0], [5.0, 5.0]],   # one close, one far
+            [[5.0, 5.0], [5.0, 5.0]],   # both far
+        ]),
+        collision_radius=0.4, penalty_scale=1.0,
+    )
+    assert p.shape == (2,)
+    assert float(p[0]) < 0.0     # env0 has a close obstacle
+    assert abs(float(p[1])) < 1e-6   # env1 clear

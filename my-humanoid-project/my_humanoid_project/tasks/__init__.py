@@ -8,6 +8,7 @@ VISION_VLA_TASK_ID = "Humanoid-G1-Vision-VLA-v0"
 ROBUST_TASK_ID = "Humanoid-G1-Robust-VLA-v0"
 COMMAND_NAV_TASK_ID = "Humanoid-G1-CommandNav-v0"
 LANG_NAV_TASK_ID = "Humanoid-G1-LangNav-v0"
+OBSTACLE_NAV_TASK_ID = "Humanoid-G1-ObstacleNav-v0"
 
 
 def register_tasks() -> bool:
@@ -87,6 +88,18 @@ def register_tasks() -> bool:
         entry_point="isaaclab.envs:ManagerBasedRLEnv",
         kwargs={
             "env_cfg_entry_point": "my_humanoid_project.tasks.g1_lang_nav_cfg:LanguageConditionedG1NavCfg",
+            "rsl_rl_cfg_entry_point": "isaaclab_tasks.manager_based.locomotion.velocity.config.g1.agents.rsl_rl_ppo_cfg:G1FlatPPORunnerCfg",
+        },
+        disable_env_checker=True,
+    )
+
+
+    print(f"DEBUG: Registering {OBSTACLE_NAV_TASK_ID}...")
+    gym.register(
+        id=OBSTACLE_NAV_TASK_ID,
+        entry_point="isaaclab.envs:ManagerBasedRLEnv",
+        kwargs={
+            "env_cfg_entry_point": "my_humanoid_project.tasks.g1_obstacle_nav_cfg:ObstacleG1NavCfg",
             "rsl_rl_cfg_entry_point": "isaaclab_tasks.manager_based.locomotion.velocity.config.g1.agents.rsl_rl_ppo_cfg:G1FlatPPORunnerCfg",
         },
         disable_env_checker=True,
