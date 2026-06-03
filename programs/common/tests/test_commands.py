@@ -90,3 +90,32 @@ def test_velocity_command_target_behind_no_forward_max_turn():
     )
     assert abs(float(cmd[0, 0])) < 1e-5         # facing away -> no forward
     assert abs(float(cmd[0, 2])) > 1.9         # near max yaw rate to turn around
+
+
+from programs.common.commands import velocity_command_to_target_avoiding
+
+
+def test_avoiding_steers_straight_when_no_obstacles_near():
+    cmd = velocity_command_to_target_avoiding(
+        robot_xy=torch.tensor([[0.0, 0.0]]),
+        robot_yaw=torch.tensor([0.0]),
+        target_xy=torch.tensor([[5.0, 0.0]]),
+        obstacles_xy=torch.tensor([[[0.0, 9.0]]]),  # far away
+        speed=1.0, yaw_gain=1.0, max_yaw_rate=2.0,
+        avoid_radius=1.5, avoid_gain=2.0,
+    )
+    assert cmd.shape == (1, 3)
+    assert abs(float(cmd[0, 0]) - 1.0) < 1e-4
+    assert abs(float(cmd[0, 2])) < 1e-4
+
+
+def test_avoiding_turns_away_from_obstacle_directly_ahead():
+    cmd = velocity_command_to_target_avoiding(
+        robot_xy=torch.tensor([[0.0, 0.0]]),
+        robot_yaw=torch.tensor([0.0]),
+        target_xy=torch.tensor([[5.0, 0.0]]),
+        obstacles_xy=torch.tensor([[[1.0, 0.05]]]),  # close, just left of center
+        speed=1.0, yaw_gain=1.0, max_yaw_rate=2.0,
+        avoid_radius=1.5, avoid_gain=3.0,
+    )
+    assert abs(float(cmd[0, 2])) > 0.1
