@@ -19,6 +19,7 @@ This vault documents Sushruth's 7–8 month physical-AI portfolio program: build
 | P1.3 | [[P1.3 - ObstacleNav]] | 85.9% success | ✅ Done |
 | P1.4 | [[P1.4 - SeqNav]] | 80.9% full-sequence / 94.5% ordering | ✅ Done |
 | P2 | [[P2 - World Model]] | Dreamer-mini CPU-verified | ✅ Done |
+| T0 | [[T0 - ManipFoundation]] | CPU harness built; env pending | 🔄 In Progress |
 | P3 | Vision nav (cameras) | Scaffold only | 🔜 Next |
 | P4 | Cosmos world sim | Scaffold only | 🔜 Future |
 | C5 | Loco-manipulation capstone | Not started | 🔜 Future |
@@ -99,6 +100,7 @@ This is the most valuable section. Read these to avoid repeating mistakes:
 
 - [x] Side-by-side demo reel — CommandNav/ObstacleNav/SeqNav hstack → `programs/videos/demo_reel.mp4` (HF: `videos/demo_reel.mp4`)
 - [ ] P0 fall-rate follow-up — `upright_reward` added (weight=0.5), **retraining now** (target < 10% fall rate)
+- [x] T0 CPU harness — `manip_metrics.py` + `evaluate_manip.py` scaffold (10 tests, all green)
 - [ ] P2 on real Isaac rollouts (currently only toy point-mass)
 - [ ] T0: Franka/LIBERO env + BC baseline (Ph0 T-track, not started)
 - [ ] T1: GR00T N1.7 LoRA manipulation (Ph1 T-track)
