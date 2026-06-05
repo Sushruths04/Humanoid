@@ -71,18 +71,33 @@ def main():
     episodes_done = 0
 
     obs, _ = env.reset()
-    print(f"[collect] obs shape: {obs.shape}")
+
+    def _to_tensor(o):
+        """Extract flat (N, obs_dim) tensor from obs — handles TensorDict and plain tensor."""
+        if isinstance(o, torch.Tensor):
+            return o
+        # RSL-RL TensorDict: key is "obs" or first key
+        if hasattr(o, "get"):
+            t = o.get("obs", None)
+            if t is None:
+                t = next(iter(o.values()))
+            return t
+        return torch.as_tensor(o)
+
+    obs_t = _to_tensor(obs)
+    print(f"[collect] obs shape: {obs_t.shape}")
 
     while episodes_done < args.num_episodes:
         with torch.inference_mode():
             action = policy(obs)
         next_obs, reward, dones, _ = env.step(action)
 
+        obs_t = _to_tensor(obs)
         if args.obs_keys == "nav":
             # Last 4 dims of policy obs are nav_command_obs: one-hot + rel_xy
-            nav_obs = obs[:, -4:]
+            nav_obs = obs_t[:, -4:]
         else:
-            nav_obs = obs
+            nav_obs = obs_t
 
         ep_obs.append(nav_obs.cpu())
         ep_act.append(action.cpu())
@@ -104,7 +119,7 @@ def main():
 
         obs = next_obs
 
-        if dones.bool().all():
+        if dones.bool().all() and episodes_done < args.num_episodes:
             ep_obs, ep_act, ep_rew = [], [], []
 
     out = Path(args.out)
