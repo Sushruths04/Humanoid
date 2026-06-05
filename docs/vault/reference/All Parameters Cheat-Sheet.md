@@ -1,0 +1,82 @@
+---
+tags: [reference, parameters, hyperparameters, cheat-sheet]
+---
+
+# All Parameters Cheat-Sheet
+
+## Training (all tasks)
+
+| Parameter | Value | Notes |
+|---|---|---|
+| num_envs | 4096 | measured peak VRAM: ~4.6 GB on L4 |
+| max_iterations | 500 | ~20 min on L4 |
+| iter_time | ~2.4 s | measured |
+| checkpoint frequency | 50 iters | model_0.pt, model_50.pt, ..., model_499.pt |
+| eval envs | 256 | for evaluation rollout |
+
+## Navigation Task Parameters
+
+| Task | NUM_MARKERS | RADIUS_RANGE | REACH_RADIUS | speed | yaw_gain | max_yaw_rate |
+|---|---|---|---|---|---|---|
+| CommandNav | 2 | (2.0, 5.0) m | 0.5 m | 1.0 | 0.5 | 1.0 |
+| LangNav | 3 | (2.0, 5.0) m | 0.5 m | 1.0 | 0.5 | 1.0 |
+| ObstacleNav | 3 | (2.0, 5.0) m | 0.5 m | 1.0 | 0.5 | 1.0 |
+| SeqNav | 3 | **(1.0, 2.5) m** | 0.5 m | 1.0 | 0.5 | 1.0 |
+
+## Reward Parameters
+
+| Task | weight | progress_scale | wrong_penalty_scale | reach_bonus |
+|---|---|---|---|---|
+| CommandNav | 1.0 | 1.0 | 1.0 | 10.0 |
+| LangNav | 1.0 | 1.0 | 1.0 | 10.0 |
+| ObstacleNav (nav) | 1.0 | 1.0 | 1.0 | 10.0 |
+| ObstacleNav (collision) | 1.0 | — | — | — |
+| SeqNav | 1.0 | **2.0** | **1.0** | 10.0 |
+
+## Obstacle Parameters (ObstacleNav)
+
+| Parameter | Value |
+|---|---|
+| NUM_OBSTACLES | 3 |
+| avoid_radius (potential field) | 1.5 m |
+| avoid_gain | 2.0 |
+| collision_radius | 0.4 m |
+| penalty_scale | 1.0 |
+
+## World Model (Dreamer-mini)
+
+| Parameter | Value |
+|---|---|
+| deter (GRU hidden) | 64 |
+| stoch (latent dim) | 16 |
+| hidden (MLP) | 64 |
+| Toy training loss | 2.7 → 0.11 |
+
+## VRAM Reference
+
+| Task type | Required VRAM | Recommended GPU |
+|---|---|---|
+| State-based nav RL (P0–P1) | ~5 GB | T4/16GB ✅ |
+| Vision RL (P3, cameras) | 24–40 GB | L4/L40S |
+| Cosmos Predict inference | 24–40 GB | L40S |
+| Cosmos Predict post-train | 80 GB | A100-80 |
+
+## Results (all measured)
+
+| Checkpoint | Metric | Value |
+|---|---|---|
+| P0 CommandNav | success_rate | **94.5%** |
+| P0 CommandNav | per-command | [95.8%, 93.4%] |
+| P1.2 LangNav | per-command | **98.8%** |
+| P1.3 ObstacleNav | success_rate | **85.9%** |
+| P1.3 ObstacleNav | per-command | [83.7%, 88.0%] |
+| P1.4 SeqNav | full_sequence_success | **80.9%** |
+| P1.4 SeqNav | ordering_accuracy | **94.5%** |
+| P1.4 SeqNav | first_subgoal_rate | 97.7% |
+
+## Related
+
+- [[00 - START HERE]]
+- [[PPO with RSL-RL]]
+- [[Reward Shaping & Progress Rewards]]
+- [docs/GPU_VRAM_REQUIREMENTS.md](../../docs/GPU_VRAM_REQUIREMENTS.md)
