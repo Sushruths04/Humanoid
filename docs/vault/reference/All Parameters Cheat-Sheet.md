@@ -94,6 +94,21 @@ tags: [reference, parameters, hyperparameters, cheat-sheet]
 | MUJOCO_GL | egl (server, no display) |
 | Python env | conda `libero_env` (Python 3.9, torch 2.7+cu118) |
 
+## T1 GR00T N1.7 (LIBERO)
+
+| Parameter | Value |
+|---|---|
+| Base model | `nvidia/GR00T-N1.7-3B` (3B params, VLA) |
+| LIBERO checkpoint | `nvidia/GR00T-N1.7-LIBERO/libero_spatial` |
+| Embodiment tag | `LIBERO_PANDA` |
+| Obs state | eef_xyz(3) + euler_rpy(3) + gripper_qpos(2) = 8 dims |
+| Obs video | `image` + `wrist_image` — (B=1,T=1,H,W,3) uint8 |
+| Action chunk | 8 steps per inference call |
+| Eval VRAM | ≥16 GB (T4 15 GB may OOM) |
+| Fine-tune VRAM | ≥40 GB (L40S / A100) |
+| Fine-tune dataset | `IPEC-COMMUNITY/libero_spatial_no_noops_1.0.0_lerobot` |
+| Expected task_success | ~97.7% (NVIDIA paper, 10 tasks) |
+
 ## Results (all measured)
 
 | Checkpoint | Metric | Value |
@@ -110,6 +125,7 @@ tags: [reference, parameters, hyperparameters, cheat-sheet]
 | P1.4 SeqNav | first_subgoal_rate | 97.7% |
 | T0 BC (libero_spatial:0) | task_success | **50.0%** |
 | T0 BC (libero_spatial:0) | grasp_success | 70.0% |
+| T1 GR00T N1.7 (libero_spatial, 10 tasks) | task_success | 🔜 pending GPU |
 
 ## Related
 

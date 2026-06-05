@@ -60,14 +60,18 @@ def _build_libero_env(bench_name: str, task_idx: int):
     bd = benchmark.get_benchmark_dict()
     b = bd[bench_name]()
     bddl_path = b.get_task_bddl_file_path(task_idx)
-    task_name = b.get_task(task_idx).name
+    task_obj = b.get_task(task_idx)
+    task_name = task_obj.name
+    # language attribute may be a sentence; fall back to name-with-spaces
+    task_language = getattr(task_obj, "language", task_name.replace("_", " "))
     print(f"[eval] task {task_idx}: {task_name}")
+    print(f"[eval]   language: {task_language}")
     env = OffScreenRenderEnv(
         bddl_file_name=bddl_path,
         camera_heights=256,
         camera_widths=256,
     )
-    return env, task_name
+    return env, task_name, task_language
 
 
 def _run_episode_groot(env, policy_fn, max_steps: int,
@@ -157,18 +161,14 @@ def _write_report(all_results: list[dict], out: Path, args):
 def main():
     args = _parse_args()
 
-    # Build GR00T policy
-    from programs.t1_groot_lora.groot_policy import build_groot_policy
-    policy_fn, _ = build_groot_policy(
+    # Load model once — reuse across all tasks
+    from programs.t1_groot_lora.groot_policy import load_groot_model, make_policy_fn
+    model = load_groot_model(
         model_path=args.checkpoint,
         embodiment_tag=args.embodiment_tag,
         device=args.device,
-        action_horizon=args.action_horizon,
         denoising_steps=args.denoising_steps,
     )
-
-    import torch
-    from programs.common.eval.manip_metrics import compute_manip_metrics
 
     # Parse task spec: "libero_spatial" → all 10 tasks; "libero_spatial:0" → just task 0
     if ":" in args.task:
@@ -181,7 +181,8 @@ def main():
     all_results = []
 
     for task_idx in task_indices:
-        env, task_name = _build_libero_env(bench_name, task_idx)
+        env, task_name, task_language = _build_libero_env(bench_name, task_idx)
+        policy_fn, _ = make_policy_fn(model, task_language)
 
         for ep in range(args.num_envs):
             g, p, d, t, s = _run_episode_groot(env, policy_fn, args.max_steps)
