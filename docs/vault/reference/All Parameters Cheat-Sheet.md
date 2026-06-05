@@ -78,6 +78,8 @@ tags: [reference, parameters, hyperparameters, cheat-sheet]
 |---|---|---|
 | P0 CommandNav | success_rate | **94.5%** |
 | P0 CommandNav | per-command | [95.8%, 93.4%] |
+| P0-stable CommandNav | success_rate | **92.6%** |
+| P0-stable CommandNav | fall_rate | **7.8%** ✅ (was 28.1%) |
 | P1.2 LangNav | per-command | **98.8%** |
 | P1.3 ObstacleNav | success_rate | **85.9%** |
 | P1.3 ObstacleNav | per-command | [83.7%, 88.0%] |

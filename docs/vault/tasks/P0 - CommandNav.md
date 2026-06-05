@@ -8,20 +8,30 @@ tags: [task, p0, commandnav, result, baseline]
 
 The baseline task that fixed the [[Decorative Navigation Defect]] in the original repo. The robot must walk to a **commanded colored marker** (red, blue) in a randomized arena.
 
-**Result: 94.5% success** (per-command: red 95.8%, blue 93.4%). Fall rate 28% → **stability fix in progress** (see below).
+**Result: 94.5% success** (per-command: red 95.8%, blue 93.4%). Fall rate 28.1% → **7.8% after stability fix** ✅ (see below).
 
 [Full result doc](../../results/p0_baseline.md)
 
-## Stability Fix (P0 follow-up — training now)
+## Stability Fix (P0-stable — complete ✅)
 
 Fall rate was 28.1% — robot often topples after reaching the target.
 
 **Fix:** added `upright_reward` (weight=0.5) as a new `RewTerm`:
-- Pure function in `programs/common/rewards.py`: `1 - 2*(x² + y²)` from quaternion, clipped at 0
+- Pure function in `programs/common/rewards.py`: `(1 - 2*(x² + y²)).clamp(0)` from quaternion
 - Returns 1.0 when perfectly upright, 0.0 when horizontal
-- TDD: 4 tests, all green
+- TDD: 4 tests, all green; weight configurable via `COMMANDNAV_UPRIGHT_WEIGHT` env var
 
-Retrained with 4096 envs, 500 iters. Results pending.
+**Result (256 eval episodes):**
+
+| Metric | Baseline | Stable |
+|---|---|---|
+| Success rate | 94.5% | **92.6%** |
+| Fall rate | 28.1% | **7.8%** ✅ |
+| Mean episode length | 768 | 932 |
+
+[Full stable result doc](../../results/p0_stable.md)
+
+Checkpoint: `mitvho09/humanoid-g1-nav` → `checkpoints/g1_commandnav_stable/model_499.pt`
 
 ---
 

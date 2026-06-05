@@ -99,7 +99,7 @@ This is the most valuable section. Read these to avoid repeating mistakes:
 ## ⏭️ Remaining Tasks (TODO board)
 
 - [x] Side-by-side demo reel — CommandNav/ObstacleNav/SeqNav hstack → `programs/videos/demo_reel.mp4` (HF: `videos/demo_reel.mp4`)
-- [ ] P0 fall-rate follow-up — `upright_reward` added (weight=0.5), **retraining now** (target < 10% fall rate)
+- [x] P0 fall-rate follow-up — `upright_reward` (weight=0.5), retrained → **7.8% fall rate** ✅ (was 28.1%)
 - [x] T0 CPU harness — `manip_metrics.py` + `evaluate_manip.py` scaffold (10 tests, all green)
 - [ ] P2 on real Isaac rollouts (currently only toy point-mass)
 - [ ] T0: Franka/LIBERO env + BC baseline (Ph0 T-track, not started)
