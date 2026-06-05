@@ -79,10 +79,7 @@ def main():
         next_obs, reward, dones, _ = env.step(action)
 
         if args.obs_keys == "nav":
-            # Extract 4-dim nav obs: one-hot (num_markers) + rel_xy
-            from programs.common.commands import target_id_to_onehot
-            from programs.common.eval.evaluate import _robot_xy_fn
-            # Use the nav command slice from full obs; last 4 dims are nav_command_obs
+            # Last 4 dims of policy obs are nav_command_obs: one-hot + rel_xy
             nav_obs = obs[:, -4:]
         else:
             nav_obs = obs
