@@ -84,7 +84,42 @@ def test_batched_envs_are_independent():
     assert reward[1].item() < 0.0   # env1 moved away from its commanded marker
 
 
-from programs.common.rewards import collision_penalty
+from programs.common.rewards import collision_penalty, upright_reward
+
+
+def test_upright_reward_is_max_when_upright():
+    # Identity quaternion [w=1, x=0, y=0, z=0] = perfectly upright
+    quat = torch.tensor([[1.0, 0.0, 0.0, 0.0]])
+    r = upright_reward(quat)
+    assert r.shape == (1,)
+    assert abs(float(r[0]) - 1.0) < 1e-5
+
+
+def test_upright_reward_zero_when_horizontal():
+    # 90-deg roll = [w=cos45, x=sin45, y=0, z=0] -> up_z = 1 - 2*sin²(45) = 0
+    import math
+    c, s = math.cos(math.pi / 4), math.sin(math.pi / 4)
+    quat = torch.tensor([[c, s, 0.0, 0.0]])
+    r = upright_reward(quat)
+    assert abs(float(r[0])) < 1e-5
+
+
+def test_upright_reward_non_negative():
+    # Inverted robot (180-deg roll) -> clipped to 0, not negative
+    quat = torch.tensor([[0.0, 1.0, 0.0, 0.0]])  # 180-deg rotation about x
+    r = upright_reward(quat)
+    assert float(r[0]) >= 0.0
+
+
+def test_upright_reward_batched():
+    quat = torch.tensor([
+        [1.0, 0.0, 0.0, 0.0],  # upright -> 1.0
+        [0.0, 1.0, 0.0, 0.0],  # inverted -> 0.0 (clipped)
+    ])
+    r = upright_reward(quat)
+    assert r.shape == (2,)
+    assert abs(float(r[0]) - 1.0) < 1e-5
+    assert float(r[1]) >= 0.0
 
 
 def test_collision_penalty_zero_when_far():

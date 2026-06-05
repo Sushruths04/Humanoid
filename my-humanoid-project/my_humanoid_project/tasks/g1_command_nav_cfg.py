@@ -104,6 +104,12 @@ def nav_command_obs(env, num_markers: int = NUM_MARKERS):
     return torch.cat([onehot, rel], dim=-1)
 
 
+def nav_upright_reward(env):
+    """Per-step reward for staying upright — reduces fall rate."""
+    from programs.common.rewards import upright_reward
+    return upright_reward(env.scene["robot"].data.root_quat_w)
+
+
 def nav_command_reward(
     env, num_markers: int = NUM_MARKERS, reach_radius: float = 0.5,
     progress_scale: float = 1.0, wrong_penalty_scale: float = 1.0, reach_bonus: float = 10.0,
@@ -153,6 +159,10 @@ if ISAACLAB_AVAILABLE:
                 func=nav_command_reward, weight=1.0,
                 params={"num_markers": NUM_MARKERS, "reach_radius": 0.5,
                         "progress_scale": 1.0, "wrong_penalty_scale": 1.0, "reach_bonus": 10.0},
+            )
+            self.rewards.upright = RewTerm(
+                func=nav_upright_reward, weight=0.5,
+                params={},
             )
             self.command_nav_task_id = COMMAND_NAV_TASK_ID
 

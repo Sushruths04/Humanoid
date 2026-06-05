@@ -56,6 +56,17 @@ def commanded_target_reward(
     return progress_term - penalty_term + bonus_term
 
 
+def upright_reward(root_quat_w: torch.Tensor) -> torch.Tensor:
+    """Reward staying upright. Returns cos²(tilt) in [0, 1].
+
+    1.0 when perfectly upright, 0.0 when horizontal, clipped at 0 when inverted.
+    root_quat_w: (N, 4) as [w, x, y, z]. Returns (N,).
+    """
+    x, y = root_quat_w[:, 1], root_quat_w[:, 2]
+    up_z = 1.0 - 2.0 * (x.pow(2) + y.pow(2))
+    return up_z.clamp(min=0.0)
+
+
 def collision_penalty(
     robot_xy: torch.Tensor,
     obstacles_xy: torch.Tensor,
