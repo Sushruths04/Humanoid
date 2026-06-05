@@ -43,6 +43,14 @@ tags: [reference, parameters, hyperparameters, cheat-sheet]
 | collision_radius | 0.4 m |
 | penalty_scale | 1.0 |
 
+## Stability Reward (P0 follow-up)
+
+| Parameter | Value | Notes |
+|---|---|---|
+| upright_reward weight | **0.5** (v1) / **2.0** (v2) | env var `COMMANDNAV_UPRIGHT_WEIGHT` |
+| formula | `(1 - 2*(x²+y²)).clamp(0)` | from quaternion [w,x,y,z] |
+| max value | 1.0 (perfectly upright) | 0.0 when horizontal, clipped 0 when inverted |
+
 ## World Model (Dreamer-mini)
 
 | Parameter | Value |
@@ -51,6 +59,9 @@ tags: [reference, parameters, hyperparameters, cheat-sheet]
 | stoch (latent dim) | 16 |
 | hidden (MLP) | 64 |
 | Toy training loss | 2.7 → 0.11 |
+| Isaac WM deter | 128 |
+| Isaac WM stoch | 32 |
+| Isaac WM training steps | 2000 |
 
 ## VRAM Reference
 
