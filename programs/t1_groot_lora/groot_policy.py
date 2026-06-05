@@ -64,7 +64,7 @@ def load_groot_model(
         strict=False,
         **kwargs,
     )
-    policy.eval()
+    policy.model.eval()   # Gr00tPolicy wraps nn.Module as self.model
     print("[gr00t] model loaded ✓")
     return policy
 
