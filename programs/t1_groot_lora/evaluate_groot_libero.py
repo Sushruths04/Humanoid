@@ -50,6 +50,10 @@ def _parse_args():
                    help="Actions per GR00T inference call (chunk size)")
     p.add_argument("--out", type=str, default="docs/results/t1_groot.md")
     p.add_argument("--device", type=str, default="cuda")
+    p.add_argument("--video-dir", type=str, default="programs/videos/t1_groot",
+                   help="Directory to save episode videos (one success per task)")
+    p.add_argument("--no-video", action="store_true",
+                   help="Disable video recording")
     return p.parse_args()
 
 
@@ -75,7 +79,8 @@ def _build_libero_env(bench_name: str, task_idx: int):
 
 
 def _run_episode_groot(env, policy_fn, max_steps: int,
-                        grasp_h_thresh: float = 0.03, drop_thresh: float = 0.05):
+                        grasp_h_thresh: float = 0.03, drop_thresh: float = 0.05,
+                        recorder=None):
     """Run one LIBERO episode with a GR00T policy (obs_dict → action).
     Returns (grasped, placed, dropped, task_success, steps_to_success).
     """
@@ -91,7 +96,9 @@ def _run_episode_groot(env, policy_fn, max_steps: int,
 
     step = 0
     while step < max_steps:
-        # GR00T outputs an action chunk; we execute action_horizon steps before re-querying
+        if recorder is not None:
+            recorder.add_frame(obs_dict["agentview_image"])
+
         action = policy_fn(obs_dict)
         obs_dict, _rew, done, _info = env.step(action)
 
@@ -178,6 +185,11 @@ def main():
         bench_name = args.task
         task_indices = list(range(10))  # libero_spatial has 10 tasks
 
+    from programs.common.eval.video_recorder import EpisodeRecorder
+    recorder = None if args.no_video else EpisodeRecorder(
+        out_dir=args.video_dir, fps=10, max_per_task=1
+    )
+
     all_results = []
 
     for task_idx in task_indices:
@@ -185,7 +197,16 @@ def main():
         policy_fn, _ = make_policy_fn(model, task_language)
 
         for ep in range(args.num_envs):
-            g, p, d, t, s = _run_episode_groot(env, policy_fn, args.max_steps)
+            if recorder is not None:
+                recorder.start_episode(task_name, ep)
+
+            g, p, d, t, s = _run_episode_groot(
+                env, policy_fn, args.max_steps, recorder=recorder
+            )
+
+            if recorder is not None:
+                recorder.finish_episode(success=bool(t))
+
             all_results.append({
                 "task": task_name,
                 "grasped": int(g),
@@ -200,6 +221,9 @@ def main():
                 print(f"  [{task_name[:40]}] ep {ep+1}/{args.num_envs}  sr={sr:.2f}")
 
         env.close()
+
+    if recorder is not None:
+        recorder.close()
 
     _write_report(all_results, Path(args.out), args)
     print("[eval] done")
