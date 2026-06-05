@@ -36,10 +36,13 @@ wm = WorldModel(obs_dim=16, action_dim=4, deter=64, stoch=16, hidden=64)
 
 ```
 programs/world_model/
-  rssm.py          ← RSSM, WorldModel classes
-  agent.py         ← Actor, Critic, imagine_returns()
-  train_wm.py      ← toy point-mass trainer (CPU, verifies code)
-  tests/test_world_model.py ← unit tests (overfit tiny batch)
+  rssm.py                    ← RSSM, WorldModel classes
+  agent.py                   ← Actor, Critic, imagine_returns()
+  train_wm.py                ← toy point-mass trainer (CPU, verifies code)
+  collect_nav_rollouts.py    ← collect (obs,action,reward) from nav policy → .pt
+  train_wm_isaac.py          ← train WorldModel on real Isaac rollouts
+  tests/test_world_model.py  ← unit tests (overfit tiny batch)
+  tests/test_wm_isaac.py     ← smoke tests for Isaac pipeline (5, all green)
 ```
 
 ---
@@ -55,11 +58,37 @@ cd /teamspace/studios/this_studio/Humanoid
 
 ---
 
+## Running on Real Isaac Rollouts (GPU)
+
+### Step 1 — Collect rollouts
+```bash
+docker exec -e PYTHONPATH=/workspace:/workspace/my-humanoid-project:/workspace/isaaclab/source \
+  isaac-lab-base /workspace/isaaclab/isaaclab.sh -p \
+  /workspace/programs/world_model/collect_nav_rollouts.py \
+  --task Humanoid-G1-CommandNav-v0 \
+  --checkpoint /workspace/programs/checkpoints/g1_commandnav/model_499.pt \
+  --num-envs 64 --num-episodes 200 \
+  --out /workspace/programs/data/nav_rollouts_commandnav.pt
+```
+
+### Step 2 — Train world model
+```bash
+python -m programs.world_model.train_wm_isaac \
+  --data programs/data/nav_rollouts_commandnav.pt \
+  --steps 2000 \
+  --out programs/checkpoints/world_model/wm_commandnav.pt
+```
+
+### Step 3 — Verify DoD
+Output should show `imagined_mean_reward` is finite (not NaN). This is the P2 DoD.
+
+---
+
 ## Remaining GPU Tasks
 
-1. **Collect rollouts** from the trained CommandNav/ObstacleNav policy (save obs, actions, rewards to disk)
-2. **Train Dreamer-mini** on real nav rollouts
-3. **Show imagination-trained agent > random** (the P2 DoD)
+1. ~~**Collect rollouts**~~ (script written, CPU-tested — needs GPU run)
+2. ~~**Train Dreamer-mini on real rollouts**~~ (script written, CPU-tested — needs GPU run)
+3. **Run the pipeline** — 200 episodes → 2000 training steps → imagined_reward finite
 4. Generate `docs/results/p2_world_model.md`
 
 VRAM: world model training is pure PyTorch, no Isaac Sim → 8–16 GB is plenty (even T4 or laptop GPU). See [GPU VRAM table](../../docs/GPU_VRAM_REQUIREMENTS.md).
