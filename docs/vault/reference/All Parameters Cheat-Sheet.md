@@ -82,6 +82,18 @@ tags: [reference, parameters, hyperparameters, cheat-sheet]
 | Initial / final loss | 0.7625 / 0.0109 |
 | Imagined reward | 0.133 (finite ✅) |
 
+## T0 Manipulation (LIBERO)
+
+| Parameter | Value |
+|---|---|
+| Env | `libero_spatial:0` (pick bowl → place on plate) |
+| Policy | MLPBCPolicy: obs=12, act=7, hidden=256 |
+| Obs format | joint_pos(7) + eef_pos(3) + gripper_qpos(2) |
+| Training demos | 50 × ~100 steps = 5018 transitions |
+| BC epochs | 200 |
+| MUJOCO_GL | egl (server, no display) |
+| Python env | conda `libero_env` (Python 3.9, torch 2.7+cu118) |
+
 ## Results (all measured)
 
 | Checkpoint | Metric | Value |
@@ -96,6 +108,8 @@ tags: [reference, parameters, hyperparameters, cheat-sheet]
 | P1.4 SeqNav | full_sequence_success | **80.9%** |
 | P1.4 SeqNav | ordering_accuracy | **94.5%** |
 | P1.4 SeqNav | first_subgoal_rate | 97.7% |
+| T0 BC (libero_spatial:0) | task_success | **50.0%** |
+| T0 BC (libero_spatial:0) | grasp_success | 70.0% |
 
 ## Related
 

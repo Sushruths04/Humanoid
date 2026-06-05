@@ -6,70 +6,75 @@ tags: [task, t0, manipulation, libero, franka, t-track]
 
 ## Summary
 
-The tabletop manipulation track baseline. Establishes a Franka/LIBERO env + manipulation eval harness + a behaviour-cloning baseline. Runs in parallel to the P-track humanoid nav work; shares the `programs/common/` spine.
+The tabletop manipulation track baseline. Establishes a LIBERO env + manipulation eval harness + a behaviour-cloning baseline. Runs in parallel to the P-track humanoid nav work; shares the `programs/common/` spine.
 
-**Status: CPU harness built. Env integration pending (requires LIBERO install in container).**
+**Status: COMPLETE ✅** LIBERO installed, BC policy at 50% task_success on libero_spatial:0.
 
-[T-track plan](../../TABLETOP_MANIPULATION_PLAN.md)
-
----
-
-## What Was Built (CPU-verified)
-
-- `programs/common/eval/manip_metrics.py` — pure tensor metrics (10 TDD tests, all green):
-  - `compute_manip_metrics` — aggregates grasp/place/drop/task-success
-  - `grasp_then_place_success` — boolean AND of grasp + place tensors
-  - `object_drop_rate_from_heights` — detects drops from height trajectory
-- `programs/t0_manip_foundation/evaluate_manip.py` — eval harness skeleton:
-  - CLI: `--task`, `--checkpoint`, `--num-envs`, `--out`
-  - Writes `docs/results/t0_manip.md`
-  - `_build_env()` and `_load_policy()` stubs to wire in LIBERO
-- `programs/t0_manip_foundation/README.md` — setup + DoD + metric table
+[Full result doc](../../results/t0_manip.md)
 
 ---
 
-## Metrics Defined
+## Results
 
-| Metric | Description |
+| Checkpoint | Metric | Value |
+|---|---|---|
+| CPT0.1 | LIBERO env up (headless) | ✅ |
+| CPT0.2 | Eval harness (random policy) | task_success=0.0% (expected) |
+| CPT0.3 | BC baseline (MLPBCPolicy) | **task_success=50.0%** ✅ |
+
+---
+
+## Architecture
+
+| Component | Detail |
 |---|---|
-| `grasp_success` | Robot lifted object > threshold above table |
-| `place_success` | Object placed within `place_radius` of target |
-| `task_success` | Grasped AND placed AND not dropped |
-| `object_drop_rate` | Dropped object after grasping (height drop > threshold) |
-| `mean_steps_to_success` | Steps to first task_success (over successes only; NaN if none) |
+| Env | LIBERO `OffScreenRenderEnv` (robosuite + MuJoCo) |
+| Task | `libero_spatial:0` — pick bowl, place on plate |
+| Policy | `MLPBCPolicy` 2-layer MLP, obs=12, act=7 |
+| Obs format | joint_pos(7) + eef_pos(3) + gripper_qpos(2) = 12 |
+| Action | OSC_POSE delta (7-dim) |
+| Training data | 50 demos × ~100 steps = 5018 transitions |
+| BC loss | 0.225 → 0.044 |
 
 ---
 
-## Checkpoints
+## What Was Built
 
-**CPT0.1 — Env up:** LIBERO installed; `python -c "from libero.libero import benchmark"` succeeds; one episode renders headless mp4.
-
-**CPT0.2 — Eval harness:** `evaluate_manip.py --task libero_spatial --num-envs 64` prints metric dict + writes `docs/results/t0_manip.md`.
-
-**CPT0.3 — BC baseline:** Behaviour-clone on small demo set (LeRobot dataset); BC policy beats random on ≥1 task.
-
----
-
-## Remaining Steps
-
-1. SSH to GPU machine, install LIBERO: `docker exec -it isaac-lab-base bash -c "pip install libero-benchmark"`
-2. Wire `_build_env()` in `evaluate_manip.py` to create LIBERO env
-3. Collect demos via scripted expert or LeRobot dataset → push to HF
-4. Train BC baseline (ACT or Diffusion Policy via LeRobot)
-5. Run eval, verify task_success > 0
+- `programs/common/eval/manip_metrics.py` — pure tensor metrics (10 TDD tests)
+- `programs/t0_manip_foundation/evaluate_manip.py` — full eval harness (LIBERO wired)
+- `programs/t0_manip_foundation/train_bc_libero.py` — LIBERO HDF5 → BC training
+- `programs/t0_manip_foundation/bc_baseline.py` — MLPBCPolicy class
 
 ---
 
-## Key Parameters (planned)
+## Installation Notes (Lightning Studio)
 
-| Parameter | Value |
-|---|---|
-| Env suite | `libero_spatial` (start), then `libero_object` |
-| Num train envs | 64 |
-| Grasp height threshold | 0.05 m |
-| Place radius | 0.05 m |
-| Drop threshold | 0.05 m |
-| BC epochs | 100 (smoke baseline) |
+LIBERO is NOT on PyPI. Install in a separate conda env:
+
+```bash
+conda create -n libero_env python=3.9 -y
+conda run -n libero_env pip install torch torchvision --index-url https://download.pytorch.org/whl/cu118
+conda run -n libero_env pip install numpy h5py mujoco==2.3.7 robosuite==1.4.1 bddl hydra-core==1.3.2 easydict cloudpickle robomimic gym==0.26.2
+
+# Clone from GitHub (no PyPI package)
+git clone --depth=1 https://github.com/Lifelong-Robot-Learning/LIBERO.git /tmp/LIBERO
+/path/to/libero_env/bin/pip install /tmp/LIBERO/ --no-deps
+
+# Add to sys.path via .pth file
+echo "/tmp/LIBERO" > /path/to/libero_env/lib/python3.9/site-packages/libero_path.pth
+```
+
+Verify: `from libero.libero import benchmark; benchmark.get_benchmark_dict()`
+
+Always run with `MUJOCO_GL=egl` (no display on GPU machines).
+
+---
+
+## Remaining Steps (T1+)
+
+- T1: GR00T N1.7 LoRA fine-tuning on LIBERO demos for language-conditioned manipulation
+- T2: World model for tabletop manipulation (reuse Dreamer-mini from P2)
+- T3: Vision-based manipulation (pixel-only BC or diffusion policy)
 
 ---
 
@@ -78,3 +83,4 @@ The tabletop manipulation track baseline. Establishes a Franka/LIBERO env + mani
 - [[P0 - CommandNav]] — shares `programs/common/` eval spine
 - [[P2 - World Model]] — T2 will reuse Dreamer-mini for manipulation
 - [[Frozen Text Encoder for Language Tasks]] — T1 language-conditioned manip reuses it
+- [docs/results/t0_manip.md](../../results/t0_manip.md)
