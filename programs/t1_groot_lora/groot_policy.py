@@ -2,31 +2,42 @@
 
 Wraps the isaac-gr00t Gr00tPolicy into the same step-callable interface used
 by evaluate_groot_libero.py. Takes a LIBERO env obs dict and returns a 7-dim
-action (OSC_POSE delta: dx, dy, dz, droll, dpitch, dyaw, gripper).
+action (OSC_POSE: x, y, z, roll, pitch, yaw, gripper).
 
-Observation format expected by GR00T LIBERO_PANDA model:
+Observation format expected by GR00T LIBERO_PANDA (libero_sim) model
+— confirmed from processor_config.json in nvidia/GR00T-N1.7-LIBERO:
+
     video:
         image:        uint8  (1, 1, H, W, 3)  - agentview camera
         wrist_image:  uint8  (1, 1, H, W, 3)  - wrist camera
-    state:
-        state:        float32 (1, 1, 8)        - eef_xyz + euler_rpy + gripper
+    state:  (per-joint-group — NOT a flat array)
+        x:       float32 (1, 1, 1)
+        y:       float32 (1, 1, 1)
+        z:       float32 (1, 1, 1)
+        roll:    float32 (1, 1, 1)
+        pitch:   float32 (1, 1, 1)
+        yaw:     float32 (1, 1, 1)
+        gripper: float32 (1, 1, 2)  — both finger positions
     language:
-        human.action.task_description: [["task text"]]
+        annotation.human.action.task_description: [["task text"]]
 
-The LIBERO env provides all of these via obs_dict keys.
+get_action() returns a dict with the same per-joint-group keys, each
+(B, T_action, D). We assemble the first timestep into a 7-dim array.
 """
 
 from __future__ import annotations
 
 import os
 import sys
-from typing import TYPE_CHECKING
 
 import numpy as np
 
 _GROOT_SRC = os.environ.get("GROOT_SRC", "/tmp/Isaac-GR00T")
 if _GROOT_SRC not in sys.path:
     sys.path.insert(0, _GROOT_SRC)
+
+# Action key order matches modality.json and OSC_POSE convention
+_ACTION_KEYS = ["x", "y", "z", "roll", "pitch", "yaw", "gripper"]
 
 
 def _quat_to_euler(quat: np.ndarray) -> np.ndarray:
@@ -35,8 +46,7 @@ def _quat_to_euler(quat: np.ndarray) -> np.ndarray:
     # LIBERO env returns [w, x, y, z], scipy expects [x, y, z, w]
     wxyz = quat.astype(np.float64)
     xyzw = np.array([wxyz[1], wxyz[2], wxyz[3], wxyz[0]])
-    euler = transform.Rotation.from_quat(xyzw).as_euler("xyz")
-    return euler.astype(np.float32)
+    return transform.Rotation.from_quat(xyzw).as_euler("xyz").astype(np.float32)
 
 
 def load_groot_model(
@@ -80,11 +90,8 @@ def make_policy_fn(policy, task_language: str):
     def policy_fn(obs_dict: dict) -> np.ndarray:
         obs = _libero_obs_to_groot(obs_dict, _lang)
         action_dict, _info = policy.get_action(obs)
-        acts = action_dict["actions"]
-        if hasattr(acts, "cpu"):
-            acts = acts.cpu().numpy()
-        acts = np.asarray(acts, dtype=np.float32)
-        return acts[0, 0]  # first action in the chunk
+        # action_dict keys: x, y, z, roll, pitch, yaw, gripper — each (B, T, D)
+        return _action_dict_to_array(action_dict)
 
     return policy_fn, False  # False = use full obs_dict
 
@@ -99,8 +106,8 @@ def build_groot_policy(
 ):
     """Build a callable GR00T policy for LIBERO evaluation (single-task).
 
-    For multi-task eval (different language per task), prefer load_groot_model()
-    + make_policy_fn() to avoid reloading the 3B-param model for each task.
+    For multi-task eval, prefer load_groot_model() + make_policy_fn() to
+    avoid reloading the 3B-param model for each task.
 
     Returns:
         (policy_fn, compact) — policy_fn(obs_dict) → np.ndarray (7,)
@@ -110,43 +117,55 @@ def build_groot_policy(
     return make_policy_fn(policy, task_language)
 
 
+def _action_dict_to_array(action_dict: dict) -> np.ndarray:
+    """Flatten per-joint-group action dict → 7-dim array (first timestep)."""
+    parts = []
+    for key in _ACTION_KEYS:
+        val = np.asarray(action_dict[key], dtype=np.float32)  # (B, T, D)
+        parts.append(val[0, 0].flatten())                      # (D,)
+    return np.concatenate(parts)   # (7,)
+
+
 def _libero_obs_to_groot(obs_dict: dict, task_language: str) -> dict:
     """Convert LIBERO env obs dict to the batched format expected by Gr00tPolicy.
 
     Observation shape convention: (B=1, T=1, ...)
+    State is per-joint-group (not a flat array) — confirmed from
+    processor_config.json: modality_keys=[x,y,z,roll,pitch,yaw,gripper].
     """
-    # ── State: eef_xyz + euler_rpy + gripper_qpos = 8 dims ───────────────────
     eef_pos = np.asarray(obs_dict.get("robot0_eef_pos", np.zeros(3)), dtype=np.float32)
-    eef_quat = np.asarray(obs_dict.get("robot0_eef_quat", np.array([1., 0., 0., 0.])), dtype=np.float32)
+    eef_quat = np.asarray(
+        obs_dict.get("robot0_eef_quat", np.array([1., 0., 0., 0.])), dtype=np.float32
+    )
     gripper = np.asarray(obs_dict.get("robot0_gripper_qpos", np.zeros(2)), dtype=np.float32)
 
-    euler = _quat_to_euler(eef_quat)                      # (3,)
-    state = np.concatenate([eef_pos, euler, gripper])     # (8,)
-    state_batched = state[None, None, :]                   # (1, 1, 8)
+    euler = _quat_to_euler(eef_quat)  # (3,) — roll, pitch, yaw
+
+    def _s(v):
+        """Scalar → (1, 1, 1) float32."""
+        return np.array([[[float(v)]]], dtype=np.float32)
 
     # ── Images: (1, 1, H, W, 3) uint8 ────────────────────────────────────────
     def _prep_img(key, h=256, w=256):
         img = obs_dict.get(key, np.zeros((h, w, 3), dtype=np.uint8))
-        img = np.asarray(img, dtype=np.uint8)
-        return img[None, None, ...]                         # (1, 1, H, W, 3)
-
-    img_main = _prep_img("agentview_image")
-    img_wrist = _prep_img("robot0_eye_in_hand_image")
-
-    # ── Language ──────────────────────────────────────────────────────────────
-    # Shape: (B=1, T=1) — each element is a string
-    lang = [[task_language]]
+        return np.asarray(img, dtype=np.uint8)[None, None, ...]  # (1,1,H,W,3)
 
     return {
         "video": {
-            "image": img_main,           # (1,1,H,W,3) uint8
-            "wrist_image": img_wrist,    # (1,1,H,W,3) uint8
+            "image":       _prep_img("agentview_image"),
+            "wrist_image": _prep_img("robot0_eye_in_hand_image"),
         },
         "state": {
-            "state": state_batched,      # (1,1,8) float32
+            "x":       _s(eef_pos[0]),
+            "y":       _s(eef_pos[1]),
+            "z":       _s(eef_pos[2]),
+            "roll":    _s(euler[0]),
+            "pitch":   _s(euler[1]),
+            "yaw":     _s(euler[2]),
+            "gripper": gripper[None, None, :],   # (1, 1, 2)
         },
         "language": {
-            # LIBERO_PANDA checkpoint modality key (from processor_config.json)
-            "annotation.human.action.task_description": lang,
+            # Key from processor_config.json libero_sim section
+            "annotation.human.action.task_description": [[task_language]],
         },
     }
