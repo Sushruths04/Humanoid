@@ -11,3 +11,5 @@ __pycache__/
 
 # run logs
 *.log
+programs/results/
+docs/results/videos/
