@@ -72,6 +72,16 @@ tags: [reference, parameters, hyperparameters, cheat-sheet]
 | Cosmos Predict inference | 24–40 GB | L40S |
 | Cosmos Predict post-train | 80 GB | A100-80 |
 
+## World Model — Isaac Rollout Results
+
+| Metric | Value |
+|---|---|
+| Rollout episodes | 200 (CommandNav, P0-stable policy) |
+| obs_dim / act_dim | 4 / 37 |
+| Training steps | 2000 |
+| Initial / final loss | 0.7625 / 0.0109 |
+| Imagined reward | 0.133 (finite ✅) |
+
 ## Results (all measured)
 
 | Checkpoint | Metric | Value |

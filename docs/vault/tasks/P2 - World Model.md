@@ -8,7 +8,9 @@ tags: [task, p2, world-model, dreamer, rssm, pytorch]
 
 A world model lets the agent imagine future states without running the real simulator — useful for model-based planning, data augmentation, and latent-space training. This project builds a minimal Dreamer-style RSSM from scratch.
 
-**Status:** fully built and CPU-verified. Toy point-mass training: loss 2.7 → 0.11. **Not yet trained on real Isaac rollouts** (remaining GPU task).
+**Status: COMPLETE ✅** CPU-verified toy training + real Isaac rollouts trained. Final: loss 0.76 → 0.011, imagined reward finite (DoD met).
+
+[Full result doc](../../results/p2_world_model.md)
 
 ---
 

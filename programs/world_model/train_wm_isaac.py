@@ -120,7 +120,7 @@ def main():
         opt.step()
         if step % 200 == 0 or step == args.steps - 1:
             eval_info = _eval_imagination(wm, episodes, args.imagine_horizon, device)
-            print(f"step {step:4d}/{args.steps}  loss={float(loss):.4f}  "
+            print(f"step {step:4d}/{args.steps}  loss={loss.item():.4f}  "
                   f"recon={parts['recon']:.4f}  rew={parts['reward']:.4f}  kl={parts['kl']:.4f}  "
                   f"| {eval_info}")
 

@@ -18,7 +18,7 @@ This vault documents Sushruth's 7–8 month physical-AI portfolio program: build
 | P1.2 | [[P1.2 - LangNav]] | 98.8% per-command | ✅ Done |
 | P1.3 | [[P1.3 - ObstacleNav]] | 85.9% success | ✅ Done |
 | P1.4 | [[P1.4 - SeqNav]] | 80.9% full-sequence / 94.5% ordering | ✅ Done |
-| P2 | [[P2 - World Model]] | CPU-verified + Isaac pipeline built | ✅ CPU Done |
+| P2 | [[P2 - World Model]] | Isaac rollouts trained, loss 0.76→0.011 | ✅ Done |
 | T0 | [[T0 - ManipFoundation]] | CPU harness built; env pending | 🔄 In Progress |
 | P3 | Vision nav (cameras) | Scaffold only | 🔜 Next |
 | P4 | Cosmos world sim | Scaffold only | 🔜 Future |
