@@ -8,9 +8,20 @@ tags: [task, p0, commandnav, result, baseline]
 
 The baseline task that fixed the [[Decorative Navigation Defect]] in the original repo. The robot must walk to a **commanded colored marker** (red, blue) in a randomized arena.
 
-**Result: 94.5% success** (per-command: red 95.8%, blue 93.4%). Fall rate 28% (follow-up task).
+**Result: 94.5% success** (per-command: red 95.8%, blue 93.4%). Fall rate 28% → **stability fix in progress** (see below).
 
-[Full result doc](../../docs/results/p0_baseline.md)
+[Full result doc](../../results/p0_baseline.md)
+
+## Stability Fix (P0 follow-up — training now)
+
+Fall rate was 28.1% — robot often topples after reaching the target.
+
+**Fix:** added `upright_reward` (weight=0.5) as a new `RewTerm`:
+- Pure function in `programs/common/rewards.py`: `1 - 2*(x² + y²)` from quaternion, clipped at 0
+- Returns 1.0 when perfectly upright, 0.0 when horizontal
+- TDD: 4 tests, all green
+
+Retrained with 4096 envs, 500 iters. Results pending.
 
 ---
 

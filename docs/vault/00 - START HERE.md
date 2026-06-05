@@ -97,14 +97,16 @@ This is the most valuable section. Read these to avoid repeating mistakes:
 
 ## ⏭️ Remaining Tasks (TODO board)
 
-- [ ] Side-by-side demo reel (render all 3 nav policies + stitch with ffmpeg)
-- [ ] P0 fall-rate follow-up (reduce from 24–28%)
+- [x] Side-by-side demo reel — CommandNav/ObstacleNav/SeqNav hstack → `programs/videos/demo_reel.mp4` (HF: `videos/demo_reel.mp4`)
+- [ ] P0 fall-rate follow-up — `upright_reward` added (weight=0.5), **retraining now** (target < 10% fall rate)
 - [ ] P2 on real Isaac rollouts (currently only toy point-mass)
+- [ ] T0: Franka/LIBERO env + BC baseline (Ph0 T-track, not started)
+- [ ] T1: GR00T N1.7 LoRA manipulation (Ph1 T-track)
 - [ ] P3 Vision nav (24 GB + RT cores; pixel-dependence probe)
+- [ ] T2/T3: WM for manip + vision manip
 - [ ] P4 Cosmos Predict post-train (80 GB A100 burst)
-- [ ] T-track manipulation (T0–T4)
-- [ ] C5 Loco-manipulation capstone
+- [ ] T4 + C5 Loco-manipulation capstone
 
 ---
 
-*Vault built from the CP1.3/CP1.4 GPU session (2026-06-05). All metrics are real and measured.*
+*Vault last updated 2026-06-05 during post-CP1.4 session. All metrics are real and measured.*
