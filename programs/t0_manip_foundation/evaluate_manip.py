@@ -50,9 +50,19 @@ def _parse_args():
     return parser.parse_args()
 
 
-def _obs_to_flat(obs: dict) -> "np.ndarray":
-    """Flatten LIBERO obs dict to 1-D array: proprio-state (39) + object-state (70) = 109."""
+def _obs_to_flat(obs: dict, compact: bool = False) -> "np.ndarray":
+    """Flatten LIBERO obs dict to 1-D array.
+
+    compact=False (default): proprio-state(39) + object-state(70) = 109 dims.
+    compact=True: joint_pos(7) + eef_pos(3) + gripper_qpos(2) = 12 dims —
+        consistent with HDF5 demo obs used in train_bc_libero.py.
+    """
     import numpy as np
+    if compact:
+        joint = np.asarray(obs.get("robot0_joint_pos", np.zeros(7)), dtype=np.float32)
+        eef = np.asarray(obs.get("robot0_eef_pos", np.zeros(3)), dtype=np.float32)
+        grip = np.asarray(obs.get("robot0_gripper_qpos", np.zeros(2)), dtype=np.float32)
+        return np.concatenate([joint, eef, grip])
     parts = []
     for key in ("robot0_proprio-state", "object-state"):
         if key in obs:
@@ -64,12 +74,13 @@ def _obs_to_flat(obs: dict) -> "np.ndarray":
 
 
 def _run_episode(env, policy_fn, max_steps: int,
-                 grasp_h_thresh: float, drop_thresh: float):
+                 grasp_h_thresh: float, drop_thresh: float,
+                 compact_obs: bool = False):
     """Run one episode; return (grasped, placed, dropped, task_success, steps_to_success)."""
     import numpy as np
 
     obs_dict = env.reset()
-    obs_flat = _obs_to_flat(obs_dict)
+    obs_flat = _obs_to_flat(obs_dict, compact=compact_obs)
 
     # Initial object z from object-state[2] (z coord of first object)
     obj_state0 = obs_dict.get("object-state", np.zeros(70))
@@ -84,7 +95,7 @@ def _run_episode(env, policy_fn, max_steps: int,
     for step in range(max_steps):
         action = policy_fn(obs_flat)
         obs_dict, _reward, done, _info = env.step(action)
-        obs_flat = _obs_to_flat(obs_dict)
+        obs_flat = _obs_to_flat(obs_dict, compact=compact_obs)
 
         obj_state = obs_dict.get("object-state", np.zeros(70))
         obj_z = float(obj_state[2])
@@ -153,7 +164,9 @@ def _build_policy(args):
         ckpt = torch.load(args.checkpoint, map_location="cpu")
         obs_dim = ckpt.get("obs_dim", 109)
         action_dim = ckpt.get("action_dim", act_dim)
-        pol = MLPBCPolicy(obs_dim=obs_dim, action_dim=action_dim)
+        hidden = ckpt.get("hidden", 256)
+        compact = ckpt.get("obs_mode", "") == "compact"
+        pol = MLPBCPolicy(obs_dim=obs_dim, action_dim=action_dim, hidden=hidden)
         pol.net.load_state_dict(ckpt["model_state"])
         pol.net.eval()
 
@@ -162,7 +175,7 @@ def _build_policy(args):
                 t = torch.tensor(obs_flat, dtype=torch.float32).unsqueeze(0)
                 return pol.forward(t).squeeze(0).numpy()
 
-        print(f"[eval] loaded BC policy from {args.checkpoint} (obs={obs_dim} act={action_dim})")
+        print(f"[eval] loaded BC policy from {args.checkpoint} (obs={obs_dim} act={action_dim} compact={compact})")
     else:
         rng = np.random.default_rng(42)
 
@@ -170,8 +183,9 @@ def _build_policy(args):
             return rng.uniform(-0.03, 0.03, act_dim).astype(np.float32)
 
         print("[eval] using random policy (no checkpoint given)")
+        compact = False
 
-    return policy_fn
+    return policy_fn, compact
 
 
 def main():
@@ -181,7 +195,7 @@ def main():
 
     print(f"[eval] building env for task={args.task}")
     env = _build_env(args)
-    policy_fn = _build_policy(args)
+    policy_fn, compact_obs = _build_policy(args)
 
     grasped_l, placed_l, dropped_l, success_l, steps_l = [], [], [], [], []
 
@@ -191,6 +205,7 @@ def main():
             max_steps=args.max_steps,
             grasp_h_thresh=args.grasp_height_threshold,
             drop_thresh=args.drop_threshold,
+            compact_obs=compact_obs,
         )
         grasped_l.append(g)
         placed_l.append(p)
