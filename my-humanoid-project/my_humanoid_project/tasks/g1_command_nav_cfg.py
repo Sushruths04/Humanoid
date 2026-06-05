@@ -25,6 +25,7 @@ if _REPO_ROOT not in sys.path:
 NUM_MARKERS = 2
 RADIUS_RANGE = (2.0, 5.0)
 COMMAND_NAV_TASK_ID = "Humanoid-G1-CommandNav-v0"
+UPRIGHT_REWARD_WEIGHT = float(os.environ.get("COMMANDNAV_UPRIGHT_WEIGHT", "0.5"))
 
 try:
     from isaaclab.managers import EventTermCfg as EventTerm
@@ -161,7 +162,7 @@ if ISAACLAB_AVAILABLE:
                         "progress_scale": 1.0, "wrong_penalty_scale": 1.0, "reach_bonus": 10.0},
             )
             self.rewards.upright = RewTerm(
-                func=nav_upright_reward, weight=0.5,
+                func=nav_upright_reward, weight=UPRIGHT_REWARD_WEIGHT,
                 params={},
             )
             self.command_nav_task_id = COMMAND_NAV_TASK_ID
