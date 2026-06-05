@@ -146,6 +146,7 @@ def _libero_obs_to_groot(obs_dict: dict, task_language: str) -> dict:
             "state": state_batched,      # (1,1,8) float32
         },
         "language": {
-            "human.action.task_description": lang,
+            # LIBERO_PANDA checkpoint modality key (from processor_config.json)
+            "annotation.human.action.task_description": lang,
         },
     }
