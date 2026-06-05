@@ -1,159 +1,244 @@
-"""Evaluate a manipulation policy on LIBERO or Isaac Lab Franka tasks.
+"""Evaluate a manipulation policy on LIBERO tabletop tasks.
 
-Rolls out the policy across N envs, recording per-episode:
-  - grasped: robot achieved stable grasp
-  - placed: robot placed object at target
-  - dropped: robot dropped object after grasping
-  - task_success: full task done (grasped + placed, no drop)
+Rolls out the policy across N episodes on a single LIBERO task, recording:
+  - grasped: robot achieved stable grasp (object lifted above threshold)
+  - placed: task success per LIBERO BDDL predicates
+  - dropped: object fell significantly after being grasped
+  - task_success: same as placed (LIBERO ground truth)
   - steps_to_success: first step at which task_success triggered (-1 if never)
-
-Writes a markdown report via programs.common.eval.report and returns metrics.
 
 Usage:
     python -m programs.t0_manip_foundation.evaluate_manip \
-        --task <LIBERO_TASK_NAME> \
-        --checkpoint <path/to/policy.pt> \
-        --num-envs 64 \
+        --task libero_spatial:0 \
+        --num-envs 10 \
         --out docs/results/t0_manip.md
+
+    # With a trained BC checkpoint:
+    python -m programs.t0_manip_foundation.evaluate_manip \
+        --task libero_spatial:0 \
+        --checkpoint programs/checkpoints/t0_bc/bc_libero_spatial_0.pt \
+        --num-envs 50
 """
 
 from __future__ import annotations
 
 import argparse
 import os
-import math
+import sys
 from pathlib import Path
+
+_REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+if _REPO_ROOT not in sys.path:
+    sys.path.insert(0, _REPO_ROOT)
 
 
 def _parse_args():
-    parser = argparse.ArgumentParser(description="Evaluate manipulation policy.")
+    parser = argparse.ArgumentParser(description="Evaluate manipulation policy on LIBERO.")
     parser.add_argument("--task", type=str, required=True,
-                        help="LIBERO task name or Isaac Lab env ID")
-    parser.add_argument("--checkpoint", type=str, default=None)
-    parser.add_argument("--num-envs", type=int, default=64)
+                        help="LIBERO task spec: '<benchmark_name>:<task_idx>' e.g. 'libero_spatial:0'")
+    parser.add_argument("--checkpoint", type=str, default=None,
+                        help="Path to BC policy checkpoint (.pt). Omit for random policy.")
+    parser.add_argument("--num-envs", type=int, default=10,
+                        help="Number of episodes to evaluate")
     parser.add_argument("--max-steps", type=int, default=500,
-                        help="Max steps per episode")
-    parser.add_argument("--grasp-height-threshold", type=float, default=0.05,
-                        help="Min lift height (m) above table to count as grasp")
-    parser.add_argument("--place-radius", type=float, default=0.05,
-                        help="Max distance (m) to target pos to count as placed")
+                        help="Max steps per episode before timeout")
+    parser.add_argument("--grasp-height-threshold", type=float, default=0.03,
+                        help="Min lift height (m) above initial object z to count as grasp")
     parser.add_argument("--drop-threshold", type=float, default=0.05,
                         help="Height drop (m) after grasp to count as dropped")
     parser.add_argument("--out", type=str, default="docs/results/t0_manip.md")
     return parser.parse_args()
 
 
-def _libero_episode(env, policy, max_steps: int, grasp_h: float, place_r: float, drop_t: float):
-    """Roll out one episode; return (grasped, placed, dropped, task_success, steps)."""
-    import torch
-    obs = env.reset()
+def _obs_to_flat(obs: dict) -> "np.ndarray":
+    """Flatten LIBERO obs dict to 1-D array: proprio-state (39) + object-state (70) = 109."""
+    import numpy as np
+    parts = []
+    for key in ("robot0_proprio-state", "object-state"):
+        if key in obs:
+            parts.append(np.asarray(obs[key], dtype=np.float32))
+    if not parts:
+        parts = [np.asarray(v, dtype=np.float32).flatten()
+                 for v in obs.values() if hasattr(v, "__len__") and len(v) < 256]
+    return np.concatenate(parts) if parts else np.zeros(109, dtype=np.float32)
+
+
+def _run_episode(env, policy_fn, max_steps: int,
+                 grasp_h_thresh: float, drop_thresh: float):
+    """Run one episode; return (grasped, placed, dropped, task_success, steps_to_success)."""
+    import numpy as np
+
+    obs_dict = env.reset()
+    obs_flat = _obs_to_flat(obs_dict)
+
+    # Initial object z from object-state[2] (z coord of first object)
+    obj_state0 = obs_dict.get("object-state", np.zeros(70))
+    initial_obj_z = float(obj_state0[2])
+
     did_grasp = False
-    did_place = False
     did_drop = False
-    grasp_height = None
-    min_h_after = float("inf")
+    task_success = False
+    max_obj_z_after_grasp = initial_obj_z
     success_step = -1
 
     for step in range(max_steps):
-        with torch.no_grad():
-            action = policy(obs)
-        obs, reward, done, info = env.step(action)
+        action = policy_fn(obs_flat)
+        obs_dict, _reward, done, _info = env.step(action)
+        obs_flat = _obs_to_flat(obs_dict)
 
-        obj_h = float(info.get("object_height", 0.0))
-        obj_dist_to_target = float(info.get("object_dist_to_target", float("inf")))
-        grasping_now = obj_h > grasp_h
+        obj_state = obs_dict.get("object-state", np.zeros(70))
+        obj_z = float(obj_state[2])
 
-        if grasping_now and not did_grasp:
+        # Grasp: object lifted above initial position by threshold
+        if not did_grasp and obj_z > initial_obj_z + grasp_h_thresh:
             did_grasp = True
-            grasp_height = obj_h
+            max_obj_z_after_grasp = obj_z
 
         if did_grasp:
-            min_h_after = min(min_h_after, obj_h)
-            if not did_place and obj_dist_to_target < place_r:
-                did_place = True
+            max_obj_z_after_grasp = max(max_obj_z_after_grasp, obj_z)
+            # Drop: fell more than drop_thresh below the highest point
+            if not did_drop and (max_obj_z_after_grasp - obj_z) > drop_thresh:
+                did_drop = True
 
-        if did_grasp and (grasp_height - min_h_after) > drop_t:
-            did_drop = True
+        # Task success via LIBERO BDDL predicates
+        if env.check_success():
+            task_success = True
+            if success_step < 0:
+                success_step = step
 
-        task_done = did_grasp and did_place and not did_drop
-        if task_done and success_step < 0:
-            success_step = step
-
-        if done:
+        if done or task_success:
             break
 
-    return did_grasp, did_place, did_drop, (did_grasp and did_place and not did_drop), success_step
+    did_place = task_success
+    return did_grasp, did_place, did_drop, task_success, success_step
+
+
+def _build_env(args):
+    """Build LIBERO OffScreenRenderEnv for the given task spec."""
+    from libero.libero import benchmark
+    from libero.libero.envs import OffScreenRenderEnv
+
+    bench_name, task_idx_str = (args.task.split(":", 1) if ":" in args.task
+                                else (args.task, "0"))
+    task_idx = int(task_idx_str)
+
+    bd = benchmark.get_benchmark_dict()
+    if bench_name not in bd:
+        raise ValueError(f"Unknown LIBERO benchmark '{bench_name}'. "
+                         f"Valid: {list(bd.keys())}")
+
+    b = bd[bench_name]()
+    bddl_path = b.get_task_bddl_file_path(task_idx)
+    task_name = b.get_task(task_idx).name
+    print(f"[eval] task: {task_name}")
+    print(f"[eval] bddl: {bddl_path}")
+
+    env = OffScreenRenderEnv(
+        bddl_file_name=bddl_path,
+        camera_heights=128,
+        camera_widths=128,
+    )
+    return env
+
+
+def _build_policy(args):
+    """Load BC policy from checkpoint, or return a random policy for smoke-tests."""
+    import numpy as np
+    import torch
+
+    act_dim = 7  # LIBERO uses OSC_POSE: 3 pos + 3 rot + 1 gripper
+
+    if args.checkpoint:
+        from programs.t0_manip_foundation.bc_baseline import MLPBCPolicy
+        ckpt = torch.load(args.checkpoint, map_location="cpu")
+        obs_dim = ckpt.get("obs_dim", 109)
+        action_dim = ckpt.get("action_dim", act_dim)
+        pol = MLPBCPolicy(obs_dim=obs_dim, action_dim=action_dim)
+        pol.net.load_state_dict(ckpt["model_state"])
+        pol.net.eval()
+
+        def policy_fn(obs_flat: np.ndarray) -> np.ndarray:
+            with torch.no_grad():
+                t = torch.tensor(obs_flat, dtype=torch.float32).unsqueeze(0)
+                return pol.forward(t).squeeze(0).numpy()
+
+        print(f"[eval] loaded BC policy from {args.checkpoint} (obs={obs_dim} act={action_dim})")
+    else:
+        rng = np.random.default_rng(42)
+
+        def policy_fn(obs_flat: np.ndarray) -> np.ndarray:
+            return rng.uniform(-0.03, 0.03, act_dim).astype(np.float32)
+
+        print("[eval] using random policy (no checkpoint given)")
+
+    return policy_fn
 
 
 def main():
     args = _parse_args()
-
-    try:
-        from isaaclab.app import AppLauncher
-        app_launcher = AppLauncher(args)
-        sim_app = app_launcher.app
-    except ImportError:
-        sim_app = None
-
     import torch
     from programs.common.eval.manip_metrics import compute_manip_metrics
-    from programs.common.eval.report import write_results_markdown
 
-    # Env + policy construction happens here; imports guarded by try/except
-    # so this module is importable on CPU for testing.
-    try:
-        env = _build_env(args)
-        policy = _load_policy(args, env)
-    except Exception as exc:
-        print(f"[eval] Cannot build env/policy: {exc}")
-        if sim_app:
-            sim_app.close()
-        return
+    print(f"[eval] building env for task={args.task}")
+    env = _build_env(args)
+    policy_fn = _build_policy(args)
 
-    grasped_list, placed_list, dropped_list, success_list, steps_list = [], [], [], [], []
-    for _ in range(args.num_envs):
-        g, p, d, t, s = _libero_episode(
-            env, policy, args.max_steps,
-            args.grasp_height_threshold, args.place_radius, args.drop_threshold,
+    grasped_l, placed_l, dropped_l, success_l, steps_l = [], [], [], [], []
+
+    for ep in range(args.num_envs):
+        g, p, d, t, s = _run_episode(
+            env, policy_fn,
+            max_steps=args.max_steps,
+            grasp_h_thresh=args.grasp_height_threshold,
+            drop_thresh=args.drop_threshold,
         )
-        grasped_list.append(g)
-        placed_list.append(p)
-        dropped_list.append(d)
-        success_list.append(t)
-        steps_list.append(s)
+        grasped_l.append(g)
+        placed_l.append(p)
+        dropped_l.append(d)
+        success_l.append(t)
+        steps_l.append(s)
+        if (ep + 1) % max(1, args.num_envs // 5) == 0:
+            print(f"[eval] episode {ep+1}/{args.num_envs}  success={sum(success_l)}/{ep+1}")
 
     metrics = compute_manip_metrics(
-        torch.tensor(grasped_list),
-        torch.tensor(placed_list),
-        torch.tensor(dropped_list),
-        torch.tensor(success_list),
-        torch.tensor(steps_list, dtype=torch.long),
+        torch.tensor(grasped_l, dtype=torch.float32),
+        torch.tensor(placed_l, dtype=torch.float32),
+        torch.tensor(dropped_l, dtype=torch.float32),
+        torch.tensor(success_l, dtype=torch.float32),
+        torch.tensor(steps_l, dtype=torch.long),
     )
-    metrics["checkpoint"] = str(args.checkpoint)
+    metrics["checkpoint"] = str(args.checkpoint or "random")
     metrics["task"] = args.task
 
-    print("[eval] metrics:", metrics)
-    write_results_markdown(metrics, args.out, title=f"Manipulation Eval: {args.task}")
-    print(f"[eval] wrote {args.out}")
+    print(f"[eval] results: {metrics}")
+
+    out = Path(args.out)
+    out.parent.mkdir(parents=True, exist_ok=True)
+    _write_report(metrics, out, args)
+    print(f"[eval] report written to {out}")
 
     env.close()
-    if sim_app:
-        sim_app.close()
 
 
-def _build_env(args):
-    """Build LIBERO or Isaac Lab manipulation env — extend for your framework."""
-    raise NotImplementedError(
-        "Wire in your LIBERO / Isaac Lab env here. "
-        "See programs/t0_manip_foundation/README.md for setup instructions."
-    )
-
-
-def _load_policy(args, env):
-    """Load policy checkpoint — extend for your framework."""
-    raise NotImplementedError(
-        "Wire in your policy loading here (LeRobot ACT/DP or custom)."
-    )
+def _write_report(metrics: dict, out: Path, args) -> None:
+    lines = [
+        f"# T0 Manipulation Eval: {args.task}",
+        "",
+        f"Policy: `{args.checkpoint or 'random'}`  ",
+        f"Episodes: {metrics['num_episodes']}  ",
+        "",
+        "## Results",
+        "",
+        "| Metric | Value |",
+        "|---|---|",
+        f"| task_success | **{metrics['task_success']:.3f}** |",
+        f"| grasp_success | {metrics['grasp_success']:.3f} |",
+        f"| place_success | {metrics['place_success']:.3f} |",
+        f"| object_drop_rate | {metrics['object_drop_rate']:.3f} |",
+        f"| mean_steps_to_success | {metrics['mean_steps_to_success']:.1f} |",
+        "",
+    ]
+    out.write_text("\n".join(lines))
 
 
 if __name__ == "__main__":
