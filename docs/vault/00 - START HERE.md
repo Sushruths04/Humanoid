@@ -20,7 +20,7 @@ This vault documents Sushruth's 7–8 month physical-AI portfolio program: build
 | P1.4 | [[P1.4 - SeqNav]] | 80.9% full-sequence / 94.5% ordering | ✅ Done |
 | P2 | [[P2 - World Model]] | Isaac rollouts trained, loss 0.76→0.011 | ✅ Done |
 | T0 | [[T0 - ManipFoundation]] | BC baseline 50% task_success on libero_spatial | ✅ Done |
-| T1 | [[T1 - GR00T LoRA]] | Scripts complete; eval needs ≥16 GB GPU | 🔜 Ready to run |
+| T1 | [[T1 - GR00T LoRA]] | **97.0% mean task success** (10 tasks, 20 eps each) | ✅ Done |
 | P3 | Vision nav (cameras) | Scaffold only | 🔜 Next |
 | P4 | Cosmos world sim | Scaffold only | 🔜 Future |
 | C5 | Loco-manipulation capstone | Not started | 🔜 Future |
@@ -103,8 +103,7 @@ This is the most valuable section. Read these to avoid repeating mistakes:
 - [x] P0 fall-rate follow-up — `upright_reward` (weight=0.5), retrained → **7.8% fall rate** ✅ (was 28.1%)
 - [x] T0 CPU harness — `manip_metrics.py` + `evaluate_manip.py` scaffold (10 tests, all green)
 - [x] T0 LIBERO install + BC baseline — `train_bc_libero.py` → **50% task_success** on libero_spatial:0 ✅
-- [x] T1 scripts complete — `groot_policy.py` + `evaluate_groot_libero.py` + `run_finetune.sh` ✅ (eval needs ≥16 GB GPU)
-- [ ] T1 eval run — upgrade GPU, run `evaluate_groot_libero.py` → `docs/results/t1_groot.md`
+- [x] T1 complete — GR00T N1.7 eval → **97.0% mean task success** across 10 LIBERO Spatial tasks ✅
 - [ ] P2 on real Isaac rollouts (currently only toy point-mass)
 - [ ] P3 Vision nav (24 GB + RT cores; pixel-dependence probe)
 - [ ] P3 Vision nav (24 GB + RT cores; pixel-dependence probe)

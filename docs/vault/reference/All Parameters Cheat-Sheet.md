@@ -125,7 +125,7 @@ tags: [reference, parameters, hyperparameters, cheat-sheet]
 | P1.4 SeqNav | first_subgoal_rate | 97.7% |
 | T0 BC (libero_spatial:0) | task_success | **50.0%** |
 | T0 BC (libero_spatial:0) | grasp_success | 70.0% |
-| T1 GR00T N1.7 (libero_spatial, 10 tasks) | task_success | 🔜 pending GPU |
+| T1 GR00T N1.7 (libero_spatial, 10 tasks) | mean_task_success | **97.0%** |
 
 ## Related
 
