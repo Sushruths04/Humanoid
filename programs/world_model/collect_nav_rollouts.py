@@ -31,7 +31,6 @@ def _parse_args():
                         choices=["nav", "full"],
                         help="nav = 4-dim nav obs only; full = full policy obs")
     parser.add_argument("--out", type=str, default="programs/data/nav_rollouts.pt")
-    parser.add_argument("--device", type=str, default="cuda")
     from isaaclab.app import AppLauncher
     AppLauncher.add_app_launcher_args(parser)
     return parser.parse_args()
