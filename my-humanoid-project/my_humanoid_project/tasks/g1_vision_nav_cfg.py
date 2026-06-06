@@ -20,10 +20,10 @@ from .g1_command_nav_cfg import CommandConditionedG1NavCfg
 
 VISION_NAV_TASK_ID = "Humanoid-G1-VisionNav-v0"
 
-_CAM_H = int(os.environ.get("P3_CAM_H", "84"))
-_CAM_W = int(os.environ.get("P3_CAM_W", "84"))
+_CAM_H = int(os.environ.get("P3_CAM_H", "64"))
+_CAM_W = int(os.environ.get("P3_CAM_W", "64"))
 _MAX_ITERS = int(os.environ.get("P3_MAX_ITERS", "1500"))
-_NUM_STEPS = int(os.environ.get("P3_NUM_STEPS", "48"))
+_NUM_STEPS = int(os.environ.get("P3_NUM_STEPS", "24"))
 
 
 def _get_camera_rgb(env, sensor_name: str = "head_camera"):
@@ -124,7 +124,7 @@ class G1VisionNavCnnRunnerCfg(RslRlOnPolicyRunnerCfg):
         clip_param=0.2,
         entropy_coef=0.008,
         num_learning_epochs=5,
-        num_mini_batches=4,
+        num_mini_batches=8,
         learning_rate=3.0e-4,
         schedule="adaptive",
         gamma=0.99,
