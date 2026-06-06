@@ -24,7 +24,8 @@ _CAM_H = int(os.environ.get("P3_CAM_H", "128"))
 _CAM_W = int(os.environ.get("P3_CAM_W", "128"))
 _MAX_ITERS = int(os.environ.get("P3_MAX_ITERS", "300"))
 _NUM_STEPS = int(os.environ.get("P3_NUM_STEPS", "48"))
-_MINI_BATCHES = int(os.environ.get("P3_MINI_BATCHES", "8"))
+_MINI_BATCHES = int(os.environ.get("P3_MINI_BATCHES", "64"))
+_CAM_UPDATE_PERIOD = float(os.environ.get("P3_CAM_UPDATE_PERIOD", "0.2"))
 
 
 def _get_camera_rgb(env, sensor_name: str = "head_camera"):
@@ -53,7 +54,7 @@ class G1VisionNavEnvCfg(CommandConditionedG1NavCfg):
 
         self.scene.head_camera = TiledCameraCfg(
             prim_path="{ENV_REGEX_NS}/Robot/head_link/front_camera",
-            update_period=0.05,
+            update_period=_CAM_UPDATE_PERIOD,
             height=_CAM_H,
             width=_CAM_W,
             data_types=["rgb"],
