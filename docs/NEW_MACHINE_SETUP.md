@@ -175,16 +175,6 @@ DoD: pixel-conditioned nav policy trains to ≥60% success on CommandNav.
 
 ---
 
-## What to Run Next — T3 (Vision Manipulation)
-
-**Machine needed: L4 16GB**
-
-T3 switches LIBERO to pixel-only observations (no proprioception). Uses the `groot_env` environment.
-
-DoD: image-conditioned policy achieves measurable success (>20%) on libero_spatial.
-
----
-
 ## What to Run Next — P4 (Cosmos Predict)
 
 **Machine needed: A100-80G (burst, expensive)**
@@ -234,8 +224,10 @@ Repo: `mitvho09/humanoid-g1-nav` (dataset repo)
 | `checkpoints/g1_seqnav/` | P1.4 SeqNav checkpoint |
 | `checkpoints/t0_bc/` | T0 BC baseline checkpoint |
 | `checkpoints/world_model/` | P2 + T2 world model checkpoints |
+| `checkpoints/t3_pixel_bc/` | T3 pixel-only BC checkpoint (ResNet18+MLP) |
 | `videos/t1_groot/` | 10 GR00T success videos (all LIBERO Spatial tasks) |
-| `videos/` | Nav demo reel (commandnav, obstaclenav, seqnav) |
+| `videos/t3_pixel_bc/` | 10 T3 attempt videos (pixel-BC, all failing — ablation) |
+| `videos/` | Nav demo reel (commandnav, obstaclenav, seqnav, demo_reel) |
 
 ```bash
 # Download everything from HF at once
@@ -254,4 +246,32 @@ Lightning Studio drops SSH keys every restart. Fix:
 
 ---
 
-*Last updated: 2026-06-06. T1 + T2 complete. Next: P3 on L40S.*
+## LIBERO Eval Dependencies for groot_env (T3 lesson)
+
+When running LIBERO OffScreenRenderEnv in groot_env, these extra packages are needed:
+
+```bash
+/home/zeus/miniconda3/envs/groot_env/bin/pip install \
+    robosuite==1.4.1 bddl==1.0.1 future easydict einops \
+    'gym==0.25.2' cloudpickle matplotlib h5py
+```
+
+**Critical:** LIBERO `__init__.py` at `/tmp/LIBERO/libero/libero/__init__.py` has a blocking `input()` call. Patch it BEFORE running any nohup eval:
+
+```bash
+python3 << 'EOF'
+import re, ast
+path = '/tmp/LIBERO/libero/libero/__init__.py'
+content = open(path).read()
+content = re.sub(r'answer = input\([^)]+\)\.lower\(\)', 'answer = "n"', content, flags=re.DOTALL)
+content = re.sub(r'custom_dataset_path = input\([^)]+\)', 'custom_dataset_path = "/tmp/libero_datasets"', content, flags=re.DOTALL)
+content = re.sub(r'confirm_answer = input\(\)\.lower\(\)', 'confirm_answer = "n"', content)
+open(path, 'w').write(content)
+ast.parse(open(path).read())
+print('LIBERO __init__.py patched OK')
+EOF
+```
+
+---
+
+*Last updated: 2026-06-06. T1 + T2 + T3 complete. Next: P3 on L40S.*

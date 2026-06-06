@@ -1,6 +1,6 @@
 # Master Roadmap — Option 3: Converged Loco-Manipulation Flagship
 
-**Owner:** Sushruth · **Created:** 2026-06-02 · **Status:** GOVERNING PLAN (chosen path)
+**Owner:** Sushruth · **Created:** 2026-06-02 · **Updated:** 2026-06-06 · **Status:** GOVERNING PLAN (chosen path)
 **This document governs.** It sequences the two source plans and replaces their separate capstones (P5 + T5) with one merged flagship (**C5**).
 
 - Humanoid projects **P0–P4**: see `docs/PHYSICAL_AI_6MONTH_PLAN.md`
@@ -115,7 +115,25 @@ Do not let Ph5 perfectionism sink the program — ship level 2, attempt level 1 
 
 ---
 
-## 5. Immediate next action
-**Ph0 / P0** is the entry point — it fixes the existing repo's honesty defect (decorative language/marker conditioning) and builds the `common/eval` harness that every later project on both tracks reuses. Start at **CP0.1 (repo hygiene)** → **CP0.2 (randomized command + target)**.
+## 5. Progress Snapshot (2026-06-06)
+
+| Task | Result | Status |
+|---|---|---|
+| P0 CommandNav | 94.5% success, 7.8% fall rate | ✅ Done |
+| P1.2 LangNav | 98.8% per-command | ✅ Done |
+| P1.3 ObstacleNav | 85.9% success | ✅ Done |
+| P1.4 SeqNav | 80.9% full-seq / 94.5% ordering | ✅ Done |
+| P2 World Model | loss 0.76→0.011 | ✅ Done |
+| T0 BC baseline | 50% task_success (libero_spatial:0) | ✅ Done |
+| T1 GR00T N1.7 eval | **97.0%** mean success (10 tasks) | ✅ Done |
+| T2 WM Manipulation | loss 1.40→0.008 | ✅ Done |
+| T3 Pixel BC | 0% success (ablation — intended) | ✅ Done |
+| **P3 Vision Nav** | Not started | 🔜 **NEXT — L40S** |
+| P4 Cosmos Predict | Not started | 🔜 Future |
+| C5 Capstone | Not started | 🔜 Future |
+
+## 6. Immediate next action
+
+**P3 Vision Nav** — rent L40S (48GB). See `docs/NEW_MACHINE_SETUP.md` for full setup runbook. Scripts scaffolded at `programs/p3_vision_nav/`. DoD: pixel-conditioned nav policy ≥60% success on CommandNav.
 
 *Source plans: `docs/PHYSICAL_AI_6MONTH_PLAN.md`, `docs/TABLETOP_MANIPULATION_PLAN.md`. References: see those docs' §7.*
