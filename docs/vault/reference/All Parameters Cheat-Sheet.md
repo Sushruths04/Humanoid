@@ -126,6 +126,8 @@ tags: [reference, parameters, hyperparameters, cheat-sheet]
 | T0 BC (libero_spatial:0) | task_success | **50.0%** |
 | T0 BC (libero_spatial:0) | grasp_success | 70.0% |
 | T1 GR00T N1.7 (libero_spatial, 10 tasks) | mean_task_success | **97.0%** |
+| T2 Dreamer-mini WM (200 GR00T rollouts) | initial_loss / final_loss | 1.403 / **0.008** |
+| T2 Dreamer-mini WM | imagined_reward_finite | ✅ PASS |
 
 ## Related
 

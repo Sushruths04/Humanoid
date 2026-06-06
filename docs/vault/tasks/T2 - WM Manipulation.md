@@ -8,7 +8,7 @@ tags: [task, t2, manipulation, world-model, dreamer, libero, t-track]
 
 Train a Dreamer-mini RSSM world model on recorded GR00T rollouts from LIBERO Spatial. The WM learns manipulation dynamics (eef position, orientation, gripper) in latent space and can imagine future rollouts without running the real simulator.
 
-**Status: IN PROGRESS**
+**Status: COMPLETE ✅ — loss 1.403 → 0.008, imagined reward finite, DoD met**
 
 ---
 
@@ -18,8 +18,8 @@ Train a Dreamer-mini RSSM world model on recorded GR00T rollouts from LIBERO Spa
 |---|---|---|---|
 | CPT2.1 | Rollout collector (`collect_manip_rollouts.py`) | 200 episodes saved | ✅ Written |
 | CPT2.2 | WM training script (`train_wm_manip.py`) | loss drops, reward finite | ✅ Written |
-| CPT2.3 | Run collect + train pipeline | DoD: imagined reward finite | 🔜 Needs GPU run |
-| CPT2.4 | Results doc + vault update | `docs/results/t2_manip_wm.md` | 🔜 After run |
+| CPT2.3 | Run collect + train pipeline | DoD: imagined reward finite | ✅ Done (loss 1.40→0.008) |
+| CPT2.4 | Results doc + vault update | `docs/results/t2_manip_wm.md` | ✅ Done |
 
 ---
 

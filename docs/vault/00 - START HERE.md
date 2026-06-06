@@ -21,6 +21,7 @@ This vault documents Sushruth's 7–8 month physical-AI portfolio program: build
 | P2 | [[P2 - World Model]] | Isaac rollouts trained, loss 0.76→0.011 | ✅ Done |
 | T0 | [[T0 - ManipFoundation]] | BC baseline 50% task_success on libero_spatial | ✅ Done |
 | T1 | [[T1 - GR00T LoRA]] | **97.0% mean task success** (10 tasks, 20 eps each) | ✅ Done |
+| T2 | [[T2 - WM Manipulation]] | Dreamer-mini on 200 GR00T rollouts, loss 1.40→0.008 | ✅ Done |
 | P3 | Vision nav (cameras) | Scaffold only | 🔜 Next |
 | P4 | Cosmos world sim | Scaffold only | 🔜 Future |
 | C5 | Loco-manipulation capstone | Not started | 🔜 Future |
