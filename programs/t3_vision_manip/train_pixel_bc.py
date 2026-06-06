@@ -77,7 +77,7 @@ class LiberoPixelDataset(Dataset):
         # Pre-normalize once: (N, H, W, 3) uint8 → (N, 3, H, W) float32
         # Keep native 128×128 resolution — ResNet18 global avg-pool handles any size.
         t = torch.from_numpy(imgs_np).float() / 255.0   # (N, H, W, 3)
-        t = t.permute(0, 3, 1, 2)                        # (N, 3, H, W)
+        t = t.permute(0, 3, 1, 2).contiguous()            # (N, 3, H, W) contiguous
         t = (t - mean[None, :, None, None]) / std[None, :, None, None]
         self.imgs = t   # (N, 3, 128, 128) float32 — ~3.8 GB, fits in RAM
         print(f"[dataset] pre-processing done — imgs tensor: {self.imgs.shape}")
@@ -129,8 +129,8 @@ def main():
         if epoch == 0:
             init_loss = avg
         final_loss = avg
-        if epoch % 20 == 0 or epoch == args.epochs - 1:
-            print(f"[t3] epoch {epoch:3d}/{args.epochs}  loss={avg:.5f}")
+        if epoch % 5 == 0 or epoch == args.epochs - 1:
+            print(f"[t3] epoch {epoch:3d}/{args.epochs}  loss={avg:.5f}", flush=True)
 
     out = Path(args.out)
     out.parent.mkdir(parents=True, exist_ok=True)
