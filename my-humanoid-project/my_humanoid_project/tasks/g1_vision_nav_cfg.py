@@ -82,7 +82,7 @@ class G1VisionNavCnnRunnerCfg(RslRlOnPolicyRunnerCfg):
 
     num_steps_per_env = _NUM_STEPS
     max_iterations = _MAX_ITERS
-    save_interval = 100
+    save_interval = int(os.environ.get("P3_SAVE_INTERVAL", "100"))
     experiment_name = "g1_vision_nav"
     obs_groups = {"actor": ["policy", "images"], "critic": ["policy", "images"]}
 
