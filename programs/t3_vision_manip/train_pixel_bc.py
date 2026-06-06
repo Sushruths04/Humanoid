@@ -79,8 +79,11 @@ class LiberoPixelDataset(Dataset):
         t = torch.from_numpy(imgs_np).float() / 255.0   # (N, H, W, 3)
         t = t.permute(0, 3, 1, 2).contiguous()            # (N, 3, H, W) contiguous
         t = (t - mean[None, :, None, None]) / std[None, :, None, None]
-        self.imgs = t   # (N, 3, 128, 128) float32 — ~3.8 GB, fits in RAM
-        print(f"[dataset] pre-processing done — imgs tensor: {self.imgs.shape}")
+        # Move entire dataset to GPU VRAM — eliminates CPU→GPU transfer every batch
+        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        self.imgs = t.to(device)
+        self.acts = self.acts.to(device)
+        print(f"[dataset] pre-processing done — imgs on {device}: {self.imgs.shape}")
 
     def __len__(self):
         return len(self.imgs)
@@ -104,7 +107,7 @@ def main():
         img_size=args.img_size,
     )
     loader = DataLoader(dataset, batch_size=args.batch_size, shuffle=True,
-                        num_workers=0, pin_memory=True)
+                        num_workers=0, pin_memory=False)
 
     from programs.t3_vision_manip.pixel_bc_policy import PixelBCPolicy
     model = PixelBCPolicy(action_dim=7, freeze_encoder=False).to(device)
@@ -117,7 +120,7 @@ def main():
     for epoch in range(args.epochs):
         ep_loss = 0.0
         for imgs, acts in loader:
-            imgs, acts = imgs.to(device), acts.to(device)
+            # data already on GPU (moved at dataset init)
             pred = model(imgs)
             loss = F.mse_loss(pred, acts)
             opt.zero_grad()
