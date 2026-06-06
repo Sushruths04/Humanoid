@@ -144,14 +144,12 @@ def main():
 
     from programs.common.eval.video_recorder import EpisodeRecorder
     recorder = None if args.no_video else EpisodeRecorder(
-        out_dir=args.video_dir, fps=10, max_per_task=1
+        out_dir=args.video_dir, fps=10, max_per_task=1, record_failures=True
     )
 
     all_results = []
     for task_idx in task_indices:
         env, task_name = _build_env(bench_name, task_idx)
-        if recorder is not None:
-            recorder.set_task(task_name)
         for ep in range(args.num_envs):
             if recorder is not None:
                 recorder.start_episode(task_name, ep)

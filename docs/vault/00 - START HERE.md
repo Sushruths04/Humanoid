@@ -22,6 +22,7 @@ This vault documents Sushruth's 7–8 month physical-AI portfolio program: build
 | T0 | [[T0 - ManipFoundation]] | BC baseline 50% task_success on libero_spatial | ✅ Done |
 | T1 | [[T1 - GR00T LoRA]] | **97.0% mean task success** (10 tasks, 20 eps each) | ✅ Done |
 | T2 | [[T2 - WM Manipulation]] | Dreamer-mini on 200 GR00T rollouts, loss 1.40→0.008 | ✅ Done |
+| T3 | [[T3 - Pixel BC]] | Pixel-only BC (ResNet18) — 0% success; ablation shows value of state+pretrain | ✅ Done |
 | P3 | Vision nav (cameras) | Scaffold only | 🔜 Next |
 | P4 | Cosmos world sim | Scaffold only | 🔜 Future |
 | C5 | Loco-manipulation capstone | Not started | 🔜 Future |
@@ -109,13 +110,13 @@ This is the most valuable section. Read these to avoid repeating mistakes:
 - [x] T0 CPU harness — `manip_metrics.py` + `evaluate_manip.py` scaffold (10 tests, all green)
 - [x] T0 LIBERO install + BC baseline — `train_bc_libero.py` → **50% task_success** on libero_spatial:0 ✅
 - [x] T1 complete — GR00T N1.7 eval → **97.0% mean task success** across 10 LIBERO Spatial tasks ✅
+- [x] T3 pixel BC — ResNet18+MLP pixel-only BC → 0% success (ablation: shows gap vs GR00T 97%) ✅
 - [ ] P2 on real Isaac rollouts (currently only toy point-mass)
 - [ ] P3 Vision nav (24 GB + RT cores; pixel-dependence probe)
-- [ ] P3 Vision nav (24 GB + RT cores; pixel-dependence probe)
-- [ ] T2/T3: WM for manip + vision manip
+- [ ] T2 WM for manip upgrade (on real GR00T rollouts)
 - [ ] P4 Cosmos Predict post-train (80 GB A100 burst)
 - [ ] T4 + C5 Loco-manipulation capstone
 
 ---
 
-*Vault last updated 2026-06-06. T1 (97.0%), T2 (WM loss 1.40→0.008), T3 training in progress. Next: P3 Vision Nav.*
+*Vault last updated 2026-06-06. T1 (97.0%), T2 (WM loss 1.40→0.008), T3 (pixel-only BC 0% — ablation complete). Next: P3 Vision Nav.*
