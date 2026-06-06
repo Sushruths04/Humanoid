@@ -36,6 +36,8 @@ Start here if you're new to any of these topics:
 - [[Command-Conditioned Navigation]] — the core design pattern used in all nav tasks
 - [[Velocity-Command Steering Law]] — how the robot is told to walk toward a target
 - [[Reward Shaping & Progress Rewards]] — why reward design is critical
+- [[Reward Engineering Deep Dive]] ⭐ — all reward formulas with math + interview Q&A
+- [[Robot Kinematics & Dynamics]] ⭐ — FK, IK, Jacobian, CoM, OSC, PD control
 - [[PPO with RSL-RL]] — the training algorithm
 - [[Sequential Subgoal Navigation]] — multi-step goal ordering
 - [[World Models (Dreamer-mini)]] — building a world model from scratch
@@ -86,6 +88,8 @@ This is the most valuable section. Read these to avoid repeating mistakes:
 - [[All Parameters Cheat-Sheet]] — every hyperparameter in one table
 - [[Common Failure Patterns]] — pattern → tell → fix
 - [[Glossary]] — Isaac Lab, RSL-RL, RL concepts defined
+- [[Interview Prep - Master Guide]] ⭐ — all interview Q&As: RL, kinematics, rewards, VLA, BC, world models
+- [[Video Index]] — all portfolio videos, what each shows, how each was trained
 
 ---
 
@@ -114,4 +118,4 @@ This is the most valuable section. Read these to avoid repeating mistakes:
 
 ---
 
-*Vault last updated 2026-06-05. T1 scripts batch-written on CPU (GPU upgrade pending for eval run).*
+*Vault last updated 2026-06-06. T1 (97.0%), T2 (WM loss 1.40→0.008), T3 training in progress. Next: P3 Vision Nav.*
