@@ -60,7 +60,7 @@ class LiberoPixelDataset(Dataset):
                 demo_keys = sorted(f["data"].keys())[:max_demos]
                 for dk in demo_keys:
                     demo = f["data"][dk]
-                    img_seq = np.array(demo["obs"]["agentview_image"])  # (T, H, W, 3) uint8
+                    img_seq = np.array(demo["obs"]["agentview_rgb"])    # (T, H, W, 3) uint8
                     act_seq = np.array(demo["actions"])                 # (T, 7)
                     imgs.append(img_seq[:-1])   # drop last (no action)
                     acts.append(act_seq[:-1])
