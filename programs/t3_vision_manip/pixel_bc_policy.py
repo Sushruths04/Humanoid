@@ -45,7 +45,7 @@ def preprocess_image(img_hwc_uint8: "np.ndarray", device="cpu") -> torch.Tensor:
     import numpy as np
     img = torch.from_numpy(img_hwc_uint8.copy()).float() / 255.0  # HWC float [0,1]
     img = img.permute(2, 0, 1)                                     # CHW
-    img = TF.resize(img, [224, 224], antialias=True)
+    # No resize — keep native 128×128, ResNet18 global avg-pool handles it
     mean = _MEAN.to(img.device)
     std  = _STD.to(img.device)
     img = (img - mean[:, None, None]) / std[:, None, None]

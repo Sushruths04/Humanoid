@@ -74,12 +74,12 @@ class LiberoPixelDataset(Dataset):
             np.concatenate(acts, axis=0).astype(np.float32))
         print(f"[dataset] {len(imgs_np)} transitions — pre-processing images...")
 
-        # Pre-resize + normalize once: (N, H, W, 3) → (N, 3, img_size, img_size) float32
+        # Pre-normalize once: (N, H, W, 3) uint8 → (N, 3, H, W) float32
+        # Keep native 128×128 resolution — ResNet18 global avg-pool handles any size.
         t = torch.from_numpy(imgs_np).float() / 255.0   # (N, H, W, 3)
         t = t.permute(0, 3, 1, 2)                        # (N, 3, H, W)
-        t = TF.resize(t, [img_size, img_size], antialias=True)
         t = (t - mean[None, :, None, None]) / std[None, :, None, None]
-        self.imgs = t   # (N, 3, img_size, img_size) float32 in CPU RAM
+        self.imgs = t   # (N, 3, 128, 128) float32 — ~3.8 GB, fits in RAM
         print(f"[dataset] pre-processing done — imgs tensor: {self.imgs.shape}")
 
     def __len__(self):
