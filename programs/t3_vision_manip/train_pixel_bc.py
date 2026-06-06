@@ -46,15 +46,18 @@ def _parse_args():
 
 
 class LiberoPixelDataset(Dataset):
-    """Loads (agentview_image, action) pairs from LIBERO HDF5 files."""
+    """Loads (agentview_image, action) pairs from LIBERO HDF5 files.
+
+    Pre-resizes and normalizes all images at init time so __getitem__ is a
+    cheap tensor slice — no per-sample CPU transform during training.
+    """
 
     def __init__(self, hdf5_paths: list[str], max_demos: int, img_size: int):
         import h5py
-        self.img_size = img_size
-        self._mean = torch.tensor([0.485, 0.456, 0.406])
-        self._std  = torch.tensor([0.229, 0.224, 0.225])
+        mean = torch.tensor([0.485, 0.456, 0.406])
+        std  = torch.tensor([0.229, 0.224, 0.225])
 
-        imgs, acts = [], []
+        imgs_raw, acts = [], []
         for path in hdf5_paths:
             with h5py.File(path, "r") as f:
                 demo_keys = sorted(f["data"].keys())[:max_demos]
@@ -62,24 +65,28 @@ class LiberoPixelDataset(Dataset):
                     demo = f["data"][dk]
                     img_seq = np.array(demo["obs"]["agentview_rgb"])    # (T, H, W, 3) uint8
                     act_seq = np.array(demo["actions"])                 # (T, 7)
-                    imgs.append(img_seq[:-1])   # drop last (no action)
+                    imgs_raw.append(img_seq[:-1])
                     acts.append(act_seq[:-1])
             print(f"  loaded {Path(path).name}: {len(demo_keys)} demos")
 
-        self.imgs = np.concatenate(imgs, axis=0)   # (N, H, W, 3) uint8
-        self.acts = np.concatenate(acts, axis=0).astype(np.float32)  # (N, 7)
-        print(f"[dataset] total transitions: {len(self.imgs)}")
+        imgs_np = np.concatenate(imgs_raw, axis=0)    # (N, H, W, 3) uint8
+        self.acts = torch.from_numpy(
+            np.concatenate(acts, axis=0).astype(np.float32))
+        print(f"[dataset] {len(imgs_np)} transitions — pre-processing images...")
+
+        # Pre-resize + normalize once: (N, H, W, 3) → (N, 3, img_size, img_size) float32
+        t = torch.from_numpy(imgs_np).float() / 255.0   # (N, H, W, 3)
+        t = t.permute(0, 3, 1, 2)                        # (N, 3, H, W)
+        t = TF.resize(t, [img_size, img_size], antialias=True)
+        t = (t - mean[None, :, None, None]) / std[None, :, None, None]
+        self.imgs = t   # (N, 3, img_size, img_size) float32 in CPU RAM
+        print(f"[dataset] pre-processing done — imgs tensor: {self.imgs.shape}")
 
     def __len__(self):
         return len(self.imgs)
 
     def __getitem__(self, idx):
-        img = torch.from_numpy(self.imgs[idx].copy()).float() / 255.0  # HWC float
-        img = img.permute(2, 0, 1)                                     # CHW
-        img = TF.resize(img, [self.img_size, self.img_size], antialias=True)
-        img = (img - self._mean[:, None, None]) / self._std[:, None, None]
-        act = torch.from_numpy(self.acts[idx])
-        return img, act
+        return self.imgs[idx], self.acts[idx]
 
 
 def main():
@@ -97,7 +104,7 @@ def main():
         img_size=args.img_size,
     )
     loader = DataLoader(dataset, batch_size=args.batch_size, shuffle=True,
-                        num_workers=4, pin_memory=True)
+                        num_workers=0, pin_memory=True)
 
     from programs.t3_vision_manip.pixel_bc_policy import PixelBCPolicy
     model = PixelBCPolicy(action_dim=7, freeze_encoder=False).to(device)
