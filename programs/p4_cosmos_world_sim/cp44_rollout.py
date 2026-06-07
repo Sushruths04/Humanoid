@@ -70,6 +70,7 @@ def main() -> None:
     config = get_cosmos_predict2_action_conditioned_pipeline(model_size="2B", resolution="480", fps=4)
     config.guardrail_config.enabled = False
     config.prompt_refiner_config.enabled = False
+    config.resize_online = False
     misc.set_random_seed(seed=args.seed, by_rank=True)
     torch.backends.cudnn.allow_tf32 = True
 

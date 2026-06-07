@@ -52,6 +52,7 @@ def main() -> None:
     dit_path = "/teamspace/studios/this_studio/Humanoid/checkpoints/cosmos_base/model-480p-4fps.pt"
     config.guardrail_config.enabled = False
     config.prompt_refiner_config.enabled = False
+    config.resize_online = False
 
     misc.set_random_seed(seed=args.seed, by_rank=True)
     torch.backends.cudnn.allow_tf32 = True
