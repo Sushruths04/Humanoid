@@ -1,98 +1,93 @@
-"""CP4.1: Stock Cosmos Predict 2.5 inference — generates a video from an initial nav frame.
+"""CP4.1: Stock Cosmos Predict2 action-conditioned inference on a G1 nav frame.
 
-DoD: mp4 saved; not black; not NaN. Proves the model loads and runs.
+Uses the real cosmos-predict2 API: Video2WorldActionConditionedPipeline.
+Run from /tmp/cosmos-predict2/ directory (needs megatron/imaginaire in path).
 
-Usage:
-    python -m programs.p4_cosmos_world_sim.cp41_inference \
-        --model-dir ~/Humanoid/checkpoints/cosmos_base/ \
-        --frame /tmp/initial_frame.npy \
-        --out docs/results/cp41_inference.mp4 \
-        --steps 16
+Usage (run from /tmp/cosmos-predict2/):
+    cd /tmp/cosmos-predict2
+    export HF_TOKEN=hf_...
+    python /teamspace/studios/this_studio/Humanoid/programs/p4_cosmos_world_sim/cp41_inference.py         --video /teamspace/studios/this_studio/Humanoid/videos/p3_vision_nav/p3_vision_nav_model499.mp4         --out /teamspace/studios/this_studio/Humanoid/docs/results/cp41_inference.mp4
 """
-
 from __future__ import annotations
+import argparse, json, os, sys
+import numpy as np
 
-import argparse
-import os
+os.environ["TOKENIZERS_PARALLELISM"] = "false"
 
 
-def _find_cosmos_api(model_dir: str):
-    """Return (pipeline_cls, load_kwargs) by probing cosmos-predict2 API variants."""
-    # Try the cosmos-predict2 pipeline API (exact class names vary by version).
-    # On machine: check /tmp/cosmos-predict2/README.md for the actual class name.
-    try:
-        from cosmos_predict2.pipelines.video2world import Video2WorldPipeline  # type: ignore
-        return Video2WorldPipeline, {"pretrained_model_name_or_path": model_dir}
-    except ImportError:
-        pass
-    try:
-        from cosmos_predict2 import CosmosPredict2Pipeline  # type: ignore
-        return CosmosPredict2Pipeline, {"model_path": model_dir}
-    except ImportError:
-        pass
-    raise ImportError(
-        "Cannot import Cosmos Predict 2 pipeline. "
-        "Check /tmp/cosmos-predict2/README.md for the correct import path and class name, "
-        "then update this file accordingly."
-    )
+def make_dummy_annotation(num_frames: int, out_path: str) -> None:
+    """Create a Bridge-format JSON with zero velocity commands (robot standing still)."""
+    annotation = {
+        "action": [[0.0, 0.0, 0.0, 0.0, 0.0, 0.0]] * num_frames,
+        "continuous_gripper_state": [0.0] * (num_frames + 1),
+        "state": [[0.0] * 6] * num_frames,
+    }
+    os.makedirs(os.path.dirname(out_path), exist_ok=True)
+    with open(out_path, "w") as f:
+        json.dump(annotation, f)
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="CP4.1: stock Cosmos inference baseline")
-    parser.add_argument("--model-dir", required=True, help="Local path to Cosmos weights")
-    parser.add_argument("--frame", required=True, help="Initial frame as .npy (H,W,3 uint8) or image path")
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--video", required=True, help="Input nav video (.mp4)")
     parser.add_argument("--out", default="docs/results/cp41_inference.mp4")
-    parser.add_argument("--steps", type=int, default=16, help="Number of video frames to generate")
+    parser.add_argument("--chunk-size", type=int, default=12, help="Frames to generate")
+    parser.add_argument("--seed", type=int, default=42)
     args = parser.parse_args()
 
-    os.makedirs(os.path.dirname(os.path.abspath(args.out)), exist_ok=True)
+    # Must run from cosmos-predict2 root (megatron needs this)
+    cosmos_root = "/tmp/cosmos-predict2"
+    if os.path.exists(cosmos_root) and cosmos_root not in sys.path:
+        os.chdir(cosmos_root)
 
-    import imageio
-    import numpy as np
     import torch
+    from cosmos_predict2.configs.action_conditioned.config import get_cosmos_predict2_action_conditioned_pipeline
+    from cosmos_predict2.pipelines.video2world_action import Video2WorldActionConditionedPipeline
+    from imaginaire.utils import misc
+    from imaginaire.utils.io import save_image_or_video
+    import mediapy as mp
 
-    # Load initial frame
-    if args.frame.endswith(".npy"):
-        frame = np.load(args.frame)  # (H, W, 3) uint8
-    else:
-        frame = imageio.imread(args.frame)  # any image format
-    print(f"Initial frame: {frame.shape} {frame.dtype}")
+    print(f"Loading Cosmos action-conditioned pipeline (2B, 480p, 4fps) ...")
+    config = get_cosmos_predict2_action_conditioned_pipeline(model_size="2B", resolution="480", fps=4)
+    dit_path = "/teamspace/studios/this_studio/Humanoid/checkpoints/cosmos_base/model-480p-4fps.pt"
+    config.guardrail_config.enabled = False
+    config.prompt_refiner_config.enabled = False
 
-    device = "cuda" if torch.cuda.is_available() else "cpu"
-    print(f"Device: {device}  VRAM: {torch.cuda.get_device_properties(0).total_memory // 1024**3} GB")
+    misc.set_random_seed(seed=args.seed, by_rank=True)
+    torch.backends.cudnn.allow_tf32 = True
+    torch.backends.cuda.matmul.allow_tf32 = True
 
-    pipeline_cls, load_kwargs = _find_cosmos_api(args.model_dir)
-
-    print(f"Loading Cosmos model from {args.model_dir} ...")
-    pipe = pipeline_cls.from_pretrained(**load_kwargs, torch_dtype=torch.bfloat16)
-    pipe = pipe.to(device)
+    pipe = Video2WorldActionConditionedPipeline.from_config(
+        config=config,
+        dit_path=dit_path,
+        use_text_encoder=False,
+        device="cuda",
+        torch_dtype=torch.bfloat16,
+        load_prompt_refiner=False,
+    )
     print("Model loaded.")
 
-    # Run inference — API varies; check README if this errors
-    with torch.no_grad():
-        output = pipe(
-            image=frame,
-            num_frames=args.steps,
-            # action conditioning not used in stock model — just visual continuation
-        )
+    # Read first frame from the P3 nav video
+    video_frames = mp.read_video(args.video)  # (T, H, W, 3)
+    first_frame = video_frames[0]             # (H, W, 3) uint8
+    print(f"Input frame: {first_frame.shape}")
 
-    # Output is typically a list of frames or a tensor (T, H, W, 3)
-    if hasattr(output, "frames"):
-        frames = output.frames  # HuggingFace Diffusers style
-    elif isinstance(output, (list, tuple)):
-        frames = output[0]
-    else:
-        frames = output
+    # Create dummy annotation (zero velocity — baseline test)
+    ann_path = "/tmp/cp41_annotation.json"
+    make_dummy_annotation(args.chunk_size, ann_path)
+    with open(ann_path) as f:
+        data = json.load(f)
+    action_ee = np.array(data["action"])[:, :6] * 20
+    gripper = np.array(data["continuous_gripper_state"])[1:args.chunk_size+1, None]
+    actions = np.concatenate([action_ee[:args.chunk_size], gripper[:args.chunk_size]], axis=1)
 
-    if hasattr(frames, "cpu"):
-        frames = frames.cpu().numpy()
+    print(f"Running inference for {args.chunk_size} frames ...")
+    video = pipe(first_frame, actions[:args.chunk_size], num_conditional_frames=1,
+                 guidance=0, seed=args.seed)
 
-    # Ensure (T, H, W, 3) uint8
-    if frames.dtype != np.uint8:
-        frames = np.clip(frames * 255, 0, 255).astype(np.uint8)
-
-    imageio.mimwrite(args.out, frames, fps=8, quality=8)
-    print(f"CP4.1 DONE — saved {len(frames)} frames to {args.out}")
+    os.makedirs(os.path.dirname(os.path.abspath(args.out)), exist_ok=True)
+    save_image_or_video(video, args.out, fps=4)
+    print(f"CP4.1 DONE — saved to {args.out}")
 
 
 if __name__ == "__main__":
