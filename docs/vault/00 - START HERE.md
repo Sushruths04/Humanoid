@@ -24,8 +24,8 @@ This vault documents Sushruth's 7–8 month physical-AI portfolio program: build
 | T2 | [[T2 - WM Manipulation]] | Dreamer-mini on 200 GR00T rollouts, loss 1.40→0.008 | ✅ Done |
 | T3 | [[T3 - Pixel BC]] | Pixel-only BC (ResNet18) — 0% success; ablation shows value of state+pretrain | ✅ Done |
 | P3 | [[P3 - VisionNav]] | **96.28% success** — 64×64 RGB cam matches state-based P0 | ✅ Done |
-| P4 | Cosmos world sim | Not started | 🔜 Next |
-| C5 | Loco-manipulation capstone | Not started | 🔜 Future |
+| P4 | [[P4 - Cosmos Predict]] | Cosmos Predict 2.5 LoRA post-train + planning | 🔜 Needs A100-80G |
+| C5 | [[C5 - Loco-Manipulation Capstone]] | Language-driven nav+manip with skill router | 🔜 Needs L40S |
 
 ---
 
@@ -118,12 +118,12 @@ This is the most valuable section. Read these to avoid repeating mistakes:
 - [x] T0 LIBERO install + BC baseline — `train_bc_libero.py` → **50% task_success** on libero_spatial:0 ✅
 - [x] T1 complete — GR00T N1.7 eval → **97.0% mean task success** across 10 LIBERO Spatial tasks ✅
 - [x] T3 pixel BC — ResNet18+MLP pixel-only BC → 0% success (ablation: shows gap vs GR00T 97%) ✅
+- [x] P3 Vision nav — **96.28% success** on 64×64 RGB cam (L4, model_499.pt) ✅
 - [ ] P2 on real Isaac rollouts (currently only toy point-mass)
-- [ ] P3 Vision nav (24 GB + RT cores; pixel-dependence probe)
 - [ ] T2 WM for manip upgrade (on real GR00T rollouts)
-- [ ] P4 Cosmos Predict post-train (80 GB A100 burst)
-- [ ] T4 + C5 Loco-manipulation capstone
+- [ ] P4 Cosmos Predict post-train (80 GB A100 burst) — see [[P4 - Cosmos Predict]]
+- [ ] C5 Loco-manipulation capstone — see [[C5 - Loco-Manipulation Capstone]]
 
 ---
 
-*Vault last updated 2026-06-06. T1 (97.0%), T2 (WM loss 1.40→0.008), T3 (pixel-only BC 0% — ablation complete). Next: P3 Vision Nav.*
+*Vault last updated 2026-06-07. P3 complete (96.28%). Next: P4 (needs A100-80G) + C5 (needs L40S).*
