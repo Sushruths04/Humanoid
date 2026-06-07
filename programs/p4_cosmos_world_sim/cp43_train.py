@@ -1,18 +1,6 @@
 """CP4.3 LoRA fine-tuning of Cosmos Predict2 2B on G1 nav Bridge data.
 
-Custom PEFT training loop using rectified flow loss.
-
-Usage (smoke test):
-    cd /tmp/cosmos-predict2
-    PYTHONPATH=/tmp/te_stub:/tmp/cosmos-predict2 \\
-    PATH=/home/zeus/miniconda3/envs/p4_env/bin:$PATH \\
-    python /teamspace/studios/this_studio/Humanoid/programs/p4_cosmos_world_sim/cp43_train.py --smoke
-
-Usage (full training):
-    cd /tmp/cosmos-predict2
-    PYTHONPATH=/tmp/te_stub:/tmp/cosmos-predict2 \\
-    python /teamspace/studios/this_studio/Humanoid/programs/p4_cosmos_world_sim/cp43_train.py \\
-        --max-steps 500 --lora-rank 16 --lr 1e-4
+Custom PEFT training loop using pipe.denoise() with ActionCondition.
 """
 from __future__ import annotations
 import argparse, json, os, sys
@@ -58,24 +46,44 @@ def add_lora(model, rank: int = 16):
 
 
 def compute_flow_loss(pipe, video_t, actions_t):
+    """
+    video_t: [B, 3, T_padded, H, W] where (T_padded-1)%4 == 0
+    actions_t: [B, 12, 7] — exactly 12 frames to match action_dim=84
+    """
     import torch
+    from cosmos_predict2.conditioner import ActionCondition, DataType
+
     with torch.no_grad():
-        latent = pipe.tokenizer.encode(video_t) * pipe.config.sigma_data
-    B = latent.shape[0]
-    t = torch.rand(B, 1, device=latent.device, dtype=torch.float32)
-    sigma = t / (1.0 - t + 1e-8)
+        latent = pipe.tokenizer.encode(video_t)  # [B, C, T_lat, H_lat, W_lat]
+
+    B, C, T_lat, H_lat, W_lat = latent.shape
+    H_vid, W_vid = video_t.shape[-2], video_t.shape[-1]
+
+    # Rectified flow noise schedule: t ~ U[0,1], sigma = t/(1-t)
+    t_rf = torch.rand(B, device=latent.device, dtype=pipe.precision)
+    sigma = t_rf / (1.0 - t_rf + 1e-8)
+
     epsilon = torch.randn_like(latent)
-    t_bc = t.view(B, 1, 1, 1, 1).to(latent.dtype)
-    xt = (1 - t_bc) * latent + t_bc * epsilon
-    condition = {
-        "t5_text_embeddings": torch.zeros(B, 256, 1024, device=latent.device, dtype=pipe.precision),
-        "num_conditional_frames": 1,
-        "action": actions_t,
-        "padding_mask": torch.zeros(B, 1, video_t.shape[-2], video_t.shape[-1], device=latent.device),
-    }
-    sigma_bc = sigma.squeeze(1).to(latent.dtype)
-    x0_pred = pipe.dit(xt, sigma_bc, condition)
-    loss = ((x0_pred - latent) ** 2).mean()
+    t_bc = t_rf.view(B, 1, 1, 1, 1).to(latent.dtype)
+    xt = (1.0 - t_bc) * latent + t_bc * epsilon
+
+    # Conditioning mask: first latent frame is the conditioning frame
+    mask = torch.zeros(B, 1, T_lat, H_lat, W_lat, device=latent.device, dtype=latent.dtype)
+    mask[:, :, :1] = 1.0
+
+    condition = ActionCondition(
+        crossattn_emb=torch.zeros(B, 256, 1024, device=latent.device, dtype=pipe.precision),
+        data_type=DataType.VIDEO,
+        padding_mask=torch.zeros(B, 1, H_vid, W_vid, device=latent.device, dtype=pipe.precision),
+        fps=None,
+        use_video_condition=True,
+        gt_frames=latent,
+        condition_video_input_mask_B_C_T_H_W=mask,
+        action=actions_t,
+    )
+
+    pred = pipe.denoise(xt, sigma, condition)
+    loss = ((pred.x0 - latent) ** 2).mean()
     return loss
 
 
@@ -142,10 +150,18 @@ def main():
             T = min(len(frames), 12)
             frames, actions = frames[:T], actions[:T]
 
+            # Cosmos VAE encodes frame-0 alone then chunks of 4.
+            # Remainder (T-1)%4 != 0 causes T=2<kernel=3 at the deepest temporal
+            # downsampling stage. Pad so (T-1) is divisible by 4.
+            pad = (4 - (T - 1) % 4) % 4
+            if pad > 0:
+                frames = np.concatenate([frames, np.tile(frames[-1:], (pad, 1, 1, 1))], axis=0)
+
             vid = torch.from_numpy(frames).permute(3, 0, 1, 2).unsqueeze(0).float().cuda()
             vid = (vid / 255.0) * 2.0 - 1.0
             vid = vid.to(torch.bfloat16)
-            act = torch.from_numpy(actions).unsqueeze(0).to("cuda", torch.bfloat16)
+            # Actions: exactly 12 frames to match action_dim=84 (12*7)
+            act = torch.from_numpy(actions[:12]).unsqueeze(0).to("cuda", torch.bfloat16)
 
             optimizer.zero_grad()
             loss = compute_flow_loss(pipe, vid, act)
