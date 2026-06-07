@@ -21,6 +21,23 @@ Quick-reference table. Click the link for the full story.
 
 ---
 
+## P3 VisionNav Failures (added 2026-06-07)
+
+| # | Failure | Symptom | Root Cause | Fix |
+|---|---|---|---|---|
+| 11 | [[RTX BVH Hang at High Env Count]] ⭐ | training hangs 30+ min at startup | RTX BVH build scales super-linearly with env count | `--num_envs 4096` max |
+| 12 | [[RTX Rendering is the Bottleneck (Not CUDA Cores)]] ⭐ | A100 at 14% GPU util, 66s/iter | RT cores saturated by 67M-pixel tiled render | 128→64 resolution (5.1× speedup) |
+| 13 | [[OOM With Camera Rollout Buffer]] | OOM during PPO update at 78.4 GB | 4096×48×128²×3 image buffer exhausts VRAM | `num_mini_batches=64` or use 64×64 |
+| 14 | [[update_period Does Not Reduce Render Time]] | no speedup from 5 Hz camera setting | `update_period` controls Python reads, not RTX renders | reduce resolution instead |
+| 15 | [[Docker Image Lost on GPU Upgrade]] | `No such image` after switching machine type | Docker images stored on ephemeral VM disk, not persistent storage | re-pull on every new machine |
+| 16 | [[RSL-RL Resume Resets Loop Counter]] | ETA 1:49 not 37 min after `--resume` | `max_iterations` = new iters to run, not target iteration | accept extra iters — warm start converges faster |
+| 17 | [[play.py Fails - Custom Task Not Registered]] | `NameNotFound: Humanoid-G1-VisionNav` | stock play.py never imports custom task module | use `custom_play.py` as entry point |
+| 18 | [[Python File Corruption Over SSH - Use Python Write]] | SyntaxError after SSH heredoc write | shell quoting layers mangle escape sequences | write via `python3 -c "open(...).write(...)"` or scp |
+| 19 | [[HuggingFace CLI Deprecated]] | `command not found: huggingface-cli` | CLI deprecated in newer huggingface_hub | use `HfApi().upload_folder(...)` in Python |
+| 20 | [[Git LFS Mismatch on New Studio]] | 200+ modified files on fresh studio | studio has real binaries but git expects LFS pointers | `GIT_LFS_SKIP_SMUDGE=1 git reset --hard origin/branch` |
+
+---
+
 ## Lessons Distilled
 
 1. **Watch the per-term reward breakdown**, not just total reward. Flat task term + rising total = reward farming.
@@ -30,6 +47,11 @@ Quick-reference table. Click the link for the full story.
 5. **scp for code transfer**, never SSH heredocs with complex content.
 6. **Isaac Sim processes linger** — kill in-container, don't poll host pgrep.
 7. **Behavior probe** > test accuracy — verify the policy CHANGES BEHAVIOR with the command.
+8. **High VRAM ≠ high GPU utilization** — profile RT cores vs CUDA cores separately for camera-based RL.
+9. **Reduce camera resolution before scaling envs** — resolution has 4× the impact on RTX render time.
+10. **Re-pull Docker image on every new machine** — Lightning VM switches wipe Docker cache completely.
+11. **`max_iterations` in RSL-RL = new iters to run**, not the target iteration number.
+12. **Always use `custom_train.py` / `custom_play.py`** — never call Isaac Lab stock scripts directly for custom tasks.
 
 ---
 
