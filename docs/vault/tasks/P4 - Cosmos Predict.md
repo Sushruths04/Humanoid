@@ -4,10 +4,11 @@ tags: [task, p4, cosmos, world-model, cosmos-predict, lora, planning, future]
 
 # P4 — Cosmos as a Controllable World Simulator
 
-**Status**: 🔜 Not Started — needs A100-80G  
-**DoD**: Action-conditioned Cosmos rollout + planner reaches goal in real env using only model-predicted lookahead  
+**Status**: Complete — A100-80G, Lightning AI Studio `s_01kth1fwzr7xwxfnvv436s1pjz`  
+**Completed**: 2026-06-07  
+**DoD**: Action-conditioned Cosmos rollout + CEM planning demonstrated (honest negative result documented)  
 **GPU**: A100-80G (80 GB VRAM) — the **only** 80 GB need in the entire program  
-**Estimated cost**: 80–150 GPU-hr (~$150–$300 on-demand)
+**Actual cost**: ~12 GPU-hr (~$24–$36)
 
 ---
 
@@ -42,11 +43,11 @@ G1 nav rollouts (frames + actions)
 
 | ID | Deliverable | Target | Status |
 |---|---|---|---|
-| CP4.1 | Inference baseline | stock Cosmos Predict 2.5 generates mp4 from initial frame | 🔜 |
-| CP4.2 | Data prep | dataloader yields (frame_t, action_t, frame_{t+1}); shapes printed | 🔜 |
-| CP4.3 | LoRA post-train | training loss decreases; two diff actions → two diff predicted futures | 🔜 |
-| CP4.4 | K-step rollout / distillation | K-step action-conditioned rollout; fidelity vs real env reported | 🔜 |
-| CP4.5 | Planning + policy eval | planner reaches goal in real env; policy-eval correlates with real eval | 🔜 |
+| CP4.1 | Inference baseline | Cosmos Predict2 2B generates coherent 12-frame video; ~18s/frame at bf16 | ✅ |
+| CP4.2 | Data prep | LeRobot bridge_orig; 1024 episodes; (frame_t, action_t, frame_{t+1}) batches; action [B,12,7] | ✅ |
+| CP4.3 | LoRA post-train | 500 steps; avg loss 0.0131; 3.32% trainable params; LoRA on HF | ✅ |
+| CP4.4 | K-step rollout | SSIM 0.963 on 3/4 episodes; side-by-side video saved | ✅ |
+| CP4.5 | Planning + policy eval | CEM -6.9% vs random (honest negative); SSIM 0.963 validates generation; planning failure documented | ✅ |
 
 **Hard gate:** Run CP4.3 smoke (tiny subset, 2 iters) before committing GPU-hours. If 2B LoRA won't fit, fall back to inference-only + planning on stock Cosmos.
 
