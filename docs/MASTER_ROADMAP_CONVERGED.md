@@ -128,12 +128,12 @@ Do not let Ph5 perfectionism sink the program — ship level 2, attempt level 1 
 | T1 GR00T N1.7 eval | **97.0%** mean success (10 tasks) | ✅ Done |
 | T2 WM Manipulation | loss 1.40→0.008 | ✅ Done |
 | T3 Pixel BC | 0% success (ablation — intended) | ✅ Done |
-| **P3 Vision Nav** | Not started | 🔜 **NEXT — L40S** |
+| **P3 Vision Nav** | 200/300 iters, reward +27.74, DoD eval pending | 🔄 In Progress (eval needed) |
 | P4 Cosmos Predict | Not started | 🔜 Future |
 | C5 Capstone | Not started | 🔜 Future |
 
 ## 6. Immediate next action
 
-**P3 Vision Nav** — rent L40S (48GB). See `docs/NEW_MACHINE_SETUP.md` for full setup runbook. Scripts scaffolded at `programs/p3_vision_nav/`. DoD: pixel-conditioned nav policy ≥60% success on CommandNav.
+**P3 Vision Nav eval** — load `model_200.pt` (reward +27.74 at iter 200), run 100 eval episodes to confirm ≥60% success DoD. Optionally resume 100 more iters from checkpoint. Config: 64×64 RGB, 4096 envs, A100 or L40S. See `docs/results/p3_vision_nav.md` for full training details.
 
 *Source plans: `docs/PHYSICAL_AI_6MONTH_PLAN.md`, `docs/TABLETOP_MANIPULATION_PLAN.md`. References: see those docs' §7.*
