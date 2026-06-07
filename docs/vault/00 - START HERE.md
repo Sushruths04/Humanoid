@@ -23,8 +23,8 @@ This vault documents Sushruth's 7–8 month physical-AI portfolio program: build
 | T1 | [[T1 - GR00T LoRA]] | **97.0% mean task success** (10 tasks, 20 eps each) | ✅ Done |
 | T2 | [[T2 - WM Manipulation]] | Dreamer-mini on 200 GR00T rollouts, loss 1.40→0.008 | ✅ Done |
 | T3 | [[T3 - Pixel BC]] | Pixel-only BC (ResNet18) — 0% success; ablation shows value of state+pretrain | ✅ Done |
-| P3 | Vision nav (cameras) | Scaffold only | 🔜 Next |
-| P4 | Cosmos world sim | Scaffold only | 🔜 Future |
+| P3 | [[P3 - VisionNav]] | **96.28% success** — 64×64 RGB cam matches state-based P0 | ✅ Done |
+| P4 | Cosmos world sim | Not started | 🔜 Next |
 | C5 | Loco-manipulation capstone | Not started | 🔜 Future |
 
 ---
@@ -64,6 +64,13 @@ Read these IN ORDER if starting from a fresh GPU machine:
 - [[Evaluation Harness]] — how results are measured + the metrics
 - [[Rendering Demo Videos]] — how to render a playback video from a checkpoint
 - [[Reproduce From Scratch]] — step-by-step recipe to reproduce all results from a cold start
+
+---
+
+## 🎮 How-To Guides
+
+- [[Reward Engineering Guide]] ⭐ — full reward table (P0/P3), how to change rewards, worked examples (jump, run, spin, crouch)
+- [[P3 Eval and Video Guide]] — how to run inference + record video from model_499.pt on any machine
 
 ---
 
