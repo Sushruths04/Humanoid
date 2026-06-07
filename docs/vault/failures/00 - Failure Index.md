@@ -35,6 +35,8 @@ Quick-reference table. Click the link for the full story.
 | 18 | [[Python File Corruption Over SSH - Use Python Write]] | SyntaxError after SSH heredoc write | shell quoting layers mangle escape sequences | write via `python3 -c "open(...).write(...)"` or scp |
 | 19 | [[HuggingFace CLI Deprecated]] | `command not found: huggingface-cli` | CLI deprecated in newer huggingface_hub | use `HfApi().upload_folder(...)` in Python |
 | 20 | [[Git LFS Mismatch on New Studio]] | 200+ modified files on fresh studio | studio has real binaries but git expects LFS pointers | `GIT_LFS_SKIP_SMUDGE=1 git reset --hard origin/branch` |
+| 21 | [[play.py Checkpoint Bare Filename Not Found]] | `FileNotFoundError: model_499.pt` on eval | `--checkpoint` triggers `retrieve_file_path()` which needs full path | use `--load_run` only; or pass absolute path |
+| 22 | [[play.py Eval Has No Episode Output]] | eval runs forever, 33% GPU, no stats printed | play.py episode loop has no print statements; buffered stdout never flushes | use training stats (more robust); or write custom N-episode eval script |
 
 ---
 
@@ -52,6 +54,9 @@ Quick-reference table. Click the link for the full story.
 10. **Re-pull Docker image on every new machine** — Lightning VM switches wipe Docker cache completely.
 11. **`max_iterations` in RSL-RL = new iters to run**, not the target iteration number.
 12. **Always use `custom_train.py` / `custom_play.py`** — never call Isaac Lab stock scripts directly for custom tasks.
+13. **Kill training process before eval** — Isaac Sim holds VRAM until the process exits; lingering train process causes OOM on eval even after training completes.
+14. **`--checkpoint` in play.py needs a full path** — bare filename triggers `retrieve_file_path()` not `get_checkpoint_path()`; use `--load_run` only for cleanest eval invocation.
+15. **play.py episode loop has no output** — training stats (`time_out` fraction) are the authoritative success metric; write a custom N-episode eval script if a separate eval run is needed.
 
 ---
 

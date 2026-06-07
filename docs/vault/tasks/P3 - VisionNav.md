@@ -83,6 +83,8 @@ Key config: `my-humanoid-project/my_humanoid_project/tasks/g1_vision_nav_cfg.py`
 6. [[RSL-RL Resume Resets Loop Counter]] — ran 300 new iters not 100 (actually better)
 7. [[play.py Fails - Custom Task Not Registered]] — needed custom_play.py
 8. [[Python File Corruption Over SSH - Use Python Write]] — heredoc mangled code
+9. [[play.py Checkpoint Bare Filename Not Found]] — `--checkpoint model.pt` calls retrieve_file_path (bare path); use `--load_run` only
+10. Eval OOM on L4 — training process still held VRAM after completing; kill it first
 
 ---
 
