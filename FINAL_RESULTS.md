@@ -52,6 +52,29 @@ We established a robust containerized environment for G1 humanoid reinforcement 
 - **Robustness Score**: Mean Reward: **22.82**, Mean Episode Length: **981.18 / 1000** (indicating the robot rarely falls, even on rough terrain).
 
 
+### 5. Vision-VLA Conditioning (Phase 3)
+- **Task**: `Humanoid-G1-Vision-VLA-v0` (camera-conditioned policy).
+- **Blocker → fix**: the initial Vulkan/`libGLX_nvidia.so.0` graphics failure was resolved by running headless with the Isaac Lab **rendering kit** (`isaaclab.python.headless.rendering.kit`) + `--enable_cameras` at low camera resolution. See `VISION_BLOCKER_REPORT.md` (marked RESOLVED).
+- **Result**: camera-enabled training reached PPO and scaled from **32 → 2048 parallel envs** (state marker `thesis/state/30_vision_vla.done`).
+- **Status**: pipeline verified at smoke scale; a long vision run with a saved checkpoint is the remaining follow-up (outputs destined for Hugging Face).
+
+---
+
+## Reproduction Scripts
+
+The full pipeline is automated under `thesis/scripts/` (each step writes a `thesis/state/<step>.done` marker and a `thesis/PROGRESS/step-logs/STEP-*.md` log):
+
+| Phase | Script | Produces |
+|---|---|---|
+| GR00T install/demo | `01_gr00t_install.sh`, `02_gr00t_demo.sh` | env + preflight (`results/gr00t_demo/`) |
+| GR00T finetune/eval | `04_gr00t_finetune.sh`, `05_gr00t_eval.sh` | `checkpoint-10000`; eval MSE 25.87 / MAE 3.01 (`results/gr00t_eval_smoke/`) |
+| G1 baseline locomotion | `10_g1_baseline_train.sh` | `Isaac-Velocity-Flat-G1-v0` policy |
+| G1 language conditioning | `11_g1_language_cond.sh` | 16-dim command-embedded policy |
+| Custom MarkerNav | `20_custom_task.sh` | `Humanoid-G1-Custom-MarkerNav-v0`, reward 28.9 |
+| Sim-to-real robustness | `25_robust_training.sh` | `checkpoints/g1_robust/model_latest.pt`, reward 22.82 / ep-len 981.18 |
+| Vision-VLA | `30_vision_vla.sh`, `31_vision_vla_cnn.sh`, `32_vision_vla_play.sh` | camera-conditioned training + mp4 rollout |
+| Collect results | `99_collect_results.sh` | aggregates summaries into `results/` |
+
 ---
 
 ## Technical Infrastructure
