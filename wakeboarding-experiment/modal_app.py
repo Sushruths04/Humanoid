@@ -1,0 +1,76 @@
+"""Run the wakeboard training on Modal serverless GPU (modal.com).
+
+Why this works on Modal: training is COMPUTE-only (no cameras), so it avoids the Vulkan
+graphics path. Use an RT-core GPU that Isaac Sim supports — **L40S** (or L4). Do NOT pick
+A100/H100: Isaac Sim needs RT cores and won't render/initialize on them.
+
+Setup (once):
+    pip install modal && modal token new
+    modal volume create wakeboard-ckpts
+    # build/pull the Isaac Lab image (see image below)
+
+Train Stage I:
+    modal run modal_app.py --action train --config configs/stage1.yaml
+Eval:
+    modal run modal_app.py --action eval --checkpoint /ckpts/wakeboard_stage1/model_latest.pt
+
+Notes:
+- Modal function timeout maxes at 24h; long Stage-II runs checkpoint to the Volume and are
+  resumed with --resume (the loop already saves model_<iter>.pt each window).
+- The Isaac Sim base image is large (~20GB); first cold start is slow, then cached.
+"""
+from __future__ import annotations
+
+import modal
+
+# --- container image: Isaac Sim 5.1 base + Isaac Lab + this repo's deps ---
+# VERIFY: the simplest path is to reuse YOUR existing GHCR image that already has Isaac Lab:
+#   ghcr.io/sushruths04/humanoid-isaaclab:latest
+image = (
+    modal.Image.from_registry(
+        "ghcr.io/sushruths04/humanoid-isaaclab:latest",
+        add_python="3.10",
+    )
+    .pip_install("rsl-rl-lib>=2.0.0", "pyyaml", "wandb", "tensorboard")
+    .env({"NVIDIA_DRIVER_CAPABILITIES": "all", "ACCEPT_EULA": "Y", "OMNI_KIT_ACCEPT_EULA": "YES"})
+)
+
+app = modal.App("wakeboard-rl", image=image)
+ckpts = modal.Volume.from_name("wakeboard-ckpts", create_if_missing=True)
+
+GPU = "L40S"   # RT-core GPU Isaac Sim supports. Alternatives: "L4" (cheaper), "A10G".
+
+
+@app.function(gpu=GPU, volumes={"/ckpts": ckpts}, timeout=24 * 60 * 60)
+def train(config: str, num_envs: int | None = None, max_iterations: int | None = None,
+          resume: str | None = None):
+    import subprocess
+    cmd = ["python", "train.py", "--config", config, "--headless",
+           "--experiment_dir", "/ckpts"]
+    if num_envs:
+        cmd += ["--num_envs", str(num_envs)]
+    if max_iterations:
+        cmd += ["--max_iterations", str(max_iterations)]
+    if resume:
+        cmd += ["--resume", resume]
+    subprocess.run(cmd, check=True, cwd="/workspace/wakeboarding-experiment")  # VERIFY cwd
+    ckpts.commit()
+
+
+@app.function(gpu=GPU, volumes={"/ckpts": ckpts}, timeout=2 * 60 * 60)
+def evaluate(checkpoint: str, v_pull_kmh: float = 30.0, episodes: int = 200):
+    import subprocess
+    out = f"/ckpts/results/eval_{int(v_pull_kmh)}kmh.json"
+    subprocess.run(["python", "eval.py", "--checkpoint", checkpoint,
+                    "--v_pull_kmh", str(v_pull_kmh), "--episodes", str(episodes),
+                    "--out", out], check=True, cwd="/workspace/wakeboarding-experiment")
+    ckpts.commit()
+
+
+@app.local_entrypoint()
+def main(action: str = "train", config: str = "configs/stage1.yaml",
+         checkpoint: str = "", v_pull_kmh: float = 30.0):
+    if action == "train":
+        train.remote(config=config)
+    elif action == "eval":
+        evaluate.remote(checkpoint=checkpoint, v_pull_kmh=v_pull_kmh)
