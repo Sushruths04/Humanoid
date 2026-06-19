@@ -1,0 +1,76 @@
+# Stage II — Deployable (smooth, natural, robust). Tracks slowed Stage-I traj + AMP + DR.
+# Inherit Stage-I structure; overrides below. See PLAN.md §5.4, §6.2.
+seed: 0
+num_envs: 8192
+max_iterations: 10000
+save_interval: 100
+experiment_name: wakeboard_stage2
+
+stage1_checkpoint: ""          # REQUIRED: path to ckpt_20_stage1_30 (trajectory source)
+slowdown_factor: 8            # track 8x-slowed Stage-I trajectory (HumanUP)
+
+rope:
+  model: "spring"
+  v_pull_kmh: 30.0            # full speed in Stage II
+  k_p: 800.0
+  k_d: 50.0
+  f_max: 600.0
+
+curriculum:
+  enabled: false              # Stage II trains at full 30 km/h
+
+board: {length: 1.4, width: 0.4, mass: 3.0, sand_friction: 0.4}
+
+dr:                            # full domain randomization (PLAN §7)
+  enabled: true
+  v_pull_jitter: 0.15
+  pull_yaw_jitter_deg: 10.0
+  sand_friction_range: [0.25, 0.6]
+  board_mass_jitter: 0.20
+  joint_stiffness_range: [0.75, 1.25]
+  joint_damping_range: [0.75, 1.25]
+  link_mass_jitter: 0.10
+  action_latency_steps: [0, 2]
+  mid_start_tug_prob: 0.1
+
+rewards:                       # Stage II: add tracking + AMP, strong penalties
+  traj_tracking: 3.0           # dense tracking of slowed Stage-I trajectory
+  pelvis_height: 1.0
+  height_progress: 0.5
+  uprightness: 2.0
+  survival: 0.5
+  forward_glide: 1.0
+  success_bonus: 50.0
+  board_positive_angle: 1.5
+  arms_straight: 1.0
+  handle_at_hips: 0.8
+  lean_back_moderate: 0.7
+  knee_bend_maintained: 0.8
+  amp_style: 1.0               # ON in Stage II
+  pen_stand_too_fast: -1.0
+  pen_pull_against_rope: -1.5
+  pen_torque: -5.0e-4          # stronger
+  pen_action_rate: -0.05       # stronger smoothness
+  pen_action_accel: -5.0e-3
+  pen_dof_pos_limits: -5.0
+  pen_fall: -20.0
+
+amp:
+  enabled: true
+  reference_motions: "data/reference_motions/"
+  discriminator_hidden: [256, 256]
+  reward_scale: 1.0
+
+ppo:
+  policy_hidden: [512, 256, 128]
+  activation: elu
+  clip_param: 0.2
+  entropy_coef: 0.003
+  learning_rate: 3.0e-4
+  schedule: adaptive
+  desired_kl: 0.01
+  gamma: 0.99
+  lam: 0.95
+  num_learning_epochs: 5
+  num_mini_batches: 4
+  num_steps_per_env: 24
