@@ -1,8 +1,8 @@
-# Wakeboarding experiment image — ONE image used by BOTH Modal and Lightning.
-# Build once, push to GHCR, pull on any machine -> fast machine switching.
-#
-# Strategy: bake the slow-changing deps into the image; MOUNT the code at runtime
-# (docker-compose mounts the repo), so editing code never needs a rebuild.
+# OPTIONAL — only needed IF the existing humanoid-isaaclab image is missing rsl-rl/deps.
+# The wakeboarding task reuses the SAME humanoid-isaaclab image (same system, different task);
+# normally you do NOT build a new image. Check first inside the container:
+#     python -c "import rsl_rl"   # if this works, you don't need this Dockerfile at all.
+# If you DO build, it stays the same image lineage (no second base) and code is mounted.
 
 FROM ghcr.io/sushruths04/humanoid-isaaclab:latest
 

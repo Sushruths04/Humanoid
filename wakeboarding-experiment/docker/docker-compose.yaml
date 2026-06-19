@@ -1,11 +1,13 @@
-# Lightning AI / local-GPU runner. `docker compose run wakeboard <cmd>`.
-# The repo is mounted, so code edits take effect with no rebuild.
+# Lightning AI / local-GPU runner. Reuses the EXISTING humanoid-isaaclab image
+# (same system, different task) — no separate image. `docker compose run wakeboard <cmd>`.
+# Code is mounted, so edits take effect with no rebuild.
 services:
   wakeboard:
-    image: ghcr.io/sushruths04/wakeboard-isaaclab:latest
-    build:
-      context: ..
-      dockerfile: docker/Dockerfile
+    image: ghcr.io/sushruths04/humanoid-isaaclab:latest   # the one shared image
+    # If rsl-rl is missing from the base, uncomment to layer it in (see docker/Dockerfile):
+    # build:
+    #   context: ..
+    #   dockerfile: docker/Dockerfile
     runtime: nvidia
     deploy:
       resources:

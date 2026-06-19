@@ -46,6 +46,13 @@ except Exception:
 
 T_SUCCESS = 6.0  # seconds; success window (PLAN §2)
 
+# --- G1 joint/link names, resolved from IsaacLab unitree.py G1_CFG (g1.usd, 23-DoF) ---
+G1_ELBOW_JOINTS = ["left_elbow_pitch_joint", "right_elbow_pitch_joint"]
+G1_KNEE_JOINTS = ["left_knee_joint", "right_knee_joint"]
+G1_FOOT_LINKS = ["left_ankle_roll_link", "right_ankle_roll_link"]
+G1_TORSO_LINK = ["torso_link"]                       # VERIFY: torso_link vs pelvis on g1.usd
+G1_HAND_LINKS = ["left_rubber_hand", "right_rubber_hand"]  # VERIFY gripper link name on g1.usd
+
 
 # ============================================================ observations
 def _board_pitch_obs(env):
@@ -179,7 +186,20 @@ if ISAACLAB_AVAILABLE:
             super().__init__(cfg, **kwargs)
             self.rope = RopeModel(self.num_envs, self.device, model="spring", v_pull_kmh=10.0)
             self._t_success = T_SUCCESS
+            self._resolve_g1_indices()
             self._init_buffers()
+
+        def _resolve_g1_indices(self):
+            """Cache joint/body indices once (names from IsaacLab G1_CFG)."""
+            robot = self.scene["robot"]
+            self._elbow_idx = robot.find_joints(G1_ELBOW_JOINTS)[0]
+            self._knee_idx = robot.find_joints(G1_KNEE_JOINTS)[0]
+            try:
+                self._hand_body_ids = robot.find_bodies(G1_HAND_LINKS)[0]
+            except Exception:
+                # fallback: wrist links if g1.usd uses a different gripper link name
+                self._hand_body_ids = robot.find_bodies([".*_wrist_yaw_link"])[0]
+            self._torso_body_id = robot.find_bodies(G1_TORSO_LINK)[0]
 
         def _init_buffers(self):
             z = lambda *s: torch.zeros(*s, device=self.device)
@@ -225,14 +245,17 @@ if ISAACLAB_AVAILABLE:
             board = self.scene["board"]
             d = robot.data
             self._robot_root_pos = d.root_pos_w
-            # board pitch from board orientation; board lin vel
-            self._board_lin_vel = board.data.root_lin_vel_w           # VERIFY
-            self._board_pitch = _quat_pitch(board.data.root_quat_w)   # VERIFY
-            # joint-angle-derived biomechanics (need G1 joint index map) -- VERIFY indices
-            self._elbow_flexion = _joint_angle(d, ("left_elbow_joint", "right_elbow_joint"))
-            self._knee_flexion = _joint_angle(d, ("left_knee_joint", "right_knee_joint"))
-            self._torso_back_lean = _torso_lean(d)
-            self._handle_pos = _hand_midpoint(d)                      # VERIFY hand bodies
+            # board pitch + linear velocity
+            self._board_lin_vel = board.data.root_lin_vel_w
+            self._board_pitch = _quat_pitch(board.data.root_quat_w)   # VERIFY quat order (wxyz)
+            # joint-angle biomechanics via cached G1 indices
+            self._elbow_flexion = d.joint_pos[:, self._elbow_idx].abs().mean(dim=1)
+            self._knee_flexion = d.joint_pos[:, self._knee_idx].abs().mean(dim=1)
+            # handle = midpoint of the two hand bodies; torso back-lean = torso pitch
+            hand_pos = d.body_pos_w[:, self._hand_body_ids]           # (N, 2, 3)
+            self._handle_pos = hand_pos.mean(dim=1)
+            torso_quat = d.body_quat_w[:, self._torso_body_id[0]]
+            self._torso_back_lean = _quat_pitch(torso_quat).abs()
             self._hip_target_pos = d.root_pos_w + torch.tensor(
                 [0.15, 0.0, 0.0], device=self.device)                # handle target near hips
             self._update_success_and_fall()
@@ -258,18 +281,6 @@ if ISAACLAB_AVAILABLE:
 
 
 # ============================================================ small geom helpers
-def _quat_pitch(quat):  # (N,4) wxyz -> pitch radians ; VERIFY quat order
+def _quat_pitch(quat):  # (N,4) wxyz -> pitch radians ; VERIFY quat order (isaaclab uses wxyz)
     w, x, y, z = quat[:, 0], quat[:, 1], quat[:, 2], quat[:, 3]
     return torch.asin(torch.clamp(2 * (w * y - z * x), -1.0, 1.0))
-
-
-def _joint_angle(data, names):  # mean |angle| over named joints ; VERIFY name->index
-    return torch.zeros(data.joint_pos.shape[0], device=data.joint_pos.device)  # FILL on GPU
-
-
-def _torso_lean(data):
-    return torch.zeros(data.root_pos_w.shape[0], device=data.root_pos_w.device)  # FILL on GPU
-
-
-def _hand_midpoint(data):
-    return data.root_pos_w + 0.0  # FILL: midpoint of the two hand bodies
