@@ -42,15 +42,19 @@ Add a **command-tracking reward term** that maps each command to a target base v
 ## Ablation (for the portfolio)
 Train **language-off** (constant vector) vs **language-on** (this plan); show the off version can't follow distinct commands while on can. This single ablation is the credible "I made the VLA's L real" story.
 
-## Executor task list
-1. Extend `language_commands.py` with the velocity-command set + `target_velocity`.
-2. Add per-env `cmd_id` buffer + reset-time resampling in the task cfg; vectorize the embedding obs.
-3. Add `reward_cmd_track` term + register it; expose weight in config.
-4. Smoke test (16 envs, 2 iters); fix shapes/devices.
-5. Full train (4096 envs) via `11_g1_language_cond.sh`; **save checkpoint + log**.
-6. Write per-command eval → `eval_language.json` + behavior-separation figure.
-7. Run the language-off vs language-on ablation.
-8. Document: update the main `Humanoid_Vault/02_This_Project/Phase2_G1_Locomotion_and_Language.md` status from "placeholder" → "on", with the real numbers.
+## Executor task list — STATUS
+> ✅ = built + CPU-verified · 🟨 = GPU-only · code is additive (existing files untouched).
+
+1. ✅ Command set + targets + embedding — `my_humanoid_project/language_velocity_commands.py` (7 commands, CPU-tested: distinct command → distinct target → tracking reward).
+2. ✅ Per-env `cmd_id` buffer + reset-time resampling + embedding obs — `tasks/g1_language_velocity_cfg.py::install_command_buffers`.
+3. ✅ `language_command_track` reward term registered in `G1LanguageVelocityEnvCfg`.
+4. 🟨 Smoke test (16 envs, 2 iters): `bash scripts/run_language_velocity.sh` — fix any shape/device + `_reset_idx` hook VERIFY on GPU.
+5. 🟨 Full train (4096 envs) + **save ckpt+log**: `FULL=1 bash scripts/run_language_velocity.sh` (`scripts/train_language_velocity.py`).
+6. ✅ Per-command eval + **behavior-separation plot**: `scripts/eval_language_velocity.py` → `eval_language.json` + `behavior_separation.png` (`separation_score`, `language_is_on` flag). *(code built; runs on GPU)*
+7. 🟨 Language-off vs language-on ablation (constant vector vs this) — flip the embedding to a constant and compare separation_score.
+8. 🟨 Document: update `Humanoid_Vault/02_This_Project/Phase2_G1_Locomotion_and_Language.md` from "placeholder" → "on" with the real `separation_score` + plot.
+
+**Turnkey now:** code + scripts exist and CPU-pieces are verified. On GPU: run `run_language_velocity.sh` (smoke → FULL), then `eval_language_velocity.py` produces the proof plot.
 
 ## Where this sits in the bigger roadmap
 This is **Step 1** of `Humanoid_Vault/03_Study/Open_Questions_and_Next_Steps.md`. After it works: multi-goal marker grounding → sequential goals → obstacles → push recovery → vision (teacher→student). The wakeboarding project (`wakeboarding-experiment/`) is a **parallel, independent** track.
