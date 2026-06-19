@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>6 · Evaluation &amp; Results — Humanoid RL</title>
+<link rel="stylesheet" href="../assets/style.css"></head>
+<body>
+<div class="layout"><aside id="sidebar"></aside><main>
+  <span class="eyebrow rv">CHAPTER 06</span>
+  <h1 class="rv">Evaluation &amp; <span class="grad-text">Results</span></h1>
+  <p class="lede rv">What we measured, the real numbers, and how we keep ourselves honest about what's proven vs. just "it ran."</p>
+
+  <h2 class="rv">The honesty rule</h2>
+  <div class="callout warn rv"><b>A number only counts if there's a file backing it.</b> Every result below has a real artifact on disk (a training log or an eval summary). "The pipeline ran" is <i>not</i> the same as "the task is benchmarked" — and we label which is which.</div>
+
+  <h2 class="rv">Verified results</h2>
+  <div class="tw rv"><table>
+    <thead><tr><th>What</th><th>Metric</th><th>Result</th><th>Status</th></tr></thead>
+    <tbody>
+      <tr><td>Robust locomotion (rough terrain + randomization)</td><td>mean reward / episode length</td><td><b>22.8</b> · <b>981/1000</b></td><td><span class="badge b-done">verified (log)</span></td></tr>
+      <tr><td>GR00T fine-tune</td><td>action MSE / MAE</td><td><b>25.9</b> / 3.0</td><td><span class="badge b-done">verified (eval)</span></td></tr>
+      <tr><td>MarkerNav (walk to target)</td><td>mean reward</td><td>28.9 @ 8192 envs</td><td><span class="badge b-prog">reported</span></td></tr>
+      <tr><td>Vision (camera) pipeline</td><td>reaches PPO, scaled to 2048 envs</td><td>qualitative</td><td><span class="badge b-prog">smoke only</span></td></tr>
+    </tbody>
+  </table></div>
+
+  <h2 class="rv">What "981 / 1000" actually means</h2>
+  <p class="rv">Episodes are 1000 steps long and end early if the robot falls. So <b>981/1000</b> means that, even on <b>rough terrain with randomized joints</b>, the robot stays on its feet for ~98% of the episode. It's our single most defensible result — fully backed by a training log.</p>
+
+  <h2 class="rv">How we evaluate (the metrics)</h2>
+  <div class="grid c3 rv">
+    <div class="card"><h3>Success rate</h3><p class="small">Did it complete the task (e.g. reach a stable wakeboard ride within 6 s)?</p></div>
+    <div class="card"><h3>Fall rate</h3><p class="small">How often it ends in a fall.</p></div>
+    <div class="card"><h3>Time-to-stand</h3><p class="small">How quickly it gets up.</p></div>
+    <div class="card"><h3>Form adherence</h3><p class="small">% of time the board angle / arm straightness stay in the correct band.</p></div>
+    <div class="card"><h3>Smoothness &amp; energy</h3><p class="small">Is the motion jittery? How much effort?</p></div>
+    <div class="card"><h3>Separation score</h3><p class="small">(Language) do different commands actually produce different behavior?</p></div>
+  </div>
+
+  <h2 class="rv">Comparisons we produce (the interview slides)</h2>
+  <ul class="rv">
+    <li><b>Across difficulty</b> — success vs pull speed (20 / 25 / 30 / 35 km/h).</li>
+    <li><b>Ablations</b> — remove one ingredient (curriculum, biomechanics rewards, AMP, randomization) and show exactly which metric it breaks.</li>
+    <li><b>Stage 1 vs Stage 2</b> — same success, but far smoother &amp; more natural after stage 2.</li>
+  </ul>
+
+  <h2 class="rv">Demo video</h2>
+  <figure class="rv">
+    <div class="media"><video controls preload="metadata" poster="../media/poster.jpg">
+      <source src="../media/robust_rollout.mp4" type="video/mp4">
+    </video>
+    <div class="ph">🎬 Drop your rollout clip at <code>media/robust_rollout.mp4</code><br>and it appears here automatically (offline, no upload).</div>
+    </div>
+    <figcaption>G1 robust locomotion on rough terrain. (See <code>media/README.md</code> for where to export it from.)</figcaption>
+  </figure>
+
+  <div class="callout iv rv"><b>Interview answer — "how did you evaluate it?"</b><br>"Task-level metrics: success rate, fall rate, time-to-stand, form-adherence, smoothness, and energy — each written to a JSON from a held-out rollout. I run difficulty sweeps and ablations so I can attribute behavior to specific reward/curriculum components. My strongest backed result is robust locomotion: mean reward 22.8 with 981/1000 episode length under rough terrain and ±25% actuator randomization, straight from the training log."</div>
+
+  <div id="pager"></div>
+  <footer>Chapter 6 of 12 · Humanoid RL Interactive Docs</footer>
+</main></div>
+<script src="../assets/site.js"></script>
+<script>HSite.init('results');document.getElementById('pager').innerHTML=HSite.pager('../','results');</script>
+</body></html>

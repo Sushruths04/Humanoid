@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>4 · Reward Design — Humanoid RL</title>
+<link rel="stylesheet" href="../assets/style.css"></head>
+<body>
+<div class="layout"><aside id="sidebar"></aside><main>
+  <span class="eyebrow rv">CHAPTER 04</span>
+  <h1 class="rv"><span class="grad-text">Reward</span> Design</h1>
+  <p class="lede rv">The single most important — and most interview-asked — part. The reward is how you <i>tell the robot what "good" means</i>. Get it wrong and it cheats; get it right and it learns elegant behavior.</p>
+
+  <h2 class="rv">What a reward is</h2>
+  <p class="rv">Every simulation step, the robot earns a number: <b>high</b> for desirable behavior, <b>negative</b> for bad behavior. PPO simply adjusts the policy to collect more reward over time. The art is designing the number so that "more reward" exactly equals "the behavior I want."</p>
+  <div class="callout warn rv"><b>Reward hacking.</b> Robots are lazy geniuses — they'll exploit any loophole. If you reward "height" only, it might jump and fall. So we use <b>many small, balanced terms</b> and watch the rollouts. (Our own G1 PRM once "learned" to read a hidden +/- marker instead of reasoning — a classic example of optimizing the metric, not the goal.)</div>
+
+  <h2 class="rv">The reward recipe</h2>
+  <p class="rv">We build the total reward from four families. Each term is independent, so we can turn any one off to measure its effect (an <b>ablation</b>).</p>
+  <div class="diagram rv">
+    <svg viewBox="0 0 740 120" xmlns="http://www.w3.org/2000/svg" font-family="monospace" font-size="12.5">
+      <rect x="20" y="35" width="150" height="50" rx="10" fill="rgba(56,225,255,.08)" stroke="#38e1ff"/><text x="95" y="58" fill="#fff" text-anchor="middle">Task</text><text x="95" y="74" fill="#8aa0c6" font-size="10" text-anchor="middle">get up / stay up</text>
+      <text x="185" y="65" fill="#fff" text-anchor="middle">+</text>
+      <rect x="200" y="35" width="160" height="50" rx="10" fill="rgba(155,107,255,.08)" stroke="#9b6bff"/><text x="280" y="58" fill="#fff" text-anchor="middle">Biomechanics</text><text x="280" y="74" fill="#8aa0c6" font-size="10" text-anchor="middle">correct form</text>
+      <text x="375" y="65" fill="#fff" text-anchor="middle">+</text>
+      <rect x="390" y="35" width="150" height="50" rx="10" fill="rgba(70,240,168,.08)" stroke="#46f0a8"/><text x="465" y="58" fill="#fff" text-anchor="middle">Style (AMP)</text><text x="465" y="74" fill="#8aa0c6" font-size="10" text-anchor="middle">looks natural</text>
+      <text x="555" y="65" fill="#fff" text-anchor="middle">−</text>
+      <rect x="570" y="35" width="150" height="50" rx="10" fill="rgba(255,107,129,.08)" stroke="#ff6b81"/><text x="645" y="58" fill="#fff" text-anchor="middle">Penalties</text><text x="645" y="74" fill="#8aa0c6" font-size="10" text-anchor="middle">don't do this</text>
+    </svg>
+  </div>
+
+  <h2 class="rv">Example — robust locomotion (the part that's done)</h2>
+  <div class="tw rv"><table>
+    <thead><tr><th>Reward term</th><th>Encourages</th></tr></thead>
+    <tbody>
+      <tr><td>velocity tracking</td><td>move at the commanded speed/direction</td></tr>
+      <tr><td>uprightness</td><td>keep the torso vertical</td></tr>
+      <tr><td>alive / episode length</td><td>don't fall (a fall ends the episode)</td></tr>
+      <tr><td><span class="badge b-todo">penalty</span> torque &amp; energy</td><td>move efficiently, not violently</td></tr>
+      <tr><td><span class="badge b-todo">penalty</span> action smoothness</td><td>no jittery, twitchy motion</td></tr>
+    </tbody>
+  </table></div>
+  <p class="rv">Add <b>rough terrain</b> + <b>domain randomization</b> (Chapter 5) and this same reward produced our headline result: <b>mean reward 22.8</b>, <b>981 / 1000</b> steps upright. (Chapter 6.)</p>
+
+  <h2 class="rv">Example — the wakeboard start (the new task)</h2>
+  <p class="rv">Here the reward literally encodes the <b>5 rules of a good wakeboard start</b>, so the robot learns correct form, not just "stand up somehow."</p>
+  <div class="tw rv"><table>
+    <thead><tr><th>Wakeboard rule</th><th>Reward term</th><th>Weight</th></tr></thead>
+    <tbody>
+      <tr><td>Rise gradually (don't jump up)</td><td>phase-gated height-progress <span class="badge b-todo">+ penalty if too fast</span></td><td>+1.5</td></tr>
+      <tr><td>Board angle ≥ 10° (heels weighted)</td><td>board_positive_angle</td><td>+1.5</td></tr>
+      <tr><td>Arms straight, handle at hips</td><td>arms_straight + handle_at_hips</td><td>+1.0 / +0.8</td></tr>
+      <tr><td>Don't pull against the rope</td><td><span class="badge b-todo">penalty</span> pull_against_rope</td><td>−1.0</td></tr>
+      <tr><td>Lean back slightly, knees soft</td><td>lean_back_moderate + knee_bend</td><td>+0.7 / +0.8</td></tr>
+      <tr><td>Reach a stable ride</td><td>success_bonus (sparse)</td><td>+50</td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="callout info rv"><b>Phase-gating, explained.</b> "Height-progress" only counts <i>after</i> the first half-second. Why? So the robot can't get points by exploding upward immediately — it's forced to stay crouched and let the pull lift it, exactly like a real beginner is taught.</div>
+
+  <div class="callout iv rv"><b>Interview answer — "walk me through your reward."</b><br>"It's a weighted sum of four families: task rewards (height, uprightness, velocity/glide, a sparse success bonus), biomechanics-shaping terms that encode domain rules — for the wakeboard, board angle ≥10°, straight arms, handle at the hips, gradual rise — an optional AMP style reward for natural motion, and penalties for energy, jerk, falling, and pulling against the rope. Each term is a separate manager term so I can ablate it. I phase-gate the height reward to prevent the 'stand up too fast' failure, and I watch rollouts to catch reward hacking."</div>
+
+  <div id="pager"></div>
+  <footer>Chapter 4 of 12 · Humanoid RL Interactive Docs</footer>
+</main></div>
+<script src="../assets/site.js"></script>
+<script>HSite.init('rewards');document.getElementById('pager').innerHTML=HSite.pager('../','rewards');</script>
+</body></html>

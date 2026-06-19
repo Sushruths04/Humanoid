@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>12 · Glossary — Humanoid RL</title>
+<link rel="stylesheet" href="../assets/style.css"></head>
+<body>
+<div class="layout"><aside id="sidebar"></aside><main>
+  <span class="eyebrow rv">CHAPTER 12</span>
+  <h1 class="rv"><span class="grad-text">Glossary</span></h1>
+  <p class="lede rv">Every bit of jargon in this site, in one plain sentence.</p>
+
+  <div class="tw rv"><table>
+    <thead><tr><th>Term</th><th>In plain English</th></tr></thead>
+    <tbody>
+      <tr><td><b>Reinforcement Learning (RL)</b></td><td>Learning by trial and error, guided by rewards.</td></tr>
+      <tr><td><b>Policy</b></td><td>The robot's "brain" — a neural network that maps what it sees to what it does.</td></tr>
+      <tr><td><b>PPO</b></td><td>The popular, stable RL algorithm that improves the policy in small safe steps.</td></tr>
+      <tr><td><b>Reward</b></td><td>A number each step telling the robot how well it's doing.</td></tr>
+      <tr><td><b>Reward hacking</b></td><td>When the robot games the reward instead of doing the real task.</td></tr>
+      <tr><td><b>Ablation</b></td><td>Turning off one ingredient to measure how much it mattered.</td></tr>
+      <tr><td><b>Isaac Sim</b></td><td>NVIDIA's GPU physics simulator.</td></tr>
+      <tr><td><b>Isaac Lab</b></td><td>The RL toolkit built on Isaac Sim.</td></tr>
+      <tr><td><b>RSL-RL</b></td><td>A fast PPO trainer for legged robots.</td></tr>
+      <tr><td><b>Unitree G1</b></td><td>The real humanoid robot we train.</td></tr>
+      <tr><td><b>Domain randomization</b></td><td>Randomizing the sim's physics so the policy survives the real world.</td></tr>
+      <tr><td><b>Sim-to-real</b></td><td>Making something trained in simulation work on real hardware.</td></tr>
+      <tr><td><b>Episode</b></td><td>One attempt; it ends on success, timeout, or a fall.</td></tr>
+      <tr><td><b>Uprightness</b></td><td>How vertical the torso is (1 = perfectly upright).</td></tr>
+      <tr><td><b>Curriculum</b></td><td>Starting easy and ramping difficulty as the robot improves.</td></tr>
+      <tr><td><b>VLA</b></td><td>Vision-Language-Action: a robot that sees, understands instructions, and acts.</td></tr>
+      <tr><td><b>GR00T</b></td><td>NVIDIA's pre-trained humanoid "foundation model" we fine-tune.</td></tr>
+      <tr><td><b>Foundation model</b></td><td>A big pre-trained model you adapt to your task with little data.</td></tr>
+      <tr><td><b>AMP</b></td><td>A reward that makes motion look like real reference clips.</td></tr>
+      <tr><td><b>HumanUP</b></td><td>The two-stage method for teaching a humanoid to get up.</td></tr>
+      <tr><td><b>Embedding</b></td><td>Turning a word/instruction into a list of numbers a network can use.</td></tr>
+      <tr><td><b>CNN</b></td><td>A neural network that processes images.</td></tr>
+      <tr><td><b>Domain (the "5 rules")</b></td><td>The real wakeboarding technique we encode into rewards.</td></tr>
+      <tr><td><b>Docker</b></td><td>A portable box containing the whole software setup.</td></tr>
+      <tr><td><b>Modal / Lightning AI</b></td><td>Cloud GPU services (serverless / persistent).</td></tr>
+      <tr><td><b>RT cores</b></td><td>GPU hardware Isaac Sim needs (L40S/L4 have them; A100/H100 don't).</td></tr>
+    </tbody>
+  </table></div>
+
+  <div id="pager"></div>
+  <footer>Chapter 12 of 12 · Humanoid RL Interactive Docs · the end 🎉</footer>
+</main></div>
+<script src="../assets/site.js"></script>
+<script>HSite.init('glossary');document.getElementById('pager').innerHTML=HSite.pager('../','glossary');</script>
+</body></html>

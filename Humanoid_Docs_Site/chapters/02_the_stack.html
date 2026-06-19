@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>2 · The Tech Stack — Humanoid RL</title>
+<link rel="stylesheet" href="../assets/style.css"></head>
+<body>
+<div class="layout"><aside id="sidebar"></aside><main>
+  <span class="eyebrow rv">CHAPTER 02</span>
+  <h1 class="rv">The <span class="grad-text">Tech Stack</span></h1>
+  <p class="lede rv">Every tool we use, what it does, and where it sits — bottom (hardware) to top (your task).</p>
+
+  <div class="diagram rv">
+    <svg viewBox="0 0 720 360" xmlns="http://www.w3.org/2000/svg" font-family="monospace">
+      <g font-size="12">
+      <rect x="120" y="10"  width="480" height="40" rx="9" fill="rgba(56,225,255,.10)" stroke="#38e1ff"/><text x="360" y="35" fill="#fff" text-anchor="middle">Your task code — wakeboard env, rewards, language commands</text>
+      <rect x="120" y="60" width="230" height="40" rx="9" fill="#0e1626" stroke="#9b6bff"/><text x="235" y="85" fill="#fff" text-anchor="middle">RSL-RL (PPO trainer)</text>
+      <rect x="370" y="60" width="230" height="40" rx="9" fill="#0e1626" stroke="#9b6bff"/><text x="485" y="85" fill="#fff" text-anchor="middle">AMP (style reward)</text>
+      <rect x="120" y="110" width="480" height="40" rx="9" fill="#0e1626" stroke="#46f0a8"/><text x="360" y="135" fill="#fff" text-anchor="middle">Isaac Lab — RL framework (envs, rewards, G1 robot)</text>
+      <rect x="120" y="160" width="480" height="40" rx="9" fill="#0e1626" stroke="#46f0a8"/><text x="360" y="185" fill="#fff" text-anchor="middle">Isaac Sim — GPU physics simulator</text>
+      <rect x="120" y="210" width="480" height="40" rx="9" fill="#0e1626" stroke="#ffcb6b"/><text x="360" y="235" fill="#fff" text-anchor="middle">Docker image (humanoid-isaaclab) — runs anywhere</text>
+      <rect x="120" y="260" width="230" height="40" rx="9" fill="#0e1626" stroke="#ff6ad5"/><text x="235" y="285" fill="#fff" text-anchor="middle">Modal / Lightning AI</text>
+      <rect x="370" y="260" width="230" height="40" rx="9" fill="#0e1626" stroke="#ff6ad5"/><text x="485" y="285" fill="#fff" text-anchor="middle">Hugging Face (storage)</text>
+      <rect x="120" y="310" width="480" height="40" rx="9" fill="rgba(155,107,255,.10)" stroke="#9b6bff"/><text x="360" y="335" fill="#fff" text-anchor="middle">GPU — NVIDIA L40S / L4 (RT cores required)</text>
+      </g>
+    </svg>
+  </div>
+
+  <h2 class="rv">What each piece does</h2>
+  <div class="tw rv"><table>
+    <thead><tr><th>Tool</th><th>What it is</th><th>Why we use it</th></tr></thead>
+    <tbody>
+      <tr><td><b>Isaac Sim</b></td><td>NVIDIA's GPU-accelerated physics simulator</td><td>Runs thousands of robot copies at once — that speed <i>is</i> the method</td></tr>
+      <tr><td><b>Isaac Lab</b></td><td>RL framework on top of Isaac Sim</td><td>Ready-made G1 robot + a clean way to compose observations & rewards</td></tr>
+      <tr><td><b>RSL-RL</b></td><td>A fast PPO implementation</td><td>The standard trainer for legged robots; GPU-vectorized</td></tr>
+      <tr><td><b>PPO</b></td><td>The RL algorithm (Proximal Policy Optimization)</td><td>Stable, simple, perfect when simulation is cheap</td></tr>
+      <tr><td><b>GR00T</b></td><td>NVIDIA's humanoid <i>foundation model</i> (~3B params)</td><td>Pre-trained brain we fine-tune for manipulation</td></tr>
+      <tr><td><b>AMP</b></td><td>Adversarial Motion Priors (a "style" reward)</td><td>Makes motions look natural without hand-tuning every joint</td></tr>
+      <tr><td><b>Docker</b></td><td>A portable container of the whole environment</td><td>Pull one image → identical setup on any machine</td></tr>
+      <tr><td><b>Modal</b></td><td>Serverless GPU cloud</td><td>Fire-and-forget jobs, pay per second, parallel</td></tr>
+      <tr><td><b>Lightning AI</b></td><td>Rented persistent GPU box</td><td>Interactive debugging + anything needing rendering</td></tr>
+      <tr><td><b>Hugging Face</b></td><td>Cloud storage for models/data</td><td>Where big checkpoints live (kept out of GitHub)</td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="callout warn rv"><b>One non-obvious constraint.</b> Isaac Sim needs a GPU with <b>RT cores</b> — so <b>L40S / L4 / A10</b> work, but <b>A100 / H100 do NOT</b> (they lack RT cores and won't initialize/render). "Bigger GPU" is the wrong instinct here.</div>
+
+  <h2 class="rv">How they fit together (the flow)</h2>
+  <ol class="rv">
+    <li>A <b>GPU</b> (L40S) runs the <b>Docker</b> container.</li>
+    <li>Inside, <b>Isaac Sim</b> simulates physics; <b>Isaac Lab</b> wraps it as an RL task.</li>
+    <li><b>RSL-RL</b> runs <b>PPO</b> to improve the policy against our <b>rewards</b>.</li>
+    <li>Checkpoints go to <b>Hugging Face</b>; the job runs on <b>Modal</b> or <b>Lightning</b>.</li>
+  </ol>
+
+  <div class="callout iv rv"><b>Interview answer — "what's your stack?"</b><br>"NVIDIA Isaac Lab on Isaac Sim for massively-parallel simulation, RSL-RL for PPO, the Unitree G1 asset, AMP for motion style, and GR00T for the foundation-model track. Everything's containerized in one Docker image so I can run the same setup on Modal serverless GPUs or a Lightning box — both L40S, because Isaac Sim needs RT cores."</div>
+
+  <div id="pager"></div>
+  <footer>Chapter 2 of 12 · Humanoid RL Interactive Docs</footer>
+</main></div>
+<script src="../assets/site.js"></script>
+<script>HSite.init('the_stack');document.getElementById('pager').innerHTML=HSite.pager('../','the_stack');</script>
+</body></html>

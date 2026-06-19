@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>8 · Wakeboarding RL — Humanoid RL</title>
+<link rel="stylesheet" href="../assets/style.css"></head>
+<body>
+<div class="layout"><aside id="sidebar"></aside><main>
+  <span class="eyebrow rv">CHAPTER 08</span>
+  <h1 class="rv">The <span class="grad-text">Wakeboarding</span> Experiment</h1>
+  <p class="lede rv">Our flagship new task: teach a G1 the hardest moment in wakeboarding — the <b>deep-water start</b> — in a dry, sand-like simulation.</p>
+
+  <h2 class="rv">The idea</h2>
+  <p class="rv">When a beginner wakeboards, the boat yanks them from a floating crouch up onto the board at ~30 km/h. <b>Almost everyone fails the start</b> — they stand up too fast, pull the rope, or let the board dig in, and face-plant. We model this on land: the G1 sits crouched, feet on a board, holding a rope handle; a rope force ramps to 30 km/h; it must learn the correct body angles to rise to a stable ride.</p>
+
+  <div class="diagram rv">
+    <svg viewBox="0 0 760 150" xmlns="http://www.w3.org/2000/svg" font-family="monospace" font-size="11.5">
+      <rect x="15" y="45" width="160" height="60" rx="10" fill="rgba(56,225,255,.07)" stroke="#38e1ff"/><text x="95" y="70" fill="#fff" text-anchor="middle">1 · Cannonball</text><text x="95" y="88" fill="#8aa0c6" text-anchor="middle">deep crouch, board up</text>
+      <rect x="205" y="45" width="160" height="60" rx="10" fill="#0e1626" stroke="#9b6bff"/><text x="285" y="70" fill="#fff" text-anchor="middle">2 · Plane-up</text><text x="285" y="88" fill="#8aa0c6" text-anchor="middle">heels weighted, board ≥10°</text>
+      <rect x="395" y="45" width="160" height="60" rx="10" fill="#0e1626" stroke="#46f0a8"/><text x="475" y="70" fill="#fff" text-anchor="middle">3 · Gradual rise</text><text x="475" y="88" fill="#8aa0c6" text-anchor="middle">extend legs slowly</text>
+      <rect x="585" y="45" width="160" height="60" rx="10" fill="rgba(70,240,168,.07)" stroke="#46f0a8"/><text x="665" y="70" fill="#fff" text-anchor="middle">4 · Stable ride</text><text x="665" y="88" fill="#8aa0c6" text-anchor="middle">balanced, tracking</text>
+      <line x1="175" y1="75" x2="203" y2="75" stroke="#fff" marker-end="url(#a)"/><line x1="365" y1="75" x2="393" y2="75" stroke="#fff" marker-end="url(#a)"/><line x1="555" y1="75" x2="583" y2="75" stroke="#fff" marker-end="url(#a)"/>
+      <defs><marker id="a" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6" fill="#fff"/></marker></defs>
+    </svg>
+  </div>
+
+  <h2 class="rv">Why "sand instead of water"?</h2>
+  <p class="rv">Simulating water is expensive and unstable. Instead we use a board that <b>slides on a low-friction ground</b> — a dry analog that keeps the core physics (a tow force dragging a board + rider) while staying fast and reliable. We're upfront that this is a deliberate abstraction.</p>
+
+  <h2 class="rv">How it's built</h2>
+  <div class="grid c2 rv">
+    <div class="card"><div class="ic">🛹</div><h3>Board + rope</h3><p class="small">A board welded to the feet; the rope is a virtual anchor moving at 30 km/h that pulls the handle via a capped spring force.</p></div>
+    <div class="card"><div class="ic">🎯</div><h3>Reward = the 5 rules</h3><p class="small">Board angle, straight arms, handle at hips, gradual rise, don't pull the rope. (Chapter 4.)</p></div>
+    <div class="card"><div class="ic">📈</div><h3>Curriculum</h3><p class="small">Pull speed ramps 10→30 km/h only as the robot succeeds — never start at the hardest setting.</p></div>
+    <div class="card"><div class="ic">🎭</div><h3>AMP style</h3><p class="small">A "looks-like-a-real-start" reward so the motion is natural, not robotic.</p></div>
+  </div>
+
+  <h2 class="rv">Status: fully coded, GPU-ready</h2>
+  <div class="pill-row rv">
+    <span class="badge b-done">rope physics · CPU-verified</span>
+    <span class="badge b-done">curriculum · CPU-verified</span>
+    <span class="badge b-done">AMP · CPU-verified</span>
+    <span class="badge b-done">G1 joint names · pre-resolved</span>
+    <span class="badge b-prog">env / training · GPU smoke pending</span>
+  </div>
+  <p class="rv">All the framework-independent logic is written and tested; the Isaac-Lab glue is written with a Day-1 GPU checklist. First GPU session is a ~2–4 h checklist, not blind debugging.</p>
+
+  <h2 class="rv">The bigger vision — a coaching robot</h2>
+  <p class="rv">Once the robot knows the <i>ideal</i> start angles, it becomes a <b>coach</b>: a webcam reads a human learner's knee/hip/arm angles and compares them to the robot's optimal pose, giving feedback ("bend your knees more", "straighten your arms"). The whole environment is angle-centric specifically to make this possible later.</p>
+
+  <figure class="rv"><div class="media"><div class="ph">🎬 Future: <code>media/wakeboard_rollout.mp4</code> — the trained start, once GPU runs are done.</div></div><figcaption>Placeholder — appears automatically when you drop the clip in.</figcaption></figure>
+
+  <div class="callout iv rv"><b>Interview answer — "tell me about the wakeboarding project."</b><br>"It frames a wakeboard deep-water start as a getting-up-under-external-pull task. The G1 starts crouched with feet welded to a board and a rope modeled as a velocity-target spring ramping to 30 km/h. The reward encodes wakeboard biomechanics — positive board angle, straight arms, gradual leg extension, no pulling the rope — plus a pull-speed curriculum and AMP style, trained with PPO in two stages à la HumanUP. It reuses the same Isaac Lab + G1 + RSL-RL stack as my locomotion work."</div>
+
+  <div id="pager"></div>
+  <footer>Chapter 8 of 12 · Humanoid RL Interactive Docs</footer>
+</main></div>
+<script src="../assets/site.js"></script>
+<script>HSite.init('wakeboarding');document.getElementById('pager').innerHTML=HSite.pager('../','wakeboarding');</script>
+</body></html>

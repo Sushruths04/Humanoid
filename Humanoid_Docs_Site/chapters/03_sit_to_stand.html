@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>3 · Sit → Stand — Humanoid RL</title>
+<link rel="stylesheet" href="../assets/style.css"></head>
+<body>
+<div class="layout"><aside id="sidebar"></aside><main>
+  <span class="eyebrow rv">CHAPTER 03</span>
+  <h1 class="rv">How a Humanoid <span class="grad-text">Sits &amp; Stands</span></h1>
+  <p class="lede rv">Getting up and staying up sounds trivial — for a robot it's one of the hardest motions. Here's how it learns.</p>
+
+  <h2 class="rv">Why standing up is hard</h2>
+  <ul class="rv">
+    <li><b>It's not repetitive.</b> Walking is a rhythm you repeat. Getting up is a one-time sequence — the robot must <i>discover</i> which body parts to push with, and when.</li>
+    <li><b>Contacts keep changing.</b> Hands, knees, feet touch the ground at different moments. The robot has to invent that contact schedule itself.</li>
+    <li><b>The reward is sparse.</b> "You're standing!" only happens at the very end. We have to break it into smaller hints (get taller → get upright → stay balanced).</li>
+  </ul>
+
+  <h2 class="rv">The two-stage recipe (HumanUP)</h2>
+  <p class="rv">We follow a published method called <b>HumanUP</b> that taught a real G1 to stand from lying down (78% success). It splits learning into two stages — the same idea works for the wakeboard rise:</p>
+  <div class="diagram rv">
+    <svg viewBox="0 0 740 180" xmlns="http://www.w3.org/2000/svg" font-family="monospace" font-size="12">
+      <rect x="30" y="40" width="300" height="100" rx="12" fill="rgba(56,225,255,.07)" stroke="#38e1ff"/>
+      <text x="180" y="66" fill="#38e1ff" font-size="14" text-anchor="middle">Stage 1 · Discovery</text>
+      <text x="180" y="90" fill="#c4d2ea" text-anchor="middle">few rules, allowed to be messy</text>
+      <text x="180" y="110" fill="#c4d2ea" text-anchor="middle">goal: find ANY way to get up</text>
+      <line x1="330" y1="90" x2="408" y2="90" stroke="#fff" stroke-width="1.5" marker-end="url(#a)"/>
+      <rect x="410" y="40" width="300" height="100" rx="12" fill="rgba(70,240,168,.07)" stroke="#46f0a8"/>
+      <text x="560" y="66" fill="#46f0a8" font-size="14" text-anchor="middle">Stage 2 · Deployable</text>
+      <text x="560" y="90" fill="#c4d2ea" text-anchor="middle">copy stage-1 motion, but slow &amp; smooth</text>
+      <text x="560" y="110" fill="#c4d2ea" text-anchor="middle">goal: safe, natural, robust</text>
+      <defs><marker id="a" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6" fill="#fff"/></marker></defs>
+    </svg>
+  </div>
+  <p class="rv"><b>Stage 1</b> gives the robot freedom to flail and discover a working trajectory. <b>Stage 2</b> takes that discovered motion, slows it ~8×, and re-trains it to be smooth, energy-efficient, and robust to bumps — the version you'd put on real hardware.</p>
+
+  <h2 class="rv">How "balance" is measured</h2>
+  <p class="rv">Two simple signals tell us if the robot is doing well:</p>
+  <div class="grid c2 rv">
+    <div class="card"><div class="ic">📐</div><h3>Uprightness</h3><p class="small">How vertical the torso is — measured by projecting gravity onto the body's up-axis. 1.0 = perfectly upright, 0 = lying down.</p></div>
+    <div class="card"><div class="ic">⏱️</div><h3>Episode length</h3><p class="small">Episodes end the instant the robot falls. So a <b>long</b> episode means it stayed up. Our robust policy reaches <b>981 / 1000</b> — it almost never falls.</p></div>
+  </div>
+
+  <div class="callout info rv"><b>Connecting the dots →</b> The <b>wakeboard start</b> (Chapter 8) is literally a "get up" motion, but with a rope yanking you forward at 30 km/h. So we reuse this exact two-stage recipe plus the uprightness/balance signals.</div>
+
+  <div class="callout iv rv"><b>Interview answer — "how does the robot learn to stand?"</b><br>"Getting up is non-periodic with shifting contacts and sparse reward, so I use a two-stage approach à la HumanUP: a discovery stage with weak regularization to find a feasible trajectory, then a deployable stage that tracks a slowed version under strict smoothness and torque penalties plus domain randomization. Balance is shaped via a torso-uprightness term (projected gravity) and rewarded implicitly through episode length, since a fall terminates the episode."</div>
+
+  <div id="pager"></div>
+  <footer>Chapter 3 of 12 · Humanoid RL Interactive Docs</footer>
+</main></div>
+<script src="../assets/site.js"></script>
+<script>HSite.init('sit_to_stand');document.getElementById('pager').innerHTML=HSite.pager('../','sit_to_stand');</script>
+</body></html>

@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Humanoid RL — Interactive Docs</title>
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<div class="layout">
+  <aside id="sidebar"></aside>
+  <main>
+    <span class="eyebrow rv">⬡ INTERACTIVE PROJECT DOCUMENTATION</span>
+    <h1 class="rv">Teaching a <span class="grad-text">Humanoid Robot</span><br>to Stand, Move &amp; Wakeboard</h1>
+    <p class="lede rv">A complete, plain-English walkthrough of how we train a <b>Unitree&nbsp;G1</b> humanoid in simulation with reinforcement learning — the stack, the rewards, the results, the design choices, and what's next. Built so a curious high-schooler can follow it, and detailed enough to defend in an interview.</p>
+
+    <div class="stats rv">
+      <div class="stat"><div class="n">981<span style="font-size:15px">/1000</span></div><div class="l">steps upright on rough terrain (robust policy)</div></div>
+      <div class="stat"><div class="n">8,192</div><div class="l">robots trained in parallel</div></div>
+      <div class="stat"><div class="n">2</div><div class="l">projects: G1 locomotion + wakeboarding</div></div>
+      <div class="stat"><div class="n">100%</div><div class="l">offline &amp; shareable — no internet needed</div></div>
+    </div>
+
+    <div class="callout info rv"><b>How to read this.</b> Use the sidebar (or the ☰ menu on mobile) to jump between chapters. Start at <b>The Big Picture</b> and go in order, or jump straight to <b>Reward Design</b> / <b>Why These Choices</b> if you're prepping for an interview. Every chapter ends with a "🎤 Interview answer" box.</p>
+    </div>
+
+    <h2 class="rv">The chapters</h2>
+    <div class="grid c3">
+      <a class="card link rv" href="chapters/01_big_picture.html"><div class="ic">🌍</div><h3>1 · The Big Picture</h3><p class="small">What we're building, why a humanoid, and the two projects in one diagram.</p><span class="more">Read →</span></a>
+      <a class="card link rv" href="chapters/02_the_stack.html"><div class="ic">🧱</div><h3>2 · The Tech Stack</h3><p class="small">Isaac Lab, the G1 robot, PPO, GR00T, AMP, Docker, Modal — what each does.</p><span class="more">Read →</span></a>
+      <a class="card link rv" href="chapters/03_sit_to_stand.html"><div class="ic">🧍</div><h3>3 · Sit → Stand</h3><p class="small">How a robot learns to get up and balance, from a crouch to a stable stance.</p><span class="more">Read →</span></a>
+      <a class="card link rv" href="chapters/04_rewards.html"><div class="ic">🎯</div><h3>4 · Reward Design</h3><p class="small">The heart of it: how we tell the robot what "good" means. (Interview gold.)</p><span class="more">Read →</span></a>
+      <a class="card link rv" href="chapters/05_simulation.html"><div class="ic">🌀</div><h3>5 · Simulation Setup</h3><p class="small">Parallel worlds, domain randomization, and the observe→act→reward loop.</p><span class="more">Read →</span></a>
+      <a class="card link rv" href="chapters/06_results.html"><div class="ic">📊</div><h3>6 · Evaluation &amp; Results</h3><p class="small">What we measured, the real numbers, and how we know it actually works.</p><span class="more">Read →</span></a>
+      <a class="card link rv" href="chapters/07_language_vision.html"><div class="ic">🗣️</div><h3>7 · Language &amp; Vision</h3><p class="small">Making the robot follow commands and see — and where the line of honesty is.</p><span class="more">Read →</span></a>
+      <a class="card link rv" href="chapters/08_wakeboarding.html"><div class="ic">🏄</div><h3>8 · Wakeboarding RL</h3><p class="small">The new project: a humanoid learning a wakeboard deep-water start.</p><span class="more">Read →</span></a>
+      <a class="card link rv" href="chapters/09_model_choices.html"><div class="ic">🧠</div><h3>9 · Why These Choices</h3><p class="small">Why GR00T — and why <i>not</i> π0, OpenVLA, or a world model.</p><span class="more">Read →</span></a>
+      <a class="card link rv" href="chapters/10_compute.html"><div class="ic">☁️</div><h3>10 · Compute &amp; Workflow</h3><p class="small">Modal vs Lightning AI, Docker, and switching machines in one command.</p><span class="more">Read →</span></a>
+      <a class="card link rv" href="chapters/11_roadmap.html"><div class="ic">🗺️</div><h3>11 · Roadmap</h3><p class="small">What's done, what's honest-but-unfinished, and the path forward.</p><span class="more">Read →</span></a>
+      <a class="card link rv" href="chapters/12_glossary.html"><div class="ic">📖</div><h3>12 · Glossary</h3><p class="small">Every piece of jargon, in one plain-English sentence.</p><span class="more">Read →</span></a>
+    </div>
+
+    <h2 class="rv">Project status at a glance</h2>
+    <div class="tw rv"><table>
+      <thead><tr><th>Part</th><th>What it is</th><th>Status</th></tr></thead>
+      <tbody>
+        <tr><td>G1 locomotion</td><td>walking on flat + rough ground</td><td><span class="badge b-done">done · verified</span></td></tr>
+        <tr><td>Robustness (sim-to-real)</td><td>rough terrain + domain randomization</td><td><span class="badge b-done">done · reward 22.8, 981/1000</span></td></tr>
+        <tr><td>GR00T fine-tune</td><td>humanoid foundation model</td><td><span class="badge b-done">done · MSE 25.9</span></td></tr>
+        <tr><td>Language conditioning</td><td>follow commands</td><td><span class="badge b-prog">code ready → train on GPU</span></td></tr>
+        <tr><td>Vision (camera)</td><td>see pixels</td><td><span class="badge b-prog">pipeline runs · smoke only</span></td></tr>
+        <tr><td>Wakeboarding</td><td>deep-water start</td><td><span class="badge b-prog">full code + plan · pre-GPU</span></td></tr>
+      </tbody>
+    </table></div>
+
+    <div id="pager"></div>
+    <footer>Humanoid RL Interactive Docs · built to be opened offline on any laptop · grounded in the real codebase &amp; results.</footer>
+  </main>
+</div>
+<script src="assets/site.js"></script>
+<script>HSite.init('index');document.getElementById('pager').innerHTML=HSite.pager('./','index');</script>
+</body>
+</html>

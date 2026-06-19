@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>5 · Simulation Setup — Humanoid RL</title>
+<link rel="stylesheet" href="../assets/style.css"></head>
+<body>
+<div class="layout"><aside id="sidebar"></aside><main>
+  <span class="eyebrow rv">CHAPTER 05</span>
+  <h1 class="rv"><span class="grad-text">Simulation</span> Setup</h1>
+  <p class="lede rv">How we actually run the training — thousands of robots at once, and the trick that makes it transfer to the real world.</p>
+
+  <h2 class="rv">Thousands of robots, one GPU</h2>
+  <p class="rv">Isaac Sim renders <b>8,192 copies</b> of the G1 in parallel on a single GPU, each trying slightly different things. At ~100,000+ simulation steps per second, the robot accumulates years of practice in hours. <b>This raw speed is the whole method</b> — it's why a simple algorithm like PPO is enough; we don't need a clever sample-efficient one.</p>
+  <div class="stats rv">
+    <div class="stat"><div class="n">8,192</div><div class="l">parallel envs</div></div>
+    <div class="stat"><div class="n">~114k</div><div class="l">steps / second</div></div>
+    <div class="stat"><div class="n">200 Hz</div><div class="l">physics rate</div></div>
+    <div class="stat"><div class="n">L40S</div><div class="l">GPU (RT cores)</div></div>
+  </div>
+
+  <h2 class="rv">What the robot sees and does</h2>
+  <div class="grid c2 rv">
+    <div class="card"><div class="ic">👁️</div><h3>Observations (input)</h3><p class="small">Joint angles &amp; speeds, body orientation, base velocity, the previous action, and task info (board angle, rope force, a phase clock, the command embedding).</p></div>
+    <div class="card"><div class="ic">🦾</div><h3>Actions (output)</h3><p class="small">Target positions for every motor, sent to a PD controller. The policy outputs these ~50 times a second.</p></div>
+  </div>
+
+  <h2 class="rv">Domain Randomization — the sim-to-real trick</h2>
+  <p class="rv">A policy trained in one <i>perfect</i> simulation overfits it and fails on a real robot, where friction, weight, and motor strength are never exactly known. The fix: <b>randomize those unknowns every episode</b>. The robot can't memorize one setup, so it learns a behavior that works across a whole <i>range</i> — which then covers reality.</p>
+  <div class="tw rv"><table>
+    <thead><tr><th>We randomize…</th><th>Range</th><th>Why</th></tr></thead>
+    <tbody>
+      <tr><td>Terrain</td><td>flat → procedural rough ground</td><td>real ground is uneven</td></tr>
+      <tr><td>Joint stiffness &amp; damping</td><td>±25%</td><td>real motors aren't ideal</td></tr>
+      <tr><td>Link masses</td><td>±10%</td><td>payload/build varies</td></tr>
+      <tr><td>Friction (wakeboard "sand")</td><td>μ 0.25–0.6</td><td>surface varies</td></tr>
+      <tr><td>Rope pull (wakeboard)</td><td>±15% + direction jitter</td><td>the boat tug is never identical</td></tr>
+    </tbody>
+  </table></div>
+  <div class="callout win rv"><b>It worked.</b> With ±25% joint randomization on rough terrain, our G1 stays upright <b>981 / 1000</b> steps — strong evidence the policy generalized rather than memorized.</div>
+
+  <h2 class="rv">The training loop in code-shape</h2>
+  <pre class="rv"><span class="cm"># conceptually, every iteration:</span>
+obs        = env.observe()              <span class="cm"># 8192 robots' states</span>
+actions    = policy(obs)                <span class="cm"># the neural-net "brain"</span>
+next_obs, reward, done = env.step(actions)
+policy     = <span class="kw">PPO</span>.update(obs, actions, reward)  <span class="cm"># nudge toward more reward</span></pre>
+
+  <div class="callout iv rv"><b>Interview answer — "how did you set up the sim / handle sim-to-real?"</b><br>"Isaac Lab with 8k parallel G1 envs at ~100k steps/s on an L40S; PD position-control actions, proprioceptive + task observations, PPO via RSL-RL. For sim-to-real I rely on extensive domain randomization — terrain, ±25% joint stiffness/damping, link mass, friction, and push/pull disturbances — so the policy is robust to the reality gap. My robustness run reaching 981/1000 episode length under randomization is the evidence it transfers."</div>
+
+  <div id="pager"></div>
+  <footer>Chapter 5 of 12 · Humanoid RL Interactive Docs</footer>
+</main></div>
+<script src="../assets/site.js"></script>
+<script>HSite.init('simulation');document.getElementById('pager').innerHTML=HSite.pager('../','simulation');</script>
+</body></html>

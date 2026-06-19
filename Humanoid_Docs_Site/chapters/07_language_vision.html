@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>7 · Language &amp; Vision — Humanoid RL</title>
+<link rel="stylesheet" href="../assets/style.css"></head>
+<body>
+<div class="layout"><aside id="sidebar"></aside><main>
+  <span class="eyebrow rv">CHAPTER 07</span>
+  <h1 class="rv"><span class="grad-text">Language &amp; Vision</span> (the VLA)</h1>
+  <p class="lede rv">"VLA" = Vision-Language-Action: a robot that <b>sees</b>, <b>understands an instruction</b>, and <b>acts</b>. Here's how far ours actually goes — and where we draw the honesty line.</p>
+
+  <h2 class="rv">The three letters, scored honestly</h2>
+  <div class="tw rv"><table>
+    <thead><tr><th>Letter</th><th>In a real VLA</th><th>In our project</th></tr></thead>
+    <tbody>
+      <tr><td><b>A — Action</b></td><td>a learned control policy</td><td><span class="badge b-done">real</span> PPO locomotion, benchmarked</td></tr>
+      <tr><td><b>V — Vision</b></td><td>a camera→image encoder</td><td><span class="badge b-prog">runs</span> head camera + CNN, smoke-tested only</td></tr>
+      <tr><td><b>L — Language</b></td><td>a learned text encoder</td><td><span class="badge b-prog">being turned on</span> (see below)</td></tr>
+    </tbody>
+  </table></div>
+
+  <h2 class="rv">Language: from "fake" to "on"</h2>
+  <p class="rv">The first version fed the policy a <b>fixed dummy code</b> for the instruction — so the robot literally couldn't tell commands apart. That's honest wiring, not a working language model. We're flipping it on with two changes:</p>
+  <ol class="rv">
+    <li><b>Randomize the command each episode</b> (e.g. <code>walk forward</code>, <code>turn left</code>, <code>stand still</code>, <code>walk fast</code>…).</li>
+    <li><b>Add a reward that depends on the command</b> — track the target speed/turn it maps to. <i>This</i> is the actual on-switch: now the robot has a reason and a way to listen.</li>
+  </ol>
+  <div class="callout win rv"><b>Already verified (on CPU):</b> distinct commands → distinct velocity targets → the tracking reward separates them cleanly (e.g. "stand still" → reward peaks at zero speed, "fast" &gt; "slow" &gt; "stand"). On GPU we train it and produce a <b>behavior-separation plot</b> as proof.</div>
+
+  <h2 class="rv">Vision: the camera, and the bug we beat</h2>
+  <p class="rv">We mount a camera on the G1's head, normalize the pixels, and feed a small CNN (the classic 3-layer "Nature-CNN") shared by the actor and critic. The hard part wasn't the network — it was a <b>graphics driver bug</b>:</p>
+  <div class="callout warn rv"><b>The Vulkan blocker (solved).</b> Camera rendering needs Vulkan; the container could compute (CUDA worked) but couldn't render (<code>libGLX_nvidia.so.0</code> missing). Fix: run headless with Isaac Lab's <b>rendering kit</b> + <code>--enable_cameras</code> at low resolution. Camera training then reached PPO and scaled to 2048 envs. <b>Lesson:</b> "nvidia-smi works" ≠ "rendering works" — compute and graphics are provisioned separately.</div>
+  <p class="rv"><b>Honest status:</b> the vision pipeline <i>runs</i>, but only at smoke scale — no long vision run or saved vision policy yet.</p>
+
+  <div class="callout iv rv"><b>Interview answer — "is it really a VLA?"</b><br>"It's a VLA-shaped scaffold and I'm precise about it: Action is real benchmarked PPO; Vision is a real camera+CNN pipeline that runs but is only smoke-tested; Language was a fixed placeholder embedding that I'm turning on by randomizing the command per episode and adding a command-tracking reward, with a behavior-separation plot as the acceptance test. The clean interface means I can swap the hash embedding for a frozen CLIP encoder without touching the env."</div>
+
+  <div id="pager"></div>
+  <footer>Chapter 7 of 12 · Humanoid RL Interactive Docs</footer>
+</main></div>
+<script src="../assets/site.js"></script>
+<script>HSite.init('language_vision');document.getElementById('pager').innerHTML=HSite.pager('../','language_vision');</script>
+</body></html>

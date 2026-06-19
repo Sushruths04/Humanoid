@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>11 · Roadmap — Humanoid RL</title>
+<link rel="stylesheet" href="../assets/style.css"></head>
+<body>
+<div class="layout"><aside id="sidebar"></aside><main>
+  <span class="eyebrow rv">CHAPTER 11</span>
+  <h1 class="rv">The <span class="grad-text">Roadmap</span></h1>
+  <p class="lede rv">What's genuinely done, what's honest-but-unfinished, and the exact path forward.</p>
+
+  <h2 class="rv">Where things stand</h2>
+  <div class="tw rv"><table>
+    <thead><tr><th>Capability</th><th>Status</th></tr></thead>
+    <tbody>
+      <tr><td>G1 walking (flat + rough)</td><td><span class="badge b-done">done</span></td></tr>
+      <tr><td>Robustness (terrain + randomization)</td><td><span class="badge b-done">done · 981/1000</span></td></tr>
+      <tr><td>GR00T fine-tune + eval</td><td><span class="badge b-done">done · MSE 25.9</span></td></tr>
+      <tr><td>Language conditioning</td><td><span class="badge b-prog">code ready, train on GPU</span></td></tr>
+      <tr><td>Vision (camera)</td><td><span class="badge b-prog">runs, smoke only</span></td></tr>
+      <tr><td>Wakeboarding start</td><td><span class="badge b-prog">fully coded, pre-GPU</span></td></tr>
+    </tbody>
+  </table></div>
+
+  <h2 class="rv">The next-steps ladder (locomotion → real VLA)</h2>
+  <div class="diagram rv">
+    <svg viewBox="0 0 760 250" xmlns="http://www.w3.org/2000/svg" font-family="monospace" font-size="12">
+      <g>
+      <rect x="40" y="10" width="420" height="34" rx="8" fill="rgba(70,240,168,.08)" stroke="#46f0a8"/><text x="60" y="32" fill="#fff">1 · Turn language ON (randomize cmd + reward)</text>
+      <rect x="80" y="50" width="420" height="34" rx="8" fill="#0e1626" stroke="#9b6bff"/><text x="100" y="72" fill="#fff">2 · Multi-goal grounding ("go to red / blue")</text>
+      <rect x="120" y="90" width="420" height="34" rx="8" fill="#0e1626" stroke="#9b6bff"/><text x="140" y="112" fill="#fff">3 · Sequential goals ("red then blue")</text>
+      <rect x="160" y="130" width="420" height="34" rx="8" fill="#0e1626" stroke="#9b6bff"/><text x="180" y="152" fill="#fff">4 · Obstacles + avoidance</text>
+      <rect x="200" y="170" width="420" height="34" rx="8" fill="#0e1626" stroke="#ffcb6b"/><text x="220" y="192" fill="#fff">5 · Push recovery (robustness++)</text>
+      <rect x="240" y="210" width="420" height="34" rx="8" fill="rgba(56,225,255,.08)" stroke="#38e1ff"/><text x="260" y="232" fill="#fff">6 · Vision via teacher→student distillation</text>
+      </g>
+    </svg>
+  </div>
+  <div class="callout info rv"><b>The key insight:</b> the roadmap assumed "language works", but the code fed a constant command — so <b>making language informative is the real unlock</b>, and it comes <i>before</i> vision, not after.</div>
+
+  <h2 class="rv">Wakeboarding track</h2>
+  <ol class="rv">
+    <li>GPU smoke (Day-1 checklist) → fix runtime glue.</li>
+    <li>Stage 1 discovery with the pull-speed curriculum (→ 30 km/h).</li>
+    <li>Stage 2 deployable + AMP + domain randomization.</li>
+    <li>Eval sweep + ablations + demo video.</li>
+    <li>Phase 2: the webcam coaching loop.</li>
+  </ol>
+
+  <h2 class="rv">Definition of "done" (for the portfolio)</h2>
+  <ul class="rv">
+    <li>Each task: a <b>saved checkpoint + log + eval JSON + a short video</b>, not just prose.</li>
+    <li>A results table with <b>success / fall / episode-length</b> per task.</li>
+    <li>At least one honest <b>ablation</b> (language on/off; vision vs state).</li>
+  </ul>
+
+  <div id="pager"></div>
+  <footer>Chapter 11 of 12 · Humanoid RL Interactive Docs</footer>
+</main></div>
+<script src="../assets/site.js"></script>
+<script>HSite.init('roadmap');document.getElementById('pager').innerHTML=HSite.pager('../','roadmap');</script>
+</body></html>

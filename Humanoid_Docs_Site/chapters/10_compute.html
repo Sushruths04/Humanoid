@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>10 · Compute &amp; Workflow — Humanoid RL</title>
+<link rel="stylesheet" href="../assets/style.css"></head>
+<body>
+<div class="layout"><aside id="sidebar"></aside><main>
+  <span class="eyebrow rv">CHAPTER 10</span>
+  <h1 class="rv"><span class="grad-text">Compute</span> &amp; Workflow</h1>
+  <p class="lede rv">Where the training actually runs, and how we move between machines in a single command.</p>
+
+  <h2 class="rv">The one rule</h2>
+  <div class="callout info rv"><b>Lightning = the box you <i>debug</i> on. Modal = jobs that already work.</b><br>Short + parallel + compute-only → <b>Modal</b>. Long + interactive + rendering → <b>Lightning AI</b>.</div>
+
+  <h2 class="rv">When to use which</h2>
+  <div class="tw rv"><table>
+    <thead><tr><th>Task</th><th>Platform</th><th>Why</th></tr></thead>
+    <tbody>
+      <tr><td>First GPU debug / fixing setup</td><td><b>Lightning</b></td><td>need edit→rerun in seconds, interactive</td></tr>
+      <tr><td>Short training (language, stage 1)</td><td><b>Modal</b></td><td>compute-only, scales to zero when done</td></tr>
+      <tr><td>Long training (stage 2)</td><td>either</td><td>Modal w/ resume, or Lightning to watch</td></tr>
+      <tr><td>Eval sweeps / ablations</td><td><b>Modal</b></td><td>fan out many jobs in parallel</td></tr>
+      <tr><td>Recording a video</td><td><b>Lightning</b></td><td>needs rendering (Vulkan)</td></tr>
+    </tbody>
+  </table></div>
+
+  <h2 class="rv">Two hard constraints</h2>
+  <div class="grid c2 rv">
+    <div class="card"><div class="ic">🎮</div><h3>RT-core GPUs only</h3><p class="small">Isaac Sim needs <b>L40S / L4 / A10</b>. <b>A100 / H100 won't work</b> (no RT cores) — counter-intuitive but firm.</p></div>
+    <div class="card"><div class="ic">🖼️</div><h3>Rendering ≠ compute</h3><p class="small">Cameras/video need Vulkan graphics, provisioned separately from CUDA. That path lives on Lightning.</p></div>
+  </div>
+
+  <h2 class="rv">Docker = switch machines in one command</h2>
+  <p class="rv">The whole environment lives in <b>one Docker image</b> (<code>humanoid-isaaclab</code>), used by both Modal and Lightning so they never drift. Code is <b>mounted</b> at runtime, so editing code never needs a rebuild. Moving to a fresh machine is just:</p>
+  <pre class="rv"><span class="cm"># on a new box — one pull and you're ready</span>
+docker login ghcr.io
+bash thesis/scripts/docker_image_portability.sh pull</pre>
+
+  <h2 class="rv">Rough time + cost intuition (on L40S)</h2>
+  <div class="tw rv"><table>
+    <thead><tr><th>Job</th><th>Est. time</th></tr></thead>
+    <tbody>
+      <tr><td>First GPU smoke + setup fixes (one-time)</td><td>½–1 day → cut to ~2–4 h with our prep</td></tr>
+      <tr><td>Language-on training</td><td>2–4 h</td></tr>
+      <tr><td>Wakeboard Stage 1</td><td>6–12 h</td></tr>
+      <tr><td>Wakeboard Stage 2</td><td>10–20 h</td></tr>
+    </tbody>
+  </table></div>
+  <p class="small rv">Modal bills per-second (great for bursty/parallel); Lightning is a persistent box (better for long interactive runs &amp; rendering).</p>
+
+  <div class="callout iv rv"><b>Interview answer — "how do you manage compute?"</b><br>"One Docker image on a registry, used by both Modal (serverless, for short/parallel compute-only jobs) and Lightning (persistent, for interactive debugging and rendering). Code is mounted so there's no rebuild loop. I'm careful to use RT-core GPUs (L40S/L4) because Isaac Sim won't run on A100/H100, and I keep the camera/render path on Lightning where graphics is available."</div>
+
+  <div id="pager"></div>
+  <footer>Chapter 10 of 12 · Humanoid RL Interactive Docs</footer>
+</main></div>
+<script src="../assets/site.js"></script>
+<script>HSite.init('compute');document.getElementById('pager').innerHTML=HSite.pager('../','compute');</script>
+</body></html>

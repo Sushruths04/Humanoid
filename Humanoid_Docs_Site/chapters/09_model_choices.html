@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>9 · Why These Choices — Humanoid RL</title>
+<link rel="stylesheet" href="../assets/style.css"></head>
+<body>
+<div class="layout"><aside id="sidebar"></aside><main>
+  <span class="eyebrow rv">CHAPTER 09</span>
+  <h1 class="rv"><span class="grad-text">Why</span> These Choices</h1>
+  <p class="lede rv">The questions interviewers love: why <i>this</i> model/method and not the trendy alternatives? Here are honest, defensible answers.</p>
+
+  <h2 class="rv">Why NVIDIA GR00T (for the foundation-model track)?</h2>
+  <ul class="rv">
+    <li><b>It's a humanoid foundation model.</b> GR00T (N1.x, ~3B params) is pre-trained on broad humanoid motion/manipulation data and <b>designed to be fine-tuned</b> to a specific robot — exactly our use case.</li>
+    <li><b>It fits the ecosystem.</b> It's NVIDIA's own model, aligned with Isaac Sim/Lab, the G1, and the GPUs we already use.</li>
+    <li><b>It's accessible.</b> Open weights on Hugging Face, a documented fine-tune + eval path — so a solo project can actually run it.</li>
+  </ul>
+
+  <h2 class="rv">Why NOT the popular alternatives?</h2>
+  <div class="tw rv"><table>
+    <thead><tr><th>Alternative</th><th>What it is</th><th>Why not here</th></tr></thead>
+    <tbody>
+      <tr><td><b>π0 (Physical Intelligence)</b></td><td>A flow-matching VLA for dexterous <b>manipulation</b></td><td>Built for tabletop arm/hand manipulation from teleop data — <b>not whole-body legged locomotion</b>, and not a sim-RL workflow. Wrong shape for "make a humanoid stand/walk".</td></tr>
+      <tr><td><b>OpenVLA</b></td><td>A 7B VLA for single-arm <b>manipulation</b> (trained on Open X-Embodiment)</td><td>It outputs 7-DoF arm actions from real-robot demos. We need 20+ DoF whole-body control learned in sim — different problem, no demo dataset.</td></tr>
+      <tr><td><b>World models (Dreamer / TD-MPC)</b></td><td>Learn a model of the world for <b>sample-efficient</b> RL</td><td>Their whole advantage is needing fewer samples. We have a <b>blisteringly fast simulator</b> (100k+ steps/s), so samples are basically free — a world model adds complexity and instability for no payoff. Model-free PPO is simpler and is the proven standard for humanoid locomotion.</td></tr>
+      <tr><td><b>End-to-end imitation only</b></td><td>Copy human/teleop demos</td><td>No large wakeboard/locomotion demo set exists, and the <b>physics of balance &amp; the rope</b> must be learned, not copied. We use imitation (AMP) only for <i>style</i>, not as the main objective.</td></tr>
+    </tbody>
+  </table></div>
+
+  <h2 class="rv">Why PPO (and not something fancier)?</h2>
+  <p class="rv">Because simulation is cheap and fast, <b>sample efficiency doesn't matter</b> — so the winning move is the <b>most stable, well-understood</b> algorithm, not the most sample-efficient one. PPO's clipped update is robust to the noisy, contact-rich rewards of locomotion, and RSL-RL runs it at huge scale on GPU. It's what essentially every state-of-the-art humanoid locomotion result uses.</p>
+
+  <h2 class="rv">Why Isaac Lab (and not MuJoCo / a custom sim)?</h2>
+  <ul class="rv">
+    <li><b>Parallelism:</b> thousands of GPU envs out of the box — the throughput that makes PPO practical.</li>
+    <li><b>Batteries included:</b> a ready G1 model, manager-based rewards/observations, domain-randomization tools, and a clean RSL-RL bridge.</li>
+    <li><b>Sim-to-real track record:</b> the recent humanoid locomotion papers (HumanUP, Booster Gym, Humanoid-Gym) are built on this exact lineage.</li>
+  </ul>
+
+  <div class="callout iv rv"><b>Interview answer — "why GR00T and not π0 / OpenVLA / a world model?"</b><br>"Those are excellent but solve a different problem: π0 and OpenVLA are manipulation VLAs trained on real-robot demos, not whole-body legged control in sim. World models buy sample efficiency, which I don't need because Isaac Lab gives me 100k+ steps/s — so model-free PPO is simpler and the proven standard. GR00T is the natural fit for the foundation-model track because it's a humanoid model designed for fine-tuning and it's open and integrated with the NVIDIA stack I'm already on. I use imitation (AMP) only for motion style, not as the primary objective."</div>
+
+  <div id="pager"></div>
+  <footer>Chapter 9 of 12 · Humanoid RL Interactive Docs</footer>
+</main></div>
+<script src="../assets/site.js"></script>
+<script>HSite.init('model_choices');document.getElementById('pager').innerHTML=HSite.pager('../','model_choices');</script>
+</body></html>
