@@ -1,0 +1,33 @@
+# Lightning AI / local-GPU runner. `docker compose run wakeboard <cmd>`.
+# The repo is mounted, so code edits take effect with no rebuild.
+services:
+  wakeboard:
+    image: ghcr.io/sushruths04/wakeboard-isaaclab:latest
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    runtime: nvidia
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu, compute, utility, graphics, video]
+    environment:
+      - NVIDIA_DRIVER_CAPABILITIES=all
+      - NVIDIA_VISIBLE_DEVICES=all
+      - WANDB_API_KEY=${WANDB_API_KEY:-}
+      - HF_TOKEN=${HF_TOKEN:-}
+    volumes:
+      - ../../wakeboarding-experiment:/workspace/wakeboarding-experiment   # code (live)
+      - wb-ckpts:/workspace/wakeboarding-experiment/checkpoints            # persist ckpts
+      - hf-cache:/root/.cache/huggingface
+    working_dir: /workspace/wakeboarding-experiment
+    shm_size: "8gb"
+    stdin_open: true
+    tty: true
+
+volumes:
+  wb-ckpts:
+  hf-cache:
