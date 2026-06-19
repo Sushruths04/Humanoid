@@ -1,5 +1,20 @@
 # Vision VLA Diagnostics: Vulkan/Graphics Blocker
 
+> ## ✅ RESOLVED
+>
+> **Status:** Vision-VLA is unblocked and runs end-to-end. State marker `thesis/state/30_vision_vla.done` is present, and `thesis/PROGRESS/step-logs/STEP-30-vision-vla.md` records camera-enabled training reaching PPO and scaling **32 → 256 → 1024 → 1536 → 2048 envs**.
+>
+> **Fix:** instead of fighting the live-GUI Vulkan path, run headless with the Isaac Lab **rendering kit** and explicit camera flags:
+> - `--experience .../apps/isaaclab.python.headless.rendering.kit`
+> - `--enable_cameras`
+> - small camera resolution to start (`VLA_CAMERA_HEIGHT=32 VLA_CAMERA_WIDTH=32`)
+>
+> Reproduce via `thesis/scripts/30_vision_vla.sh` (smoke) or `thesis/scripts/31_vision_vla_cnn.sh` (CNN, 128×128). Inspect a rollout with `thesis/scripts/32_vision_vla_play.sh`.
+>
+> **Remaining gap:** only the vision *smoke* reached PPO; no long vision run / saved vision checkpoint is captured in this repo yet (large outputs go to Hugging Face per the workflow). The original diagnostics below are retained for history.
+
+---
+
 While attempting to initiate Step 30 (Vision VLA), we encountered a persistent system-level blocker on the Lightning AI L40S instance.
 
 ## Error Details
