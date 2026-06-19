@@ -37,9 +37,10 @@ modal run modal_app.py --action eval --checkpoint /ckpts/wakeboard_stage1/model_
 
 ### Lightning AI (debug + long + render)
 ```bash
-# one-time on a fresh machine:
+# one-time on a fresh machine (reuse your EXISTING image + portability helper):
 docker login ghcr.io
-./docker/run.sh pull                 # pull the prebuilt image (fast machine switch)
+bash thesis/scripts/docker_image_portability.sh pull   # pull humanoid-isaaclab (fast switch)
+cd wakeboarding-experiment
 # debug interactively (fix VERIFY markers):
 ./docker/run.sh shell
 #   (inside) bash scripts/00_smoke.sh
@@ -49,24 +50,25 @@ docker login ghcr.io
 CKPT=checkpoints/.../model_latest.pt bash scripts/40_record_video.sh
 ```
 
-## Docker = fast machine switching (build once, run anywhere)
-The whole point: **one image** (`ghcr.io/sushruths04/wakeboard-isaaclab:latest`) used by **both** Modal and Lightning. Deps are baked in (slow part, cached); **code is mounted at runtime**, so editing code never triggers a rebuild.
+## Docker = fast machine switching (reuse the ONE existing image)
+The wakeboarding task is the **same system** (Isaac Lab + G1 + RSL-RL) as the rest of the
+Humanoid repo, so it reuses the **existing** image `ghcr.io/sushruths04/humanoid-isaaclab:latest`
+— no second image. Image build + push/pull/save/load is already handled by your existing
+helper; do not duplicate it:
 
-**Set it up once:**
 ```bash
-./docker/run.sh build      # layer rsl-rl + deps on top of your humanoid-isaaclab base
-docker login ghcr.io
-./docker/run.sh push       # -> GHCR
+# push from the machine where it works:
+bash thesis/scripts/docker_image_portability.sh push
+# pull on a new machine (the switch — one command):
+bash thesis/scripts/docker_image_portability.sh pull
+# tarball fallback if no registry:
+bash thesis/scripts/docker_image_portability.sh save   # then ... load
 ```
-**On any new Lightning machine (the switch):**
-```bash
-docker login ghcr.io
-./docker/run.sh pull       # 1 command, you're ready
-./docker/run.sh shell
-```
-**No registry? tarball fallback:** `./docker/run.sh save` → copy `wakeboard-image.tar` → `./docker/run.sh load`.
-
-Modal uses the **same** image automatically (`modal.Image.from_registry(...)` in `modal_app.py`), so Modal and Lightning never drift apart.
+Code is **mounted** at runtime (docker-compose), so editing code never needs a rebuild.
+Modal uses the **same** image automatically (`modal.Image.from_registry(...)` in
+`modal_app.py`), so Modal and Lightning never drift apart. The only thing the wakeboarding
+task may add on top is `rsl-rl` — and only if it's missing from the base (see
+`docker/Dockerfile`, which is OPTIONAL).
 
 ## Cost intuition (not exact prices)
 - **Modal** bills per-second and scales to zero → cheapest for **bursty/short/parallel** work and for jobs you don't watch.

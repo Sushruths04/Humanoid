@@ -59,4 +59,5 @@ def make_board_cfg(p: BoardParams):
 
 # Foot->board binding: implemented at env-build time. Preferred approach is a fixed
 # joint per foot. See wakeboard_start_cfg.py::_bind_feet_to_board for the wiring point.
-FOOT_BODY_NAMES = ("left_ankle_roll_link", "right_ankle_roll_link")  # VERIFY G1 link names
+# Resolved from IsaacLab G1_CFG (g1.usd, 23-DoF): the foot bodies are the ankle-roll links.
+FOOT_BODY_NAMES = ("left_ankle_roll_link", "right_ankle_roll_link")

@@ -11,7 +11,8 @@ tags: [moc, index, wakeboarding]
 - **Compute:** Modal (main, L40S) / Lightning AI (fallback) — see project README & PLAN §8
 - **Best checkpoint:** _none yet (no GPU run)_
 - **Best success @30 km/h:** _TBD_
-- **Next action:** run `scripts/00_smoke.sh` on GPU, fix `# VERIFY` markers, then `10_train_stage1.sh`
+- **Next action:** follow `../PRE_GPU_CHECKLIST.md` on a Lightning box (G1 joint/link names already pre-filled → fewer markers to fix), then `10_train_stage1.sh`
+- **Pre-GPU prep done:** G1 names resolved from IsaacLab; Day-1 checklist written; Docker reuses existing `humanoid-isaaclab` image
 - **Last updated:** 2026-06-19
 
 ## 🗺️ Map of Content
