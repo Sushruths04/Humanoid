@@ -1,0 +1,70 @@
+# Stage I — Discovery (find ANY way up under the pull). Weak regularization.
+# See PLAN.md §5 (rewards), §6 (curriculum), §8 (training).
+seed: 0
+num_envs: 4096
+max_iterations: 5000
+save_interval: 100
+experiment_name: wakeboard_stage1
+
+# --- rope / pull (PLAN §3.3) ---
+rope:
+  model: "spring"          # "spring" (velocity-target, default) | "force"
+  v_pull_kmh: 10.0         # START low; curriculum ramps to 30 (PLAN §6.1)
+  k_p: 800.0
+  k_d: 50.0
+  f_max: 600.0             # N, cap
+
+# --- pull-speed curriculum (PLAN §6.1) ---
+curriculum:
+  enabled: true
+  v_pull_levels_kmh: [10.0, 15.0, 20.0, 25.0, 30.0]
+  promote_success_rate: 0.60   # advance level when rolling success >= this
+  window: 200                  # iters of rolling stats
+
+# --- board / surface (PLAN §3.2) ---
+board:
+  length: 1.4
+  width: 0.4
+  mass: 3.0
+  sand_friction: 0.4
+
+# --- domain randomization (Stage I: minimal) ---
+dr:
+  enabled: false
+
+# --- reward weights (PLAN §5). Stage I: strong task, weak penalties ---
+rewards:
+  pelvis_height: 2.0
+  height_progress: 1.5
+  uprightness: 2.0
+  survival: 0.5
+  forward_glide: 1.0
+  success_bonus: 50.0
+  board_positive_angle: 1.5
+  arms_straight: 1.0
+  handle_at_hips: 0.8
+  lean_back_moderate: 0.7
+  knee_bend_maintained: 0.8
+  amp_style: 0.0           # off in Stage I
+  pen_stand_too_fast: -1.0
+  pen_pull_against_rope: -1.0
+  pen_torque: -1.0e-4
+  pen_action_rate: -0.01
+  pen_action_accel: -1.0e-3
+  pen_dof_pos_limits: -5.0
+  pen_fall: -20.0
+
+# --- PPO (RSL-RL) (PLAN §8) ---
+ppo:
+  policy_hidden: [512, 256, 128]
+  activation: elu
+  clip_param: 0.2
+  entropy_coef: 0.005
+  learning_rate: 5.0e-4
+  schedule: adaptive
+  desired_kl: 0.01
+  gamma: 0.99
+  lam: 0.95
+  num_learning_epochs: 5
+  num_mini_batches: 4
+  num_steps_per_env: 24

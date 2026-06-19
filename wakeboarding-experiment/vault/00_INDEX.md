@@ -7,9 +7,11 @@ tags: [moc, index, wakeboarding]
 > The single hub for this project. Status badges below are updated by whoever runs experiments (see [[DOC_PROTOCOL]] in the project root).
 
 ## 📍 Status (update me)
-- **Stage:** 🟡 PLAN written — no code yet
-- **Best checkpoint:** _none_
+- **Stage:** 🟢 **Full codebase written** (pure-PyTorch core CPU-verified; Isaac-Lab parts untested on GPU) — ready for a GPU smoke pass
+- **Compute:** Modal (main, L40S) / Lightning AI (fallback) — see project README & PLAN §8
+- **Best checkpoint:** _none yet (no GPU run)_
 - **Best success @30 km/h:** _TBD_
+- **Next action:** run `scripts/00_smoke.sh` on GPU, fix `# VERIFY` markers, then `10_train_stage1.sh`
 - **Last updated:** 2026-06-19
 
 ## 🗺️ Map of Content

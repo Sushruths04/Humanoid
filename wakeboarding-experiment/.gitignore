@@ -1,0 +1,7 @@
+checkpoints/
+runs/
+results/*.json
+__pycache__/
+*.pyc
+wandb/
+data/reference_motions/*.npz
