@@ -34,5 +34,11 @@ tags: [moc, index, wakeboarding]
 ## 🎯 The goal in one line
 Teach a G1 humanoid the biomechanics of a wakeboard deep-water start (crouch → stable ride under a 30 km/h pull), with results polished enough to show recruiters.
 
+## 💻 Compute
+**Modal vs Lightning decision rule + Docker machine-switching:** `../COMPUTE_GUIDE.md`.
+- Quick rule: *short + parallel + compute-only → **Modal**. long + interactive + rendering → **Lightning**.*
+- First GPU smoke / fixing `# VERIFY` markers → **Lightning** (interactive). Then push image, run on Modal.
+- One image (`ghcr.io/sushruths04/wakeboard-isaaclab`) for both → `./docker/run.sh pull` to switch machines.
+
 ## 🔗 Plan
 Full executor plan: `../PLAN.md` (sections referenced throughout these notes).
