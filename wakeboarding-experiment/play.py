@@ -44,46 +44,9 @@ def main():
     runner.load(args.checkpoint)
     policy = runner.get_inference_policy(device=str(env.device))
 
-    # Use omni.replicator or viewport for frame capture
-    from omni.isaac.core import World
-    from omni.isaac.core.utils.viewport import set_camera_view
-    import omni.kit
-
-    stage = omni.usd.get_context().get_stage()
-    viewport = omni.kit.viewport.utility.get_active_viewport()
-    if viewport is None:
-        print("[play] WARNING: no viewport available, falling back to numpy log-only mode")
-        _run_without_video(env, policy, args)
-        return
-
-    frame_dir = tempfile.mkdtemp(prefix="wakeboard_frames_")
-    frame_idx = 0
-    collected = 0
-
-    obs, _ = env.reset()
-    for step in range(800):
-        with torch.no_grad():
-            act = policy(obs)
-        obs, _, dones, _ = env.step(act)
-
-        # Capture viewport frame
-        rt = viewport.get_render_product()
-        if rt is not None:
-            buffer = omni.kit.app.get_app().get_viewport().get_float_texel("rgb")
-            # alternative: use get_image
-            pass
-
-        done_idx = dones.nonzero().flatten()
-        for i in done_idx.tolist():
-            collected += 1
-            if collected >= args.episodes:
-                break
-        if collected >= args.episodes:
-            break
-
-    # Fallback: record observations as numpy arrays
-    print(f"[play] Recording complete. Attempting ffmpeg encode...")
-    _encode_frames(frame_dir, args.out)
+    # Video capture not available on headless L4 (no GLFW/Vulkan display)
+    # Use trace mode to log per-step physics data
+    _run_without_video(env, policy, args)
 
     env.close()
     simulation_app.close()
