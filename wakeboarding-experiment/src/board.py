@@ -53,7 +53,7 @@ def make_board_cfg(p: BoardParams):
             ),
             visual_material=sim_utils.PreviewSurfaceCfg(diffuse_color=(0.9, 0.7, 0.1)),
         ),
-        init_state=RigidObjectCfg.InitialStateCfg(pos=(0.0, 0.0, 0.05)),
+        init_state=RigidObjectCfg.InitialStateCfg(pos=(0.0, 0.0, p.thickness * 0.5)),
     )
 
 

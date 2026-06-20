@@ -206,6 +206,7 @@ if ISAACLAB_AVAILABLE:
             self._init_buffers(num_envs, device)
             super().__init__(cfg, **kwargs)
             self._resolve_g1_indices()
+            self._bind_feet_to_board()
 
         def _resolve_g1_indices(self):
             """Cache joint/body indices once (names from IsaacLab G1_CFG)."""
@@ -218,6 +219,39 @@ if ISAACLAB_AVAILABLE:
                 # fallback: any palm/hand link
                 self._hand_body_ids = robot.find_bodies([".*_palm_link"])[0]
             self._torso_body_id = robot.find_bodies(G1_TORSO_LINK)[0]
+
+        def _bind_feet_to_board(self):
+            """Create fixed joints from both ankle-roll links to the board in each env.
+
+            The board is spawned with its center at the ankle-roll link height, so the
+            joint frames are coincident at reset and PhysX does not snap the bodies.
+            """
+            from pxr import Gf, Sdf, UsdGeom, UsdPhysics
+            import omni.usd
+
+            stage = omni.usd.get_context().get_stage()
+            created = 0
+            for env_id in range(self.num_envs):
+                board_path = f"/World/envs/env_{env_id}/Board"
+                board_prim = stage.GetPrimAtPath(board_path)
+                board_xf = UsdGeom.Xformable(board_prim).ComputeLocalToWorldTransform(0)
+                board_inv = board_xf.GetInverse()
+                for foot_name in G1_FOOT_LINKS:
+                    foot_path = f"/World/envs/env_{env_id}/Robot/{foot_name}"
+                    foot_prim = stage.GetPrimAtPath(foot_path)
+                    foot_xf = UsdGeom.Xformable(foot_prim).ComputeLocalToWorldTransform(0)
+                    foot_world = foot_xf.ExtractTranslation()
+                    board_local = board_inv.Transform(foot_world)
+                    joint_path = f"{board_path}/{foot_name}_fixed_joint"
+                    joint = UsdPhysics.FixedJoint.Define(stage, joint_path)
+                    joint.CreateBody0Rel().SetTargets([Sdf.Path(foot_path)])
+                    joint.CreateBody1Rel().SetTargets([Sdf.Path(board_path)])
+                    joint.CreateLocalPos0Attr().Set(Gf.Vec3f(0.0, 0.0, 0.0))
+                    joint.CreateLocalPos1Attr().Set(Gf.Vec3f(float(board_local[0]), float(board_local[1]), float(board_local[2])))
+                    joint.CreateLocalRot0Attr().Set(Gf.Quatf(1.0, 0.0, 0.0, 0.0))
+                    joint.CreateLocalRot1Attr().Set(Gf.Quatf(1.0, 0.0, 0.0, 0.0))
+                    created += 1
+            print(f"[wakeboard] board fixed joints configured: count={created}", flush=True)
 
         def _init_buffers(self, num_envs=None, device=None):
             num_envs = self.num_envs if num_envs is None else num_envs
