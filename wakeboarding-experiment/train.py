@@ -44,7 +44,8 @@ def main():
 
     # 2) now safe to import env + RL
     import torch
-    from rsl_rl.runners import OnPolicyRunner          # VERIFY import path
+    from rsl_rl.runners import OnPolicyRunner
+    from isaaclab_rl.rsl_rl import RslRlVecEnvWrapper   # adapts ManagerBasedRLEnv -> rsl_rl VecEnv
     from src.tasks.wakeboard_start_cfg import WakeboardStartEnv, WakeboardStartEnvCfg, T_SUCCESS
     from src.curriculum import PullSpeedCurriculum
     from src.rope_model import kmh_to_ms
@@ -66,10 +67,11 @@ def main():
         enabled=cur_cfg.get("enabled", False),
     )
 
-    # 5) RSL-RL runner
+    # 5) RSL-RL runner (wrap env to the rsl_rl VecEnv interface; keep raw `env` for rope/buffers)
     runner_cfg = build_rsl_rl_cfg(cfg)
     exp_dir = os.path.join(args.experiment_dir, cfg["experiment_name"])
-    runner = OnPolicyRunner(env, runner_cfg, log_dir=exp_dir, device=str(env.device))
+    rl_env = RslRlVecEnvWrapper(env)
+    runner = OnPolicyRunner(rl_env, runner_cfg, log_dir=exp_dir, device=str(env.device))
     if args.resume:
         runner.load(args.resume)
 
@@ -99,23 +101,56 @@ def apply_reward_weights(env, weights: dict):
 
 
 def build_rsl_rl_cfg(cfg: dict) -> dict:
+    # Use Isaac Lab's own rsl_rl config dataclasses so the emitted dict matches the installed
+    # rsl_rl schema. This image is rsl-rl >= 4.0: the policy is split into separate actor/critic
+    # RslRlMLPModelCfg models with an obs_groups map (see anymal_d/agents/rsl_rl_ppo_cfg.py).
+    # Imported here (not at module top): needs the launched app.
+    from isaaclab_rl.rsl_rl import (
+        RslRlMLPModelCfg,
+        RslRlOnPolicyRunnerCfg,
+        RslRlPpoAlgorithmCfg,
+    )
+
     ppo = cfg["ppo"]
-    return {
-        "num_steps_per_env": ppo["num_steps_per_env"],
-        "max_iterations": cfg["max_iterations"],
-        "save_interval": cfg.get("save_interval", 100),
-        "experiment_name": cfg["experiment_name"],
-        "policy": {"class_name": "ActorCritic",
-                   "actor_hidden_dims": ppo["policy_hidden"],
-                   "critic_hidden_dims": ppo["policy_hidden"],
-                   "activation": ppo["activation"]},
-        "algorithm": {"class_name": "PPO",
-                      "clip_param": ppo["clip_param"], "entropy_coef": ppo["entropy_coef"],
-                      "learning_rate": ppo["learning_rate"], "schedule": ppo["schedule"],
-                      "desired_kl": ppo["desired_kl"], "gamma": ppo["gamma"],
-                      "lam": ppo["lam"], "num_learning_epochs": ppo["num_learning_epochs"],
-                      "num_mini_batches": ppo["num_mini_batches"]},
-    }
+    hidden = list(ppo["policy_hidden"])
+    runner = RslRlOnPolicyRunnerCfg(
+        num_steps_per_env=ppo["num_steps_per_env"],
+        max_iterations=cfg["max_iterations"],
+        save_interval=cfg.get("save_interval", 100),
+        experiment_name=cfg["experiment_name"],
+        obs_groups={"actor": ["policy"], "critic": ["policy"]},
+        actor=RslRlMLPModelCfg(
+            hidden_dims=hidden,
+            activation=ppo["activation"],
+            distribution_cfg=RslRlMLPModelCfg.GaussianDistributionCfg(init_std=1.0),
+        ),
+        critic=RslRlMLPModelCfg(
+            hidden_dims=hidden,
+            activation=ppo["activation"],
+        ),
+        algorithm=RslRlPpoAlgorithmCfg(
+            value_loss_coef=1.0,
+            use_clipped_value_loss=True,
+            clip_param=ppo["clip_param"],
+            entropy_coef=ppo["entropy_coef"],
+            num_learning_epochs=ppo["num_learning_epochs"],
+            num_mini_batches=ppo["num_mini_batches"],
+            learning_rate=ppo["learning_rate"],
+            schedule=ppo["schedule"],
+            gamma=ppo["gamma"],
+            lam=ppo["lam"],
+            desired_kl=ppo["desired_kl"],
+            max_grad_norm=1.0,
+        ),
+    )
+    rl_cfg = runner.to_dict()
+    # rsl-rl >= 5.0 MLPModel uses distribution_cfg only; to_dict() still emits the deprecated
+    # scalar fields, which MLPModel.__init__ rejects as unexpected kwargs. Strip them.
+    for grp in ("actor", "critic"):
+        for dep in ("stochastic", "init_noise_std", "noise_std_type", "state_dependent_std"):
+            if isinstance(rl_cfg.get(grp), dict):
+                rl_cfg[grp].pop(dep, None)
+    return rl_cfg
 
 
 if __name__ == "__main__":

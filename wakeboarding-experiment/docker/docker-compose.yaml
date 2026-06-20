@@ -8,6 +8,15 @@ services:
     # build:
     #   context: ..
     #   dockerfile: docker/Dockerfile
+    # The image's default ENTRYPOINT is /isaac-sim/runheadless.sh (launches the STREAMING app and
+    # swallows our command). Override it: make bare `python` the kit python3, export the Isaac env
+    # vars that AppLauncher needs (EXP_PATH, ISAAC_PATH), source the python env (PYTHONPATH/LD_LIB),
+    # then exec our actual command. ($$@ -> $@ at runtime so docker-compose doesn't interpolate it.)
+    entrypoint:
+      - /bin/bash
+      - -c
+      - 'ln -sf /isaac-sim/kit/python/bin/python3 /usr/local/bin/python; export ISAAC_PATH=/isaac-sim EXP_PATH=/isaac-sim/apps CARB_APP_PATH=/isaac-sim/kit LD_PRELOAD=/isaac-sim/kit/libcarb.so RESOURCE_NAME=IsaacSim; source /isaac-sim/setup_python_env.sh; exec "$$@"'
+      - --
     runtime: nvidia
     deploy:
       resources:
@@ -22,6 +31,7 @@ services:
       # Isaac Sim refuses to start without these — confirmed by the import hitting the EULA gate.
       - ACCEPT_EULA=Y
       - OMNI_KIT_ACCEPT_EULA=YES
+      - PYTHONUNBUFFERED=1          # stream train.py stdout live (no buffered silence)
       - WANDB_API_KEY=${WANDB_API_KEY:-}
       - HF_TOKEN=${HF_TOKEN:-}
     volumes:

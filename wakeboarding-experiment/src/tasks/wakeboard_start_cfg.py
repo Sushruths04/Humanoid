@@ -51,7 +51,7 @@ G1_ELBOW_JOINTS = ["left_elbow_pitch_joint", "right_elbow_pitch_joint"]
 G1_KNEE_JOINTS = ["left_knee_joint", "right_knee_joint"]
 G1_FOOT_LINKS = ["left_ankle_roll_link", "right_ankle_roll_link"]
 G1_TORSO_LINK = ["torso_link"]                       # VERIFY: torso_link vs pelvis on g1.usd
-G1_HAND_LINKS = ["left_rubber_hand", "right_rubber_hand"]  # VERIFY gripper link name on g1.usd
+G1_HAND_LINKS = ["left_palm_link", "right_palm_link"]  # verified against live g1.usd body_names
 
 
 # ============================================================ observations
@@ -72,7 +72,11 @@ def _v_pull_obs(env):
 
 
 def _phase_obs(env):
-    return torch.clamp(env.episode_length_buf.float() * env.step_dt / T_SUCCESS, 0, 1).unsqueeze(-1)
+    # episode_length_buf doesn't exist yet during the manager dim-resolution pass.
+    elb = getattr(env, "episode_length_buf", None)
+    if elb is None:
+        return torch.zeros(env.num_envs, 1, device=env.device)
+    return torch.clamp(elb.float() * env.step_dt / T_SUCCESS, 0, 1).unsqueeze(-1)
 
 
 if ISAACLAB_AVAILABLE:
@@ -115,6 +119,15 @@ if ISAACLAB_AVAILABLE:
     @configclass
     class ObservationsCfg:
         policy: PolicyObsCfg = PolicyObsCfg()
+
+    # -------------------------------------------------- actions
+    @configclass
+    class ActionsCfg:
+        # joint-position control over ALL G1 joints (arms actuated, per task intent).
+        # Mirrors the stock G1 velocity config (scale 0.5, default offset).
+        joint_pos = loco_mdp.JointPositionActionCfg(
+            asset_name="robot", joint_names=[".*"], scale=0.5, use_default_offset=True
+        )
 
     # -------------------------------------------------- rewards (weights set from YAML)
     @configclass
@@ -161,6 +174,7 @@ if ISAACLAB_AVAILABLE:
     class WakeboardStartEnvCfg(ManagerBasedRLEnvCfg):
         scene: WakeboardSceneCfg = WakeboardSceneCfg(num_envs=4096, env_spacing=4.0)
         observations: ObservationsCfg = ObservationsCfg()
+        actions: ActionsCfg = ActionsCfg()
         rewards: RewardsCfg = RewardsCfg()
         terminations: TerminationsCfg = TerminationsCfg()
         events: EventsCfg = EventsCfg()
@@ -183,11 +197,15 @@ if ISAACLAB_AVAILABLE:
         cfg: WakeboardStartEnvCfg
 
         def __init__(self, cfg, **kwargs):
-            super().__init__(cfg, **kwargs)
-            self.rope = RopeModel(self.num_envs, self.device, model="spring", v_pull_kmh=10.0)
+            # Observation terms are evaluated once during super().__init__() (the manager
+            # dim-resolution pass), so the custom buffers + rope they read must exist FIRST.
+            num_envs = cfg.scene.num_envs
+            device = getattr(cfg.sim, "device", None) or "cuda:0"
             self._t_success = T_SUCCESS
+            self.rope = RopeModel(num_envs, device, model="spring", v_pull_kmh=10.0)
+            self._init_buffers(num_envs, device)
+            super().__init__(cfg, **kwargs)
             self._resolve_g1_indices()
-            self._init_buffers()
 
         def _resolve_g1_indices(self):
             """Cache joint/body indices once (names from IsaacLab G1_CFG)."""
@@ -197,24 +215,26 @@ if ISAACLAB_AVAILABLE:
             try:
                 self._hand_body_ids = robot.find_bodies(G1_HAND_LINKS)[0]
             except Exception:
-                # fallback: wrist links if g1.usd uses a different gripper link name
-                self._hand_body_ids = robot.find_bodies([".*_wrist_yaw_link"])[0]
+                # fallback: any palm/hand link
+                self._hand_body_ids = robot.find_bodies([".*_palm_link"])[0]
             self._torso_body_id = robot.find_bodies(G1_TORSO_LINK)[0]
 
-        def _init_buffers(self):
-            z = lambda *s: torch.zeros(*s, device=self.device)
-            self._board_pitch = z(self.num_envs)
-            self._board_lin_vel = z(self.num_envs, 3)
-            self._elbow_flexion = z(self.num_envs)
-            self._knee_flexion = z(self.num_envs)
-            self._torso_back_lean = z(self.num_envs)
-            self._handle_pos = z(self.num_envs, 3)
-            self._hip_target_pos = z(self.num_envs, 3)
-            self._robot_root_pos = z(self.num_envs, 3)
-            self._rope_force = z(self.num_envs, 3)
-            self._success_event = torch.zeros(self.num_envs, dtype=torch.bool, device=self.device)
-            self._fall_event = torch.zeros(self.num_envs, dtype=torch.bool, device=self.device)
-            self._stable_time = z(self.num_envs)
+        def _init_buffers(self, num_envs=None, device=None):
+            num_envs = self.num_envs if num_envs is None else num_envs
+            device = self.device if device is None else device
+            z = lambda *s: torch.zeros(*s, device=device)
+            self._board_pitch = z(num_envs)
+            self._board_lin_vel = z(num_envs, 3)
+            self._elbow_flexion = z(num_envs)
+            self._knee_flexion = z(num_envs)
+            self._torso_back_lean = z(num_envs)
+            self._handle_pos = z(num_envs, 3)
+            self._hip_target_pos = z(num_envs, 3)
+            self._robot_root_pos = z(num_envs, 3)
+            self._rope_force = z(num_envs, 3)
+            self._success_event = torch.zeros(num_envs, dtype=torch.bool, device=device)
+            self._fall_event = torch.zeros(num_envs, dtype=torch.bool, device=device)
+            self._stable_time = z(num_envs)
 
         # --- core hook: apply rope force + refresh buffers every physics decimation ---
         def _pre_physics_step(self, actions):
