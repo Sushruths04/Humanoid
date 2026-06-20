@@ -397,7 +397,8 @@ if ISAACLAB_AVAILABLE:
             # handle = midpoint of the two hand bodies; torso back-lean = torso pitch
             hand_pos = torch.nan_to_num(d.body_pos_w[:, self._hand_body_ids], nan=0.0)
             self._handle_pos = hand_pos.mean(dim=1)
-            torso_quat = torch.nan_to_num(d.body_quat_w[:, self._torso_body_id[0]], nan=torch.tensor([1.0, 0.0, 0.0, 0.0], device=self.device))
+            raw_torso_q = d.body_quat_w[:, self._torso_body_id[0]]
+            torso_quat = torch.where(torch.isnan(raw_torso_q).any(dim=-1, keepdim=True), torch.tensor([1.0, 0.0, 0.0, 0.0], device=self.device), raw_torso_q)
             self._torso_back_lean = _quat_pitch(torso_quat).abs()
             self._hip_target_pos = self._robot_root_pos + torch.tensor(
                 [0.15, 0.0, 0.0], device=self.device)
