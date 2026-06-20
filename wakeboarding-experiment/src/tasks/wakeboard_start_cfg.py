@@ -164,10 +164,47 @@ if ISAACLAB_AVAILABLE:
         fell = DoneTerm(func=_fell_over)
         # VERIFY: add illegal-contact term for torso/head/knee using ContactSensor.
 
+    def _reset_to_cannonball(env, env_ids):
+        """Reset to crouched 'cannonball' wakeboard-start pose.
+
+        Deep hip/knee flex, torso reclined, arms forward -- the deep-water start.
+        """
+        robot = env.scene["robot"]
+
+        # Start from default root state and apply env origins
+        default_root_state = robot.data.default_root_state[env_ids].clone()
+        default_root_state[:, 0:3] += env.scene.env_origins[env_ids]
+        # Override z to crouched height (lower CG -- crouched, not standing at 0.74m)
+        default_root_state[:, 2] = env.scene.env_origins[env_ids, 2] + 0.50
+        # Zero velocities
+        default_root_state[:, 7:] = 0.0
+        robot.write_root_pose_to_sim(default_root_state[:, :7], env_ids=env_ids)
+        robot.write_root_velocity_to_sim(default_root_state[:, 7:], env_ids=env_ids)
+
+        # Set cannonball joint positions
+        joint_pos = robot.data.default_joint_pos[env_ids].clone()
+        joint_vel = torch.zeros_like(joint_pos)
+
+        joint_names = robot.joint_names
+        for i, name in enumerate(joint_names):
+            if "hip_pitch" in name:
+                joint_pos[:, i] = -0.8       # deep hip flexion
+            elif "knee" in name:
+                joint_pos[:, i] = 1.4        # deep knee flexion
+            elif "ankle_pitch" in name:
+                joint_pos[:, i] = 0.3        # feet relatively flat
+            elif name == "torso_joint":
+                joint_pos[:, i] = -0.3       # torso reclined back
+            elif "shoulder_pitch" in name:
+                joint_pos[:, i] = 0.9        # arms forward toward handle
+            elif "elbow_pitch" in name:
+                joint_pos[:, i] = 1.0        # elbows bent
+
+        robot.write_joint_state_to_sim(joint_pos, joint_vel, env_ids=env_ids)
+
     @configclass
     class EventsCfg:
-        reset_pose = EventTerm(func=loco_mdp.reset_scene_to_default, mode="reset")
-        # VERIFY: replace with a custom 'reset to cannonball crouch' event (see env.reset).
+        reset_pose = EventTerm(func=_reset_to_cannonball, mode="reset")
 
     # -------------------------------------------------- env cfg
     @configclass
@@ -357,6 +394,15 @@ if ISAACLAB_AVAILABLE:
             self._success_event.zero_()
             return out
 
+
+
+        def _reset_idx(self, env_ids):
+            """Override to reset rope anchor + episode buffers for auto-reset envs."""
+            super()._reset_idx(env_ids)
+            self._refresh_biomech_buffers()
+            self.rope.reset(env_ids, self._handle_pos)
+            self._stable_time[env_ids] = 0.0
+            self._success_event[env_ids] = False
 
 # ============================================================ small geom helpers
 def _quat_pitch(quat):  # (N,4) wxyz -> pitch radians ; VERIFY quat order (isaaclab uses wxyz)
