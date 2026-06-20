@@ -152,10 +152,15 @@ def pen_action_accel(env) -> torch.Tensor:
 
 
 def pen_dof_pos_limits(env) -> torch.Tensor:
-    # VERIFY: Isaac Lab provides a soft dof-limit helper; placeholder L2-over-violation here.
     j = _robot(env).data.joint_pos
-    lo = _robot(env).data.soft_joint_pos_limits[..., 0]
-    hi = _robot(env).data.soft_joint_pos_limits[..., 1]
+    lo_hi = _robot(env).data.soft_joint_pos_limits
+    if lo_hi is None or torch.isnan(lo_hi).all():
+        return torch.zeros(j.shape[0], device=j.device)
+    lo = lo_hi[..., 0]
+    hi = lo_hi[..., 1]
+    lo = torch.nan_to_num(lo, nan=-1e6)
+    hi = torch.nan_to_num(hi, nan=1e6)
+    j = torch.nan_to_num(j, nan=0.0)
     below = torch.clamp(lo - j, min=0.0)
     above = torch.clamp(j - hi, min=0.0)
     return torch.sum(below + above, dim=-1)

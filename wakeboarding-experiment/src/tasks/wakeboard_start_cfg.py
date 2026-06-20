@@ -152,7 +152,7 @@ if ISAACLAB_AVAILABLE:
 
     # -------------------------------------------------- terminations (PLAN §4.3)
     def _board_out_of_range(env):
-        return (env._board_pitch < -20 * DEG) | (env._board_pitch > 45 * DEG)
+        return (env._board_pitch < -40 * DEG) | (env._board_pitch > 60 * DEG)
 
     def _fell_over(env):
         return R.uprightness(env) < 0.3

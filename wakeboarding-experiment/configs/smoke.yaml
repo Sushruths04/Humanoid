@@ -1,7 +1,7 @@
 # Smoke test — confirm the pipeline builds + reaches PPO. Tiny + fast (PLAN §14 task 6).
 seed: 0
 num_envs: 16
-max_iterations: 100
+max_iterations: 500
 save_interval: 1
 experiment_name: wakeboard_smoke
 rope: {model: "spring", v_pull_kmh: 10.0, k_p: 800.0, k_d: 50.0, f_max: 600.0}
