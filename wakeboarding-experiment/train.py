@@ -78,10 +78,10 @@ def main():
     # 6) train with resilient loop: checkpoint before each chunk, retry on NaN crash
     import torch as _torch
     total = cfg["max_iterations"]
-    step = max(50, cur_cfg.get("window", 100))
+    step = 50
     done = 0
     last_good_checkpoint = None
-    max_retries = 3
+    max_retries = 50
     retry_count = 0
     while done < total:
         n = min(step, total - done)
