@@ -44,9 +44,66 @@ def main():
     runner.load(args.checkpoint)
     policy = runner.get_inference_policy(device=str(env.device))
 
-    # Video capture not available on headless L4 (no GLFW/Vulkan display)
-    # Use trace mode to log per-step physics data
-    _run_without_video(env, policy, args)
+    # Try offscreen rendering via omni.replicator render products
+    try:
+        import omni.replicator.core as rep
+        import omni.usd
+        from pxr import Sdf, Gf
+
+        # Create a camera for rendering
+        camera = rep.create.camera(position=(0, -3, 1.5), look_at=(0, 0, 0.7))
+        render_product = rep.create.render_product(camera, resolution=(640, 480))
+
+        frame_dir = os.path.join(os.path.dirname(args.out), "frames")
+        os.makedirs(frame_dir, exist_ok=True)
+
+        obs, _ = env.reset()
+        collected = 0
+        ep_steps = 0
+        frames_captured = []
+
+        for step in range(400):
+            with torch.no_grad():
+                act = policy(obs)
+            result = env.step(act)
+            if len(result) >= 3:
+                obs = result[0]
+            ep_steps += 1
+
+            # Capture frame every 4th step (30fps -> 7.5fps effective)
+            if step % 4 == 0:
+                annotator = rep.AnnotatorRegistry.get.annotators["rgb"]
+                annotator.attach([render_product])
+                rep.step.render()
+                frame_data = annotator.get_data()
+                if frame_data is not None:
+                    import numpy as np
+                    from PIL import Image
+                    fname = os.path.join(frame_dir, f"frame_{step:05d}.png")
+                    img = Image.fromarray(np.array(frame_data))
+                    img.save(fname)
+                    frames_captured.append(fname)
+
+            done_idx = result[2].nonzero().flatten() if len(result) > 2 and isinstance(result[2], torch.Tensor) else []
+            for i in (done_idx.tolist() if hasattr(done_idx, 'tolist') else []):
+                collected += 1
+                ep_steps = 0
+                if collected >= args.episodes:
+                    break
+            if collected >= args.episodes:
+                break
+
+        if frames_captured:
+            _encode_frames(frame_dir, args.out)
+            print(f"[play] Video saved to {args.out} ({len(frames_captured)} frames)")
+        else:
+            print("[play] No frames captured, falling back to trace mode")
+            _run_without_video(env, policy, args)
+
+    except Exception as e:
+        print(f"[play] Offscreen rendering failed: {e}")
+        print("[play] Falling back to trace mode")
+        _run_without_video(env, policy, args)
 
     env.close()
     simulation_app.close()
