@@ -314,7 +314,22 @@ if ISAACLAB_AVAILABLE:
             force = self.rope.compute_force(self._handle_pos, self._handle_lin_vel())
             self._rope_force = force
             self._apply_handle_force(force)
-            return super().step(action)
+            out = super().step(action)
+            # NaN detection + auto-reset: if physics blew up, reset those envs
+            robot = self.scene["robot"]
+            nan_mask = torch.isnan(robot.data.root_pos_w).any(dim=1)
+            if nan_mask.any():
+                nan_ids = nan_mask.nonzero(as_tuple=False).squeeze(-1)
+                print(f"[wakeboard] NaN detected in {len(nan_ids)} envs, auto-resetting", flush=True)
+                self._reset_idx(nan_ids)
+                # Sanitize obs to prevent NaN propagation into PPO
+                obs_dict = out[0]
+                if isinstance(obs_dict, dict):
+                    for k in obs_dict:
+                        obs_dict[k] = torch.nan_to_num(obs_dict[k], nan=0.0)
+                elif isinstance(obs_dict, torch.Tensor):
+                    out = (torch.nan_to_num(obs_dict, nan=0.0),) + out[1:]
+            return out
 
         def _apply_handle_force(self, force):
             # Apply the world-frame rope force across both palm links. Isaac Lab expects
