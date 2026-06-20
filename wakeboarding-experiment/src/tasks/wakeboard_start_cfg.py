@@ -315,20 +315,31 @@ if ISAACLAB_AVAILABLE:
             self._rope_force = force
             self._apply_handle_force(force)
             out = super().step(action)
-            # NaN detection + auto-reset: if physics blew up, reset those envs
-            robot = self.scene["robot"]
-            nan_mask = torch.isnan(robot.data.root_pos_w).any(dim=1)
-            if nan_mask.any():
-                nan_ids = nan_mask.nonzero(as_tuple=False).squeeze(-1)
-                print(f"[wakeboard] NaN detected in {len(nan_ids)} envs, auto-resetting", flush=True)
-                self._reset_idx(nan_ids)
-                # Sanitize obs to prevent NaN propagation into PPO
-                obs_dict = out[0]
-                if isinstance(obs_dict, dict):
-                    for k in obs_dict:
-                        obs_dict[k] = torch.nan_to_num(obs_dict[k], nan=0.0)
-                elif isinstance(obs_dict, torch.Tensor):
-                    out = (torch.nan_to_num(obs_dict, nan=0.0),) + out[1:]
+            # NaN/inf guard: sanitize outputs to prevent PPO crash
+            obs = out[0]
+            rewards = out[1]
+            need_sanitize = False
+            if isinstance(obs, dict):
+                for v in obs.values():
+                    if torch.isnan(v).any() or torch.isinf(v).any():
+                        need_sanitize = True
+                        break
+            elif isinstance(obs, torch.Tensor):
+                need_sanitize = torch.isnan(obs).any() or torch.isinf(obs).any()
+            if not need_sanitize and isinstance(rewards, torch.Tensor):
+                need_sanitize = torch.isnan(rewards).any() or torch.isinf(rewards).any()
+            if need_sanitize:
+                if not hasattr(self, "_nan_count"):
+                    self._nan_count = 0
+                self._nan_count += 1
+                if self._nan_count <= 5:
+                    print(f"[wakeboard] NaN/inf sanitized (occurrence #{self._nan_count})", flush=True)
+                if isinstance(obs, dict):
+                    out = ({k: torch.nan_to_num(v, nan=0.0, posinf=0.0, neginf=0.0) for k, v in obs.items()},) + out[1:]
+                elif isinstance(obs, torch.Tensor):
+                    out = (torch.nan_to_num(obs, nan=0.0, posinf=0.0, neginf=0.0),) + out[1:]
+                if isinstance(rewards, torch.Tensor):
+                    out = (out[0], torch.nan_to_num(rewards, nan=0.0, posinf=0.0, neginf=0.0)) + out[2:]
             return out
 
         def _apply_handle_force(self, force):
