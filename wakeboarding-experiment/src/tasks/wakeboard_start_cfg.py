@@ -236,26 +236,50 @@ if ISAACLAB_AVAILABLE:
             self._fall_event = torch.zeros(num_envs, dtype=torch.bool, device=device)
             self._stable_time = z(num_envs)
 
-        # --- core hook: apply rope force + refresh buffers every physics decimation ---
-        def _pre_physics_step(self, actions):
-            super()._pre_physics_step(actions)
+        # --- core hook: apply rope force before ManagerBasedRLEnv writes scene data ---
+        def step(self, action):
             self._refresh_biomech_buffers()
             self.rope.step_anchor(self.step_dt)
             force = self.rope.compute_force(self._handle_pos, self._handle_lin_vel())
             self._rope_force = force
-            self._apply_handle_force(force)   # VERIFY external-force API below
+            self._apply_handle_force(force)
+            return super().step(action)
 
         def _apply_handle_force(self, force):
-            # VERIFY: apply at the hands/handle body via
-            # robot.set_external_force_and_torque(forces, torques, body_ids=hand_ids)
+            # Apply the world-frame rope force across both palm links. Isaac Lab expects
+            # (num_envs, num_bodies, 3), matching len(body_ids).
             robot = self.scene["robot"]
+            num_hands = len(self._hand_body_ids)
+            if num_hands == 0:
+                raise RuntimeError("No hand body ids resolved for rope force application")
+            forces = (force.unsqueeze(1).expand(-1, num_hands, -1) / num_hands).contiguous()
+            torques = torch.zeros_like(forces)
             try:
                 robot.set_external_force_and_torque(
-                    force.unsqueeze(1), torch.zeros_like(force).unsqueeze(1),
+                    forces=forces,
+                    torques=torques,
                     body_ids=self._hand_body_ids,
+                    is_global=True,
                 )
-            except Exception:
-                pass  # filled in on GPU once body ids are known
+                if not getattr(self, "_reported_rope_force_apply", False):
+                    self._reported_rope_force_apply = True
+                    print(
+                        "[wakeboard] rope force configured: "
+                        f"force_shape={tuple(forces.shape)} "
+                        f"body_ids={self._hand_body_ids} "
+                        f"mean_norm={force.norm(dim=-1).mean().item():.3f}",
+                        flush=True,
+                    )
+            except Exception as exc:
+                if not getattr(self, "_reported_rope_force_error", False):
+                    self._reported_rope_force_error = True
+                    print(
+                        "[wakeboard] rope force application failed: "
+                        f"force_shape={tuple(forces.shape)} "
+                        f"body_ids={self._hand_body_ids} error={exc!r}",
+                        flush=True,
+                    )
+                raise
 
         def _handle_lin_vel(self):
             return self._board_lin_vel  # approx; VERIFY: use hand body velocity
