@@ -75,19 +75,42 @@ def main():
     if args.resume:
         runner.load(args.resume)
 
-    # 6) train with a per-iteration curriculum callback
+    # 6) train with resilient loop: checkpoint before each chunk, retry on NaN crash
+    import torch as _torch
     total = cfg["max_iterations"]
-    step = max(50, cur_cfg.get("window", 200))
+    step = max(50, cur_cfg.get("window", 100))
     done = 0
+    last_good_checkpoint = os.path.join(exp_dir, "model_init.pt")
+    runner.save(last_good_checkpoint)
+    max_retries = 3
+    retry_count = 0
     while done < total:
         n = min(step, total - done)
-        runner.learn(num_learning_iterations=n, init_at_random_ep_len=True)
-        done += n
-        succ = float(getattr(env, "_success_event", torch.zeros(1)).float().mean().item())
+        ckpt_before = os.path.join(exp_dir, f"model_{done}_pre.pt")
+        runner.save(ckpt_before)
+        try:
+            runner.learn(num_learning_iterations=n, init_at_random_ep_len=True)
+            done += n
+            retry_count = 0
+        except RuntimeError as e:
+            if "std >= 0" in str(e) or "nan" in str(e).lower():
+                retry_count += 1
+                print(f"[resilient] PPO crash at iter {done}/{total}: {e}")
+                print(f"[resilient] retry {retry_count}/{max_retries} from {last_good_checkpoint}")
+                if retry_count > max_retries:
+                    print(f"[resilient] max retries exceeded, stopping at {done} iters")
+                    break
+                runner.load(last_good_checkpoint)
+                continue
+            else:
+                raise
+        succ = float(getattr(env, "_success_event", _torch.zeros(1)).float().mean().item())
         if curriculum.update(succ):
             env.rope.set_v_pull(curriculum.current_ms)
             print(f"[curriculum] advanced -> {curriculum.current_kmh} km/h")
         runner.save(os.path.join(exp_dir, f"model_{done}.pt"))
+        last_good_checkpoint = os.path.join(exp_dir, f"model_{done}.pt")
+        print(f"[checkpoint] saved model_{done}.pt | reward={succ:.4f} done={done}/{total}")
 
     runner.save(os.path.join(exp_dir, "model_latest.pt"))
     simulation_app.close()

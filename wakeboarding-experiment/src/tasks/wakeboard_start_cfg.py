@@ -385,20 +385,22 @@ if ISAACLAB_AVAILABLE:
             robot = self.scene["robot"]
             board = self.scene["board"]
             d = robot.data
-            self._robot_root_pos = d.root_pos_w
+            self._robot_root_pos = torch.nan_to_num(d.root_pos_w, nan=0.0)
             # board pitch + linear velocity
-            self._board_lin_vel = board.data.root_lin_vel_w
-            self._board_pitch = _quat_pitch(board.data.root_quat_w)   # VERIFY quat order (wxyz)
+            self._board_lin_vel = torch.nan_to_num(board.data.root_lin_vel_w, nan=0.0)
+            raw_pitch = _quat_pitch(board.data.root_quat_w)
+            self._board_pitch = torch.nan_to_num(raw_pitch, nan=0.0)
             # joint-angle biomechanics via cached G1 indices
-            self._elbow_flexion = d.joint_pos[:, self._elbow_idx].abs().mean(dim=1)
-            self._knee_flexion = d.joint_pos[:, self._knee_idx].abs().mean(dim=1)
+            jp = torch.nan_to_num(d.joint_pos, nan=0.0)
+            self._elbow_flexion = jp[:, self._elbow_idx].abs().mean(dim=1)
+            self._knee_flexion = jp[:, self._knee_idx].abs().mean(dim=1)
             # handle = midpoint of the two hand bodies; torso back-lean = torso pitch
-            hand_pos = d.body_pos_w[:, self._hand_body_ids]           # (N, 2, 3)
+            hand_pos = torch.nan_to_num(d.body_pos_w[:, self._hand_body_ids], nan=0.0)
             self._handle_pos = hand_pos.mean(dim=1)
-            torso_quat = d.body_quat_w[:, self._torso_body_id[0]]
+            torso_quat = torch.nan_to_num(d.body_quat_w[:, self._torso_body_id[0]], nan=torch.tensor([1.0, 0.0, 0.0, 0.0], device=self.device))
             self._torso_back_lean = _quat_pitch(torso_quat).abs()
-            self._hip_target_pos = d.root_pos_w + torch.tensor(
-                [0.15, 0.0, 0.0], device=self.device)                # handle target near hips
+            self._hip_target_pos = self._robot_root_pos + torch.tensor(
+                [0.15, 0.0, 0.0], device=self.device)
             self._update_success_and_fall()
 
         def _update_success_and_fall(self):
