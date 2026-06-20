@@ -53,6 +53,20 @@ G1_FOOT_LINKS = ["left_ankle_roll_link", "right_ankle_roll_link"]
 G1_TORSO_LINK = ["torso_link"]                       # VERIFY: torso_link vs pelvis on g1.usd
 G1_HAND_LINKS = ["left_palm_link", "right_palm_link"]  # verified against live g1.usd body_names
 
+# Cannonball wakeboard-start pose — used for BOTH the spawn init state and every reset, so the
+# foot->board weld (created at spawn) is never violated by the reset teleport (was the cause of
+# the PhysX CUDA device-side assert / NaN explosion). Joint-name regexes for the G1.
+CANNONBALL_ROOT_Z = 0.55
+# Exact joint names (the G1 cfg uses exact names; regexes collide with its keys). Joints not
+# listed default to 0.0 at spawn.
+CANNONBALL_JOINT_POS = {
+    "left_hip_pitch_joint": -0.8, "right_hip_pitch_joint": -0.8,    # deep hip flexion
+    "left_knee_joint": 1.4, "right_knee_joint": 1.4,                # deep knee flexion
+    "left_ankle_pitch_joint": 0.3, "right_ankle_pitch_joint": 0.3,  # feet relatively flat
+    "left_shoulder_pitch_joint": 0.9, "right_shoulder_pitch_joint": 0.9,  # arms forward
+    "left_elbow_pitch_joint": 1.0, "right_elbow_pitch_joint": 1.0,  # elbows bent
+}
+
 
 # ============================================================ observations
 def _board_pitch_obs(env):
@@ -174,8 +188,8 @@ if ISAACLAB_AVAILABLE:
         # Start from default root state and apply env origins
         default_root_state = robot.data.default_root_state[env_ids].clone()
         default_root_state[:, 0:3] += env.scene.env_origins[env_ids]
-        # Override z to crouched height (lower CG -- crouched, not standing at 0.74m)
-        default_root_state[:, 2] = env.scene.env_origins[env_ids, 2] + 0.50
+        # Override z to crouched height (matches the spawn/weld pose CANNONBALL_ROOT_Z)
+        default_root_state[:, 2] = env.scene.env_origins[env_ids, 2] + CANNONBALL_ROOT_Z
         # Zero velocities
         default_root_state[:, 7:] = 0.0
         robot.write_root_pose_to_sim(default_root_state[:, :7], env_ids=env_ids)
@@ -221,9 +235,20 @@ if ISAACLAB_AVAILABLE:
             self.decimation = 4
             self.episode_length_s = 8.0
             self.sim.dt = 1.0 / 200.0
+            # PhysX solver robustness: the foot->board fixed-joint weld is an over-constrained
+            # closed loop; the default iteration count can't converge it under the rope pull and
+            # explodes (NaN -> CUDA device-side assert). Give the solver more iterations.
+            self.sim.physx.solver_position_iteration_count = 16
+            self.sim.physx.solver_velocity_iteration_count = 4
+            self.sim.physx.bounce_threshold_velocity = 0.2
             # pull the stock G1 articulation (arms ACTUATED — do not freeze)
             g1 = G1FlatEnvCfg().scene.robot       # VERIFY: reuse the G1 ArticulationCfg
             g1.prim_path = "{ENV_REGEX_NS}/Robot"
+            # Spawn already in the cannonball crouch so the foot->board weld is created in the
+            # SAME pose the env resets to (weld == spawn == reset). This removes the violent
+            # reset-vs-weld conflict that was crashing PhysX.
+            g1.init_state.pos = (0.0, 0.0, CANNONBALL_ROOT_Z)
+            g1.init_state.joint_pos = dict(CANNONBALL_JOINT_POS)   # exact names; others -> 0.0
             self.scene.robot = g1
             self.scene.board = make_board_cfg(self.board)
 
