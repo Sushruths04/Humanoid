@@ -25,7 +25,7 @@ def main():
     os.makedirs(os.path.dirname(args.out) or ".", exist_ok=True)
 
     from isaaclab.app import AppLauncher
-    app = AppLauncher(headless=True, enable_cameras=True).app
+    app = AppLauncher(headless=True).app
 
     import torch
     from rsl_rl.runners import OnPolicyRunner
