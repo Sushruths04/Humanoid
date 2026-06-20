@@ -132,11 +132,15 @@ def pen_pull_against_rope(env) -> torch.Tensor:
 
 
 def pen_torque(env) -> torch.Tensor:
-    return torch.sum(_robot(env).data.applied_torque ** 2, dim=-1)  # VERIFY attr
+    t = _robot(env).data.applied_torque
+    t = torch.nan_to_num(t, nan=0.0, posinf=1e4, neginf=-1e4)
+    return torch.sum(t ** 2, dim=-1)
 
 
 def pen_action_rate(env) -> torch.Tensor:
-    return torch.sum((env.action_manager.action - env.action_manager.prev_action) ** 2, dim=-1)
+    d = env.action_manager.action - env.action_manager.prev_action
+    d = torch.nan_to_num(d, nan=0.0, posinf=1e4, neginf=-1e4)
+    return torch.sum(d ** 2, dim=-1)
 
 
 def pen_action_accel(env) -> torch.Tensor:
