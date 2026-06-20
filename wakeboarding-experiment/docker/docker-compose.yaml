@@ -19,6 +19,9 @@ services:
     environment:
       - NVIDIA_DRIVER_CAPABILITIES=all
       - NVIDIA_VISIBLE_DEVICES=all
+      # Isaac Sim refuses to start without these — confirmed by the import hitting the EULA gate.
+      - ACCEPT_EULA=Y
+      - OMNI_KIT_ACCEPT_EULA=YES
       - WANDB_API_KEY=${WANDB_API_KEY:-}
       - HF_TOKEN=${HF_TOKEN:-}
     volumes:

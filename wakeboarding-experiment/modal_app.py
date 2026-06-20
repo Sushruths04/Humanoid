@@ -21,10 +21,18 @@ Notes:
 """
 from __future__ import annotations
 
+from pathlib import Path
+
 import modal
 
-# --- container image: Isaac Sim 5.1 base + Isaac Lab + this repo's deps ---
-# VERIFY: the simplest path is to reuse YOUR existing GHCR image that already has Isaac Lab:
+# Repo code must live INSIDE the image — unlike the local docker-compose path (which mounts
+# the code), Modal has no mount, so we copy this experiment dir to /workspace/wakeboarding-experiment
+# (the same path train()/evaluate() cd into below).
+_LOCAL_DIR = Path(__file__).parent.resolve()
+_REMOTE_DIR = "/workspace/wakeboarding-experiment"
+
+# --- container image: Isaac Sim 5.1 base + Isaac Lab + this repo's deps + this repo's code ---
+# Reuse YOUR existing GHCR image that already has Isaac Lab:
 #   ghcr.io/sushruths04/humanoid-isaaclab:latest
 image = (
     modal.Image.from_registry(
@@ -33,6 +41,9 @@ image = (
     )
     .pip_install("rsl-rl-lib>=2.0.0", "pyyaml", "wandb", "tensorboard")
     .env({"NVIDIA_DRIVER_CAPABILITIES": "all", "ACCEPT_EULA": "Y", "OMNI_KIT_ACCEPT_EULA": "YES"})
+    # bake the experiment code into the image so cwd=_REMOTE_DIR exists at runtime
+    .add_local_dir(str(_LOCAL_DIR), _REMOTE_DIR, copy=True,
+                   ignore=["runs", "checkpoints", "__pycache__", "*.pt", "vault"])
 )
 
 app = modal.App("wakeboard-rl", image=image)
@@ -53,7 +64,7 @@ def train(config: str, num_envs: int | None = None, max_iterations: int | None =
         cmd += ["--max_iterations", str(max_iterations)]
     if resume:
         cmd += ["--resume", resume]
-    subprocess.run(cmd, check=True, cwd="/workspace/wakeboarding-experiment")  # VERIFY cwd
+    subprocess.run(cmd, check=True, cwd=_REMOTE_DIR)
     ckpts.commit()
 
 
@@ -63,7 +74,7 @@ def evaluate(checkpoint: str, v_pull_kmh: float = 30.0, episodes: int = 200):
     out = f"/ckpts/results/eval_{int(v_pull_kmh)}kmh.json"
     subprocess.run(["python", "eval.py", "--checkpoint", checkpoint,
                     "--v_pull_kmh", str(v_pull_kmh), "--episodes", str(episodes),
-                    "--out", out], check=True, cwd="/workspace/wakeboarding-experiment")
+                    "--out", out], check=True, cwd=_REMOTE_DIR)
     ckpts.commit()
 
 
