@@ -38,9 +38,11 @@ def main():
     env = WakeboardStartEnv(env_cfg)
     env.rope.set_v_pull(kmh_to_ms(args.v_pull_kmh))
 
-    runner = OnPolicyRunner(env, _min_cfg(), log_dir=None, device=str(env.device))
+    from isaaclab_rl.rsl_rl import RslRlVecEnvWrapper
+    rl_env = RslRlVecEnvWrapper(env)
+    runner = OnPolicyRunner(rl_env, _min_cfg(), log_dir=None, device=str(env.device))
     runner.load(args.checkpoint)
-    policy = runner.get_inference_policy(device=env.device)
+    policy = runner.get_inference_policy(device=str(env.device))
 
     # Use omni.replicator or viewport for frame capture
     from omni.isaac.core import World
