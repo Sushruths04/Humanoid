@@ -60,7 +60,13 @@ def _run_without_video(env, policy, args):
     for step in range(800):
         with torch.no_grad():
             act = policy(obs)
-        obs, rewards, dones, _ = env.step(act)
+        result = env.step(act)
+        if len(result) == 5:
+            obs, rewards, dones, truncated, infos = result
+        elif len(result) == 4:
+            obs, rewards, dones, infos = result
+        else:
+            obs = result[0]
         h = env.scene["robot"].data.root_pos_w[:, 2].mean().item()
         bp = env._board_pitch.mean().item() * 180 / 3.14159
         frames["pelvis_z"].append(h)
