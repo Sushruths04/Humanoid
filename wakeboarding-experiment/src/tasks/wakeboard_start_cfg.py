@@ -353,7 +353,7 @@ if ISAACLAB_AVAILABLE:
                 if self._physics_nan_count <= 10:
                     print(f"[wakeboard] physics NaN recovery: {nan_envs.sum().item()} envs reset", flush=True)
                 nan_ids = torch.where(nan_envs)[0]
-                self._reset_to_cannonball(self, nan_ids)
+                _reset_to_cannonball(self, nan_ids)
                 robot.write_root_pose_to_sim(
                     robot.data.root_state_w[nan_ids, :7], env_ids=nan_ids)
                 robot.write_root_velocity_to_sim(
