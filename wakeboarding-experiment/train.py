@@ -101,6 +101,8 @@ def main():
                     print(f"[resilient] max retries exceeded, stopping at {done} iters")
                     break
                 runner.load(last_good_checkpoint)
+                if hasattr(runner.alg, 'storage'):
+                    runner.alg.storage.clear()
                 continue
             else:
                 raise

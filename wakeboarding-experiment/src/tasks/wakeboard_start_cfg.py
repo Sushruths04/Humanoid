@@ -332,14 +332,42 @@ if ISAACLAB_AVAILABLE:
                 if not hasattr(self, "_nan_count"):
                     self._nan_count = 0
                 self._nan_count += 1
-                if self._nan_count <= 5:
+                if self._nan_count <= 10:
                     print(f"[wakeboard] NaN/inf sanitized (occurrence #{self._nan_count})", flush=True)
                 if isinstance(obs, dict):
-                    out = ({k: torch.nan_to_num(v, nan=0.0, posinf=0.0, neginf=0.0) for k, v in obs.items()},) + out[1:]
+                    out = ({k: torch.nan_to_num(v, nan=0.0, posinf=1e4, neginf=-1e4) for k, v in obs.items()},) + out[1:]
                 elif isinstance(obs, torch.Tensor):
-                    out = (torch.nan_to_num(obs, nan=0.0, posinf=0.0, neginf=0.0),) + out[1:]
+                    out = (torch.nan_to_num(obs, nan=0.0, posinf=1e4, neginf=-1e4),) + out[1:]
                 if isinstance(rewards, torch.Tensor):
-                    out = (out[0], torch.nan_to_num(rewards, nan=0.0, posinf=0.0, neginf=0.0)) + out[2:]
+                    out = (out[0], torch.nan_to_num(rewards, nan=0.0, posinf=1e4, neginf=-1e4)) + out[2:]
+            # Physics NaN recovery: detect corrupted envs and force-reset them
+            robot = self.scene["robot"]
+            nan_envs = (torch.isnan(robot.data.root_pos_w).any(dim=1) |
+                        torch.isnan(robot.data.joint_pos).any(dim=1) |
+                        torch.isinf(robot.data.root_pos_w).any(dim=1) |
+                        torch.isinf(robot.data.joint_pos).any(dim=1))
+            if nan_envs.any():
+                if not hasattr(self, "_physics_nan_count"):
+                    self._physics_nan_count = 0
+                self._physics_nan_count += 1
+                if self._physics_nan_count <= 10:
+                    print(f"[wakeboard] physics NaN recovery: {nan_envs.sum().item()} envs reset", flush=True)
+                nan_ids = torch.where(nan_envs)[0]
+                self._reset_to_cannonball(self, nan_ids)
+                robot.write_root_pose_to_sim(
+                    robot.data.root_state_w[nan_ids, :7], env_ids=nan_ids)
+                robot.write_root_velocity_to_sim(
+                    torch.zeros(nan_ids.shape[0], 6, device=self.device), env_ids=nan_ids)
+                self._refresh_biomech_buffers()
+                self.rope.reset(nan_ids, self._handle_pos[nan_ids])
+                # Sanitize the obs/rewards for the NaN envs
+                if isinstance(out[0], dict):
+                    for k in out[0]:
+                        out[0][k][nan_ids] = 0.0
+                elif isinstance(out[0], torch.Tensor):
+                    out[0][nan_ids] = 0.0
+                if isinstance(out[1], torch.Tensor):
+                    out[1][nan_ids] = 0.0
             return out
 
         def _apply_handle_force(self, force):
