@@ -1,6 +1,6 @@
 # Smoke test — confirm the pipeline builds + reaches PPO. Tiny + fast (PLAN §14 task 6).
 seed: 0
-num_envs: 16
+num_envs: 2048
 max_iterations: 100
 save_interval: 1
 experiment_name: wakeboard_smoke
@@ -23,9 +23,9 @@ rewards:
   amp_style: 0.0
   pen_stand_too_fast: -1.0
   pen_pull_against_rope: -1.0
-  pen_torque: -1.0e-4
-  pen_action_rate: -0.01
-  pen_action_accel: -1.0e-3
+  pen_torque: -1.0e-6
+  pen_action_rate: -0.001
+  pen_action_accel: -1.0e-4
   pen_dof_pos_limits: -5.0
   pen_fall: -20.0
 ppo:
