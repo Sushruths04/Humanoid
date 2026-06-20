@@ -80,8 +80,7 @@ def main():
     total = cfg["max_iterations"]
     step = max(50, cur_cfg.get("window", 100))
     done = 0
-    last_good_checkpoint = os.path.join(exp_dir, "model_init.pt")
-    runner.save(last_good_checkpoint)
+    last_good_checkpoint = None
     max_retries = 3
     retry_count = 0
     while done < total:
@@ -96,6 +95,9 @@ def main():
             if "std >= 0" in str(e) or "nan" in str(e).lower():
                 retry_count += 1
                 print(f"[resilient] PPO crash at iter {done}/{total}: {e}")
+                if last_good_checkpoint is None:
+                    print(f"[resilient] no good checkpoint yet, cannot retry")
+                    break
                 print(f"[resilient] retry {retry_count}/{max_retries} from {last_good_checkpoint}")
                 if retry_count > max_retries:
                     print(f"[resilient] max retries exceeded, stopping at {done} iters")
