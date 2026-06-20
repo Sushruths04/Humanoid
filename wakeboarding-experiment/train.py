@@ -85,8 +85,6 @@ def main():
     retry_count = 0
     while done < total:
         n = min(step, total - done)
-        ckpt_before = os.path.join(exp_dir, f"model_{done}_pre.pt")
-        runner.save(ckpt_before)
         try:
             runner.learn(num_learning_iterations=n, init_at_random_ep_len=True)
             done += n
@@ -112,6 +110,12 @@ def main():
             print(f"[curriculum] advanced -> {curriculum.current_kmh} km/h")
         runner.save(os.path.join(exp_dir, f"model_{done}.pt"))
         last_good_checkpoint = os.path.join(exp_dir, f"model_{done}.pt")
+        # Now we can save pre-chunk checkpoints since logger is initialized
+        try:
+            pre = os.path.join(exp_dir, f"model_{done}_pre.pt")
+            runner.save(pre)
+        except Exception:
+            pass
         print(f"[checkpoint] saved model_{done}.pt | reward={succ:.4f} done={done}/{total}")
 
     runner.save(os.path.join(exp_dir, "model_latest.pt"))
