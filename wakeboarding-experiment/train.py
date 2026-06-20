@@ -53,8 +53,8 @@ def main():
     # 3) build env
     env_cfg = WakeboardStartEnvCfg()
     env_cfg.scene.num_envs = cfg["num_envs"]
+    apply_reward_weights(env_cfg, cfg["rewards"])     # set RewTerm weights BEFORE env construction
     env = WakeboardStartEnv(env_cfg)
-    apply_reward_weights(env, cfg["rewards"])         # set RewTerm weights from YAML
     env.rope.model = cfg["rope"]["model"]
     env.rope.set_v_pull(kmh_to_ms(cfg["rope"]["v_pull_kmh"]))
 
@@ -93,9 +93,10 @@ def main():
     simulation_app.close()
 
 
-def apply_reward_weights(env, weights: dict):
+def apply_reward_weights(env_cfg, weights: dict):
+    """Set RewTerm weights on the cfg object (must be called BEFORE env construction)."""
     for name, w in weights.items():
-        term = getattr(env.cfg.rewards, name, None)
+        term = getattr(env_cfg.rewards, name, None)
         if term is not None:
             term.weight = float(w)
 
