@@ -158,32 +158,32 @@ Evidence from fixed board probe:
 
 For 16 envs, 32 joints means 2 joints per env.
 
-The final board-binding probe had no Traceback and no CreateJoint snap warnings.
+The final board-binding probe had no Traceback and no CreateJoint snap warnings. A later clean verification run also showed board_range staying at zero through the final iteration.
 
-Final table:
+Final clean verification table:
 
 ```text
 Learning iteration 29/30
-Episode_Reward/pelvis_height: 0.0872
+Episode_Reward/pelvis_height: 0.0647
 Episode_Reward/height_progress: 0.0000
-Episode_Reward/uprightness: 0.0657
-Episode_Reward/survival: 0.0218
-Episode_Reward/forward_glide: 0.0083
+Episode_Reward/uprightness: 0.0427
+Episode_Reward/survival: 0.0173
+Episode_Reward/forward_glide: 0.0132
 Episode_Reward/success_bonus: 0.0000
-Episode_Reward/board_positive_angle: 0.0186
-Episode_Reward/arms_straight: 0.0326
-Episode_Reward/handle_at_hips: 0.0136
-Episode_Reward/lean_back_moderate: 0.0112
-Episode_Reward/knee_bend_maintained: 0.0172
-Episode_Reward/pen_stand_too_fast: -0.0037
-Episode_Reward/pen_pull_against_rope: -0.0120
-Episode_Reward/pen_torque: -2.6888
-Episode_Reward/pen_action_rate: -0.0758
-Episode_Reward/pen_action_accel: -0.0076
-Episode_Reward/pen_dof_pos_limits: -0.3458
+Episode_Reward/board_positive_angle: 0.0299
+Episode_Reward/arms_straight: 0.0023
+Episode_Reward/handle_at_hips: 0.0137
+Episode_Reward/lean_back_moderate: 0.0013
+Episode_Reward/knee_bend_maintained: 0.0277
+Episode_Reward/pen_stand_too_fast: -0.0028
+Episode_Reward/pen_pull_against_rope: -0.0345
+Episode_Reward/pen_torque: -2.3423
+Episode_Reward/pen_action_rate: -0.0572
+Episode_Reward/pen_action_accel: -0.0057
+Episode_Reward/pen_dof_pos_limits: -0.2216
 Episode_Termination/timeout: 0.0000
-Episode_Termination/board_range: 0.6693
-Episode_Termination/fell: 0.4089
+Episode_Termination/board_range: 0.0000
+Episode_Termination/fell: 1.0000
 ```
 
 ## How to Interpret board_range
@@ -220,7 +220,7 @@ Committed and verified:
 - Rope force is split across both palm links with the correct shape and global frame.
 - Board is spawned at foot-link height instead of above the feet.
 - Board fixed joints are created for both feet in every environment.
-- Latest smoke probe had no traceback and no fixed-joint snap warnings.
+- Latest smoke probe had no traceback, no fixed-joint snap warnings, and final board_range was 0.0000.
 
 Not done:
 
