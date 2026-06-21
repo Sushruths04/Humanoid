@@ -386,13 +386,18 @@ if ISAACLAB_AVAILABLE:
                 self._refresh_biomech_buffers()
                 self.rope.reset(nan_ids, self._handle_pos[nan_ids])
                 # Sanitize the obs/rewards for the NaN envs
-                if isinstance(out[0], dict):
-                    for k in out[0]:
-                        out[0][k][nan_ids] = 0.0
-                elif isinstance(out[0], torch.Tensor):
-                    out[0][nan_ids] = 0.0
-                if isinstance(out[1], torch.Tensor):
-                    out[1][nan_ids] = 0.0
+                try:
+                    if isinstance(out[0], dict):
+                        for k in out[0]:
+                            t = out[0][k]
+                            if isinstance(t, torch.Tensor) and t.shape[0] >= nan_ids.max() + 1:
+                                t[nan_ids] = 0.0
+                    elif isinstance(out[0], torch.Tensor) and out[0].shape[0] >= nan_ids.max() + 1:
+                        out[0][nan_ids] = 0.0
+                    if isinstance(out[1], torch.Tensor) and out[1].shape[0] >= nan_ids.max() + 1:
+                        out[1][nan_ids] = 0.0
+                except Exception as _e:
+                    print(f"[wakeboard] NaN obs sanitize skip: {_e}", flush=True)
             return out
 
         def _apply_handle_force(self, force):
