@@ -40,7 +40,8 @@ image = (
         add_python="3.10",
     )
     .entrypoint([])
-    .pip_install("rsl-rl-lib>=2.0.0", "pyyaml", "wandb", "tensorboard")
+    .run_commands("apt-get update -qq && apt-get install -y -q ffmpeg || true")
+    .pip_install("rsl-rl-lib>=2.0.0", "pyyaml", "wandb", "tensorboard", "Pillow", "imageio[ffmpeg]")
     .env({"NVIDIA_DRIVER_CAPABILITIES": "all", "ACCEPT_EULA": "Y", "OMNI_KIT_ACCEPT_EULA": "YES",
           "CUDA_LAUNCH_BLOCKING": "1"})
     # bake the experiment code into the image so cwd=_REMOTE_DIR exists at runtime
@@ -105,8 +106,6 @@ def render_video(checkpoint: str, v_pull_kmh: float = 10.0, episodes: int = 3, s
            "--v_pull_kmh", str(v_pull_kmh), "--episodes", str(episodes),
            "--steps", str(steps), "--out", out]
     shell_cmd = (
-        "pip install -q Pillow && "
-        "apt-get install -y -q ffmpeg && "
         "ln -sf /isaac-sim/kit/python/bin/python3 /usr/local/bin/python && "
         "export ISAAC_PATH=/isaac-sim EXP_PATH=/isaac-sim/apps "
         "CARB_APP_PATH=/isaac-sim/kit LD_PRELOAD=/isaac-sim/kit/libcarb.so "
