@@ -45,17 +45,18 @@ def main():
     runner.load(args.checkpoint)
     policy = runner.get_inference_policy(device=str(env.device))
 
-    # Setup offscreen camera via omni.replicator
+    # Setup offscreen camera via omni.replicator BasicWriter (writes PNGs directly to disk)
     frame_dir = tempfile.mkdtemp(prefix="wb_frames_")
     frames_ok = False
     try:
         import omni.replicator.core as rep
         cam = rep.create.camera(position=(2.0, -3.5, 1.8), look_at=(0.0, 0.0, 0.65))
         rp = rep.create.render_product(cam, resolution=(640, 480))
-        rgb_annotator = rep.AnnotatorRegistry.get_annotator("rgb")
-        rgb_annotator.attach([rp])
+        writer = rep.WriterRegistry.get("BasicWriter")
+        writer.initialize(output_dir=frame_dir, rgb=True)
+        writer.attach([rp])
         rep.orchestrator.step(delta_time=0.0)  # warm up renderer
-        print(f"[play] Offscreen camera attached to render product", flush=True)
+        print(f"[play] BasicWriter attached, output: {frame_dir}", flush=True)
         frames_ok = True
     except Exception as e:
         print(f"[play] Camera setup failed: {e}", flush=True)
@@ -101,21 +102,14 @@ def main():
         trace["reward"].append(rewards[0].item() if torch.is_tensor(rewards) else float(rewards))
         trace["step"].append(step)
 
-        # Capture frame
+        # Capture frame — BasicWriter writes PNGs automatically on each step
         if frames_ok and step % 3 == 0:
             try:
                 import omni.replicator.core as rep
                 rep.orchestrator.step(delta_time=0.0)
-                raw = rgb_annotator.get_data()
-                if raw is not None:
-                    # Isaac Sim 5.x returns {"data": ndarray, "info": {...}}
-                    img_arr = raw["data"] if isinstance(raw, dict) else np.array(raw)
-                    if img_arr is not None and img_arr.ndim == 3 and img_arr.shape[2] >= 3:
-                        from PIL import Image
-                        Image.fromarray(img_arr[:, :, :3]).save(
-                            os.path.join(frame_dir, f"frame_{step:05d}.png"))
-            except Exception:
-                pass
+            except Exception as e:
+                print(f"[play] render step {step} failed: {e}", flush=True)
+                frames_ok = False
 
         # Check done
         done_idx = dones.nonzero(as_tuple=False).flatten()
@@ -133,16 +127,29 @@ def main():
         json.dump(trace, f)
     print(f"[play] Trace saved: {trace_out} ({len(trace['pelvis_z'])} steps)")
 
-    # Encode video if frames exist
-    pngs = sorted([f for f in os.listdir(frame_dir) if f.endswith(".png")])
+    # Encode video if frames exist (BasicWriter saves as rgb/NNNN.png inside frame_dir)
+    rgb_dir = os.path.join(frame_dir, "rgb")
+    search_dir = rgb_dir if os.path.isdir(rgb_dir) else frame_dir
+    pngs = sorted([f for f in os.listdir(search_dir) if f.endswith(".png")])
+    print(f"[play] Frames captured: {len(pngs)} in {search_dir}", flush=True)
     if pngs:
-        cmd = ["ffmpeg", "-y", "-framerate", "20", "-i",
-               os.path.join(frame_dir, "frame_%05d.png"),
+        first = os.path.join(search_dir, pngs[0])
+        # detect pattern from first filename
+        import re
+        m = re.search(r'(\d+)\.png$', pngs[0])
+        digits = len(m.group(1)) if m else 4
+        stem = pngs[0][:pngs[0].rfind(m.group(1))] if m else "rgb_"
+        pattern = os.path.join(search_dir, f"{stem}%0{digits}d.png")
+        cmd = ["ffmpeg", "-y", "-framerate", "20", "-i", pattern,
+               "-vf", "scale=trunc(iw/2)*2:trunc(ih/2)*2",
                "-c:v", "libx264", "-pix_fmt", "yuv420p", args.out]
-        subprocess.run(cmd, check=True)
-        print(f"[play] Video saved: {args.out} ({len(pngs)} frames)")
+        result = subprocess.run(cmd, capture_output=True, text=True)
+        if result.returncode == 0:
+            print(f"[play] Video saved: {args.out} ({len(pngs)} frames)", flush=True)
+        else:
+            print(f"[play] ffmpeg failed: {result.stderr[-300:]}", flush=True)
     else:
-        print("[play] No frames captured (offscreen rendering not available on this GPU)")
+        print("[play] No frames captured — check camera setup", flush=True)
 
     # Print summary
     print(f"\n=== ROLLOUT SUMMARY (model: {args.checkpoint}) ===")
