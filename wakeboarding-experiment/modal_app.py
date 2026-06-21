@@ -41,7 +41,7 @@ image = (
     )
     .entrypoint([])
     .run_commands("apt-get update -qq && apt-get install -y -q ffmpeg || true")
-    .pip_install("rsl-rl-lib>=2.0.0", "pyyaml", "wandb", "tensorboard", "Pillow", "imageio[ffmpeg]")
+    .pip_install("rsl-rl-lib>=2.0.0", "pyyaml", "wandb", "tensorboard", "Pillow")
     .env({"NVIDIA_DRIVER_CAPABILITIES": "all", "ACCEPT_EULA": "Y", "OMNI_KIT_ACCEPT_EULA": "YES",
           "CUDA_LAUNCH_BLOCKING": "1"})
     # bake the experiment code into the image so cwd=_REMOTE_DIR exists at runtime
