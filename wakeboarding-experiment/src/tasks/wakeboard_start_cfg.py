@@ -384,7 +384,7 @@ if ISAACLAB_AVAILABLE:
                 robot.write_root_velocity_to_sim(
                     torch.zeros(nan_ids.shape[0], 6, device=self.device), env_ids=nan_ids)
                 self._refresh_biomech_buffers()
-                self.rope.reset(nan_ids, self._handle_pos[nan_ids])
+                self.rope.reset(nan_ids, self._handle_pos)
                 # Sanitize the obs/rewards for the NaN envs
                 try:
                     if isinstance(out[0], dict):
