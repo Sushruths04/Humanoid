@@ -46,7 +46,9 @@ def main():
     policy = runner.get_inference_policy(device=str(env.device))
 
     # Setup offscreen camera via omni.replicator BasicWriter (writes PNGs directly to disk)
-    frame_dir = tempfile.mkdtemp(prefix="wb_frames_")
+    # Use workspace dir (mounted volume) so frames survive container lifecycle
+    frame_dir = os.path.join(os.path.dirname(os.path.abspath(args.out)), "wb_frames")
+    os.makedirs(frame_dir, exist_ok=True)
     frames_ok = False
     try:
         import omni.replicator.core as rep
