@@ -15,6 +15,7 @@ def parse_args():
     p.add_argument("--num_envs", type=int, default=1)
     p.add_argument("--out", default="results/rollout.mp4")
     p.add_argument("--steps", type=int, default=600)
+    p.add_argument("--no-cameras", action="store_true", help="disable RTX cameras (trace only, works without RTX GPU)")
     return p.parse_args()
 
 def main():
@@ -22,7 +23,8 @@ def main():
     os.makedirs(os.path.dirname(args.out) or ".", exist_ok=True)
 
     from isaaclab.app import AppLauncher
-    app_launcher = AppLauncher(headless=True, enable_cameras=True)
+    enable_cam = not args.no_cameras
+    app_launcher = AppLauncher(headless=True, enable_cameras=enable_cam)
     app = app_launcher.app
 
     import torch
