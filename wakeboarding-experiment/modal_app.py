@@ -100,6 +100,6 @@ def evaluate(checkpoint: str, v_pull_kmh: float = 30.0, episodes: int = 200):
 def main(action: str = "train", config: str = "configs/stage1.yaml",
          checkpoint: str = "", v_pull_kmh: float = 30.0):
     if action == "train":
-        train.spawn(config=config)
+        train.remote(config=config)
     elif action == "eval":
-        evaluate.spawn(checkpoint=checkpoint, v_pull_kmh=v_pull_kmh)
+        evaluate.remote(checkpoint=checkpoint, v_pull_kmh=v_pull_kmh)
