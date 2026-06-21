@@ -74,6 +74,12 @@ def main():
 
     # Run rollout
     obs, _ = env.reset()
+    # Clear AGAIN — env.reset() generates many static frames during physics settle
+    if frames_ok:
+        for f in _glob.glob(os.path.join(frame_dir, "*.png")):
+            os.remove(f)
+        print(f"[play] Post-reset frames cleared. Rollout starting NOW.", flush=True)
+
     collected = 0
     trace = {"pelvis_z": [], "board_pitch": [], "fell": [], "reward": [], "step": [],
              "pelvis_x": [], "pelvis_vx": [], "rope_force": [], "uprightness": [],
