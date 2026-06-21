@@ -1,11 +1,12 @@
 # Humanoid VLA Mini-Thesis: Final Results
 
 ## Executive Summary
-This project successfully implemented a two-phase humanoid research pipeline:
+This project successfully implemented a three-phase humanoid research pipeline:
 1.  **GR00T Foundation Model Replication**: Verification of fine-tuning capabilities using the 2B humanoid model.
 2.  **Isaac Lab G1 VLA Pipeline**: Implementation of language-conditioned locomotion and navigation for the Unitree G1 humanoid.
+3.  **Wakeboarding RL (Stage I complete)**: Unitree G1 trained to balance on a moving wakeboard at 10 km/h via PPO on Modal serverless GPU.
 
-All execution was performed on **Lightning AI** using **NVIDIA L40S GPUs**.
+Phases 1–2 ran on **Lightning AI (NVIDIA L40S)**. Phase 3 (wakeboarding) runs on **Modal serverless GPU (L40S)**.
 
 ---
 
@@ -94,4 +95,38 @@ The project utilizes a custom Docker-based workflow to manage the complex depend
 - **Logs**: `thesis/logs/` contains full training telemetry.
 - **Visuals**: `thesis/results/gr00t_eval_smoke/traj_0.jpeg` shows policy rollout.
 
-**Project Status: COMPLETE**
+---
+
+## Phase 3: Wakeboarding RL (2026-06-21)
+
+Novel contribution: Unitree G1 humanoid trained to perform a wakeboard deep-water start in Isaac Lab.
+
+### Stage I Results (Fixed 10 km/h, PPO on Modal L40S)
+
+| Iteration | Fell rate | Timeout rate | Notes |
+|---|---|---|---|
+| 0 | 97% | 3% | Random policy |
+| 500 | 6% | 94% | Basic balance learned |
+| 980 | **0%** | **100%** | Stable board riding |
+| 5000 (final) | ~5% | 81% | Full pose + riding |
+
+**Checkpoint**: `wakeboard-ckpts:/wakeboard_stage1/model_latest.pt` (Modal volume)
+
+### What G1 learned in Stage I
+- Balance on moving board under rope tension
+- Cannonball/crouch stance (knee bend, hip flex)
+- Torso upright against rope pull
+- Arms at hips, handle position
+- Moderate lean-back against force
+
+### Key bugs fixed (wakeboarding-specific)
+1. `rope.reset()` double-indexing — root cause of all CUDA crashes on Modal
+2. `RewardManager` timing — weights must be applied BEFORE `WakeboardStartEnv()` construction
+3. Modal gVisor blocks RTX rendering — video requires Lightning AI
+4. `CUDA_LAUNCH_BLOCKING=1` debug flag removed after fix confirmed
+
+### Pending
+- **Stage II**: curriculum 10→20→30 km/h (not started)
+- **Video**: `play.py` ready, needs Lightning AI for RTX renderer
+
+**Project Status: STAGE I COMPLETE — Stage II + Video pending**
