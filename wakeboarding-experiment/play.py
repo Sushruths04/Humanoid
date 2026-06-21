@@ -61,7 +61,9 @@ def main():
     # Run rollout
     obs, _ = env.reset()
     collected = 0
-    trace = {"pelvis_z": [], "board_pitch": [], "fell": [], "reward": [], "step": []}
+    trace = {"pelvis_z": [], "board_pitch": [], "fell": [], "reward": [], "step": [],
+             "pelvis_x": [], "pelvis_vx": [], "rope_force": [], "uprightness": [],
+             "joint_pos": [], "root_quat": []}
     ep_steps = torch.zeros(env.num_envs, device=env.device)
 
     for step in range(args.steps):
@@ -73,14 +75,27 @@ def main():
 
         ep_steps += 1
 
-        # Trace data
-        h = env.scene["robot"].data.root_pos_w[:, 2].mean().item()
-        bp = env._board_pitch.mean().item() * 180.0 / 3.14159
-        fell = env._fall_event.float().mean().item()
+        # Trace data — env 0 only for rich data
+        robot = env.scene["robot"]
+        h = robot.data.root_pos_w[0, 2].item()
+        px = robot.data.root_pos_w[0, 0].item()
+        vx = robot.data.root_lin_vel_w[0, 0].item()
+        quat = robot.data.root_quat_w[0].cpu().tolist()
+        jpos = robot.data.joint_pos[0].cpu().tolist()
+        bp = env._board_pitch[0].item() * 180.0 / 3.14159
+        fell = env._fall_event[0].float().item()
+        rf = env._rope_force[0].norm().item()
+        grav_up = -robot.data.projected_gravity_b[0, 2].item()
         trace["pelvis_z"].append(h)
+        trace["pelvis_x"].append(px)
+        trace["pelvis_vx"].append(vx)
+        trace["root_quat"].append(quat)
+        trace["joint_pos"].append(jpos)
         trace["board_pitch"].append(bp)
         trace["fell"].append(fell)
-        trace["reward"].append(rewards.mean().item() if torch.is_tensor(rewards) else float(rewards))
+        trace["rope_force"].append(rf)
+        trace["uprightness"].append(grav_up)
+        trace["reward"].append(rewards[0].item() if torch.is_tensor(rewards) else float(rewards))
         trace["step"].append(step)
 
         # Capture frame

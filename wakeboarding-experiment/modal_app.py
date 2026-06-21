@@ -97,6 +97,26 @@ def evaluate(checkpoint: str, v_pull_kmh: float = 30.0, episodes: int = 200):
     ckpts.commit()
 
 
+@app.function(gpu=GPU, volumes={"/ckpts": ckpts}, timeout=30 * 60)
+def collect_trace(checkpoint: str, v_pull_kmh: float = 10.0, steps: int = 500):
+    import subprocess
+    out = f"/ckpts/traces/trace_{checkpoint.split('/')[-1].replace('.pt','')}.json"
+    cmd = ["python", "play.py", "--checkpoint", checkpoint,
+           "--v_pull_kmh", str(v_pull_kmh), "--steps", str(steps),
+           "--episodes", "99", "--out", out.replace(".json", ".mp4")]
+    shell_cmd = (
+        "ln -sf /isaac-sim/kit/python/bin/python3 /usr/local/bin/python && "
+        "export ISAAC_PATH=/isaac-sim EXP_PATH=/isaac-sim/apps "
+        "CARB_APP_PATH=/isaac-sim/kit LD_PRELOAD=/isaac-sim/kit/libcarb.so "
+        "RESOURCE_NAME=IsaacSim && "
+        "source /isaac-sim/setup_python_env.sh && "
+        + " ".join(cmd)
+    )
+    subprocess.run(["bash", "-c", shell_cmd], check=True, cwd=_REMOTE_DIR)
+    ckpts.commit()
+    return out
+
+
 @app.function(gpu=GPU, volumes={"/ckpts": ckpts}, timeout=60 * 60)
 def render_video(checkpoint: str, v_pull_kmh: float = 10.0, episodes: int = 3, steps: int = 400):
     import subprocess
@@ -119,9 +139,9 @@ def render_video(checkpoint: str, v_pull_kmh: float = 10.0, episodes: int = 3, s
 
 @app.local_entrypoint()
 def main(action: str = "train", config: str = "configs/stage1.yaml",
-         checkpoint: str = "", v_pull_kmh: float = 10.0):
+         checkpoint: str = "", v_pull_kmh: float = 10.0, resume: str = ""):
     if action == "train":
-        train.remote(config=config)
+        train.remote(config=config, resume=resume or None)
     elif action == "eval":
         evaluate.remote(checkpoint=checkpoint, v_pull_kmh=v_pull_kmh)
     elif action == "render":
