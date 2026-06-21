@@ -106,11 +106,12 @@ def main():
             try:
                 import omni.replicator.core as rep
                 rep.orchestrator.step(delta_time=0.0)
-                frame_data = rgb_annotator.get_data()
-                if frame_data is not None:
-                    from PIL import Image
-                    img_arr = np.array(frame_data)
-                    if img_arr.ndim == 3 and img_arr.shape[2] >= 3:
+                raw = rgb_annotator.get_data()
+                if raw is not None:
+                    # Isaac Sim 5.x returns {"data": ndarray, "info": {...}}
+                    img_arr = raw["data"] if isinstance(raw, dict) else np.array(raw)
+                    if img_arr is not None and img_arr.ndim == 3 and img_arr.shape[2] >= 3:
+                        from PIL import Image
                         Image.fromarray(img_arr[:, :, :3]).save(
                             os.path.join(frame_dir, f"frame_{step:05d}.png"))
             except Exception:
