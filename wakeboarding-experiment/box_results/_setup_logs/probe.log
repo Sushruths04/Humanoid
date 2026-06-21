@@ -1,0 +1,1317 @@
+[INFO][AppLauncher]: Using device: cuda:0
+[INFO][AppLauncher]: Loading experience file: /workspace/isaaclab/apps/isaaclab.python.headless.kit
+[Info] [carb] Logging to file: /isaac-sim/kit/logs/Kit/Isaac-Sim/5.1/kit_20260620_155518.log
+2026-06-20T15:55:19Z [1,302ms] [Warning] [omni.platforminfo.plugin] failed to open the default display.  Can't verify X Server version.
+2026-06-20T15:55:19Z [1,338ms] [Warning] [omni.usd_config.extension] Enable omni.materialx.libs extension to use MaterialX
+2026-06-20T15:55:21Z [3,237ms] [Warning] [carb] Acquiring non optional plugin interface which is not listed as dependency: [omni::physx::IPhysxBenchmarks v1.0] (plugin: <default plugin>), by client: omni.physics.physx.plugin. Add it to CARB_PLUGIN_IMPL_DEPS() macro of a client.
+2026-06-20T15:55:22Z [4,338ms] [Warning] [omni.isaac.dynamic_control] omni.isaac.dynamic_control is deprecated as of Isaac Sim 4.5. No action is needed from end-users.
+
+|---------------------------------------------------------------------------------------------|
+| Driver Version: 580.159.03    | Graphics API: Vulkan
+|=============================================================================================|
+| GPU | Name                             | Active | LDA | GPU Memory | Vendor-ID | LUID       |
+|     |                                  |        |     |            | Device-ID | UUID       |
+|     |                                  |        |     |            | Bus-ID    |            |
+|---------------------------------------------------------------------------------------------|
+| 0   | NVIDIA L4                        | Yes: 0 |     | 23034   MB | 10de      | 0          |
+|     |                                  |        |     |            | 27b8      | 1834a8c7.. |
+|     |                                  |        |     |            | 0         |            |
+|=============================================================================================|
+| OS: 24.04.2 LTS (Noble Numbat) ubuntu, Version: 24.04.2, Kernel: 6.8.0-1007-gcp
+| Processor: Intel(R) Xeon(R) CPU @ 2.20GHz
+| Cores: 4 | Logical Cores: 8
+|---------------------------------------------------------------------------------------------|
+| Total Memory (MB): 32093 | Free Memory: 22358
+| Total Page/Swap (MB): 16383 | Free Page/Swap: 0
+|---------------------------------------------------------------------------------------------|
+cat: '/sys/devices/system/cpu/cpu*/cpufreq/scaling_governor': No such file or directory
+2026-06-20T15:55:34Z [15,486ms] [Warning] [gpu.foundation.plugin] ECC is enabled on physical device 0
+2026-06-20T15:55:43Z [25,352ms] [Warning] [isaaclab.envs.manager_based_env] Seed not set for the environment. The environment creation may not be deterministic.
+
+[36m======================================================================================[0m
+[36m[1m[INFO][IsaacLab]: Logging to file: /tmp/isaaclab/logs/isaaclab_2026-06-20_15-55-43.log[0m
+[36m======================================================================================[0m
+
+[33m15:55:43 [simulation_context.py] WARNING: The `enable_external_forces_every_iteration` parameter in the PhysxCfg is set to False. If you are experiencing noisy velocities, consider enabling this flag. You may need to slightly increase the number of velocity iterations (setting it to 1 or 2 rather than 0), together with this flag, to improve the accuracy of velocity updates.[0m
+[INFO]: Base environment:
+	Environment device    : cuda:0
+	Environment seed      : None
+	Physics step-size     : 0.005
+	Rendering step-size   : 0.005
+	Environment step-size : 0.02
+[33m15:55:43 [manager_based_env.py] WARNING: The render interval (1) is smaller than the decimation (4). Multiple render calls will happen for each environment step. If this is not intended, set the render interval to be equal to the decimation.[0m
+[INFO]: Time taken for scene creation : 1.349094 seconds
+[INFO]: Scene manager:  <class InteractiveScene>
+	Number of environments: 16
+	Environment spacing   : 4.0
+	Source prim name      : /World/envs/env_0
+	Global prim paths     : []
+	Replicate physics     : True
+[INFO]: Starting the simulation. This may take a few seconds. Please wait...
+[INFO]: Time taken for simulation start : 1.455936 seconds
+[INFO] Command Manager:  <CommandManager> contains 0 active terms.
++------------------------+
+|  Active Command Terms  |
++--------+-------+-------+
+| Index  | Name  |  Type |
++--------+-------+-------+
++--------+-------+-------+
+
+[INFO] Event Manager:  <EventManager> contains 1 active terms.
++----------------------------------+
+| Active Event Terms in Mode: 'reset' |
++------------+---------------------+
+|   Index    | Name                |
++------------+---------------------+
+|     0      | reset_pose          |
++------------+---------------------+
+
+[INFO] Recorder Manager:  <RecorderManager> contains 0 active terms.
++---------------------+
+| Active Recorder Terms |
++-----------+---------+
+|   Index   | Name    |
++-----------+---------+
++-----------+---------+
+
+[INFO] Action Manager:  <ActionManager> contains 1 active terms.
++------------------------------------+
+|  Active Action Terms (shape: 37)   |
++--------+-------------+-------------+
+| Index  | Name        |   Dimension |
++--------+-------------+-------------+
+|   0    | joint_pos   |          37 |
++--------+-------------+-------------+
+
+[INFO] Observation Manager: <ObservationManager> contains 1 groups.
++--------------------------------------------------------+
+| Active Observation Terms in Group: 'policy' (shape: (126,)) |
++-------------+----------------------------+-------------+
+|    Index    | Name                       |    Shape    |
++-------------+----------------------------+-------------+
+|      0      | joint_pos                  |    (37,)    |
+|      1      | joint_vel                  |    (37,)    |
+|      2      | base_ang_vel               |     (3,)    |
+|      3      | proj_gravity               |     (3,)    |
+|      4      | last_action                |    (37,)    |
+|      5      | board_pitch                |     (1,)    |
+|      6      | rope_force                 |     (3,)    |
+|      7      | handle_rel                 |     (3,)    |
+|      8      | v_pull                     |     (1,)    |
+|      9      | phase                      |     (1,)    |
++-------------+----------------------------+-------------+
+
+[INFO] Termination Manager:  <TerminationManager> contains 3 active terms.
++--------------------------------+
+|    Active Termination Terms    |
++-------+-------------+----------+
+| Index | Name        | Time Out |
++-------+-------------+----------+
+|   0   | timeout     |   True   |
+|   1   | board_range |  False   |
+|   2   | fell        |  False   |
++-------+-------------+----------+
+
+[INFO] Reward Manager:  <RewardManager> contains 17 active terms.
++-----------------------------------------+
+|           Active Reward Terms           |
++-------+-----------------------+---------+
+| Index | Name                  |  Weight |
++-------+-----------------------+---------+
+|   0   | pelvis_height         |     2.0 |
+|   1   | height_progress       |     1.5 |
+|   2   | uprightness           |     2.0 |
+|   3   | survival              |     0.5 |
+|   4   | forward_glide         |     1.0 |
+|   5   | success_bonus         |    50.0 |
+|   6   | board_positive_angle  |     1.5 |
+|   7   | arms_straight         |     1.0 |
+|   8   | handle_at_hips        |     0.8 |
+|   9   | lean_back_moderate    |     0.7 |
+|   10  | knee_bend_maintained  |     0.8 |
+|   11  | pen_stand_too_fast    |    -1.0 |
+|   12  | pen_pull_against_rope |    -1.0 |
+|   13  | pen_torque            | -0.0001 |
+|   14  | pen_action_rate       |   -0.01 |
+|   15  | pen_action_accel      |  -0.001 |
+|   16  | pen_dof_pos_limits    |    -5.0 |
++-------+-----------------------+---------+
+
+[INFO] Curriculum Manager:  <CurriculumManager> contains 0 active terms.
++----------------------+
+| Active Curriculum Terms |
++-----------+----------+
+|   Index   | Name     |
++-----------+----------+
++-----------+----------+
+
+[INFO]: Completed setting up the environment...
+--------------------------------------------------------------------------------
+Resolved observation sets: 
+	 actor :  ['policy']
+	 critic :  ['policy']
+--------------------------------------------------------------------------------
+Actor Model: MLPModel(
+  (obs_normalizer): Identity()
+  (distribution): GaussianDistribution()
+  (mlp): MLP(
+    (0): Linear(in_features=126, out_features=256, bias=True)
+    (1): ELU(alpha=1.0)
+    (2): Linear(in_features=256, out_features=256, bias=True)
+    (3): ELU(alpha=1.0)
+    (4): Linear(in_features=256, out_features=37, bias=True)
+  )
+)
+Critic Model: MLPModel(
+  (obs_normalizer): Identity()
+  (mlp): MLP(
+    (0): Linear(in_features=126, out_features=256, bias=True)
+    (1): ELU(alpha=1.0)
+    (2): Linear(in_features=256, out_features=256, bias=True)
+    (3): ELU(alpha=1.0)
+    (4): Linear(in_features=256, out_features=1, bias=True)
+  )
+)
+Could not find git repository in /isaac-sim/kit/python/lib/python3.11/site-packages/rsl_rl/__init__.py. Skipping.
+################################################################################
+[1m                            Learning iteration 0/30                             [0m 
+
+                            Total steps: 384 
+                       Steps per second: 183 
+                        Collection time: 1.536s 
+                          Learning time: 0.552s 
+                        Mean value loss: 0.1135
+                    Mean surrogate loss: -0.0360
+                      Mean entropy loss: 52.4988
+                            Mean reward: -0.34
+                    Mean episode length: 24.00
+                        Mean action std: 1.00
+           Episode_Reward/pelvis_height: 0.0047
+         Episode_Reward/height_progress: 0.0000
+             Episode_Reward/uprightness: 0.0041
+                Episode_Reward/survival: 0.0013
+           Episode_Reward/forward_glide: 0.0000
+           Episode_Reward/success_bonus: 0.0000
+    Episode_Reward/board_positive_angle: 0.0000
+           Episode_Reward/arms_straight: 0.0001
+          Episode_Reward/handle_at_hips: 0.0010
+      Episode_Reward/lean_back_moderate: 0.0000
+    Episode_Reward/knee_bend_maintained: 0.0020
+      Episode_Reward/pen_stand_too_fast: 0.0000
+   Episode_Reward/pen_pull_against_rope: 0.0000
+              Episode_Reward/pen_torque: -0.0092
+         Episode_Reward/pen_action_rate: -0.0019
+        Episode_Reward/pen_action_accel: -0.0002
+      Episode_Reward/pen_dof_pos_limits: -0.0037
+            Episode_Termination/timeout: 0.0000
+        Episode_Termination/board_range: 0.0000
+               Episode_Termination/fell: 0.0026
+--------------------------------------------------------------------------------
+                         Iteration time: 2.09s
+                           Time elapsed: 00:00:02
+                                    ETA: 00:01:00
+
+################################################################################
+[1m                            Learning iteration 1/30                             [0m 
+
+                            Total steps: 768 
+                       Steps per second: 238 
+                        Collection time: 1.399s 
+                          Learning time: 0.208s 
+                        Mean value loss: 0.0454
+                    Mean surrogate loss: -0.0762
+                      Mean entropy loss: 52.4991
+                            Mean reward: -0.36
+                    Mean episode length: 34.20
+                        Mean action std: 1.00
+           Episode_Reward/pelvis_height: 0.1693
+         Episode_Reward/height_progress: 0.0002
+             Episode_Reward/uprightness: 0.1503
+                Episode_Reward/survival: 0.0444
+           Episode_Reward/forward_glide: 0.0000
+           Episode_Reward/success_bonus: 0.0000
+    Episode_Reward/board_positive_angle: 0.0015
+           Episode_Reward/arms_straight: 0.0040
+          Episode_Reward/handle_at_hips: 0.0354
+      Episode_Reward/lean_back_moderate: 0.0000
+    Episode_Reward/knee_bend_maintained: 0.0710
+      Episode_Reward/pen_stand_too_fast: 0.0000
+   Episode_Reward/pen_pull_against_rope: 0.0000
+              Episode_Reward/pen_torque: -0.3217
+         Episode_Reward/pen_action_rate: -0.0708
+        Episode_Reward/pen_action_accel: -0.0071
+      Episode_Reward/pen_dof_pos_limits: -0.1076
+            Episode_Termination/timeout: 0.0000
+        Episode_Termination/board_range: 0.0000
+               Episode_Termination/fell: 0.5755
+--------------------------------------------------------------------------------
+                         Iteration time: 1.61s
+                           Time elapsed: 00:00:03
+                                    ETA: 00:00:51
+
+################################################################################
+[1m                            Learning iteration 2/30                             [0m 
+
+                            Total steps: 1152 
+                       Steps per second: 270 
+                        Collection time: 1.221s 
+                          Learning time: 0.200s 
+                        Mean value loss: 0.0389
+                    Mean surrogate loss: -0.0802
+                      Mean entropy loss: 52.4973
+                            Mean reward: -0.46
+                    Mean episode length: 34.64
+                        Mean action std: 1.00
+           Episode_Reward/pelvis_height: 0.1905
+         Episode_Reward/height_progress: 0.0002
+             Episode_Reward/uprightness: 0.1687
+                Episode_Reward/survival: 0.0494
+           Episode_Reward/forward_glide: 0.0001
+           Episode_Reward/success_bonus: 0.0000
+    Episode_Reward/board_positive_angle: 0.0016
+           Episode_Reward/arms_straight: 0.0044
+          Episode_Reward/handle_at_hips: 0.0394
+      Episode_Reward/lean_back_moderate: 0.0000
+    Episode_Reward/knee_bend_maintained: 0.0790
+      Episode_Reward/pen_stand_too_fast: -0.0011
+   Episode_Reward/pen_pull_against_rope: 0.0000
+              Episode_Reward/pen_torque: -0.4169
+         Episode_Reward/pen_action_rate: -0.0812
+        Episode_Reward/pen_action_accel: -0.0081
+      Episode_Reward/pen_dof_pos_limits: -0.1396
+            Episode_Termination/timeout: 0.0000
+        Episode_Termination/board_range: 0.0000
+               Episode_Termination/fell: 0.9922
+--------------------------------------------------------------------------------
+                         Iteration time: 1.42s
+                           Time elapsed: 00:00:05
+                                    ETA: 00:00:46
+
+################################################################################
+[1m                            Learning iteration 3/30                             [0m 
+
+                            Total steps: 1536 
+                       Steps per second: 266 
+                        Collection time: 1.242s 
+                          Learning time: 0.200s 
+                        Mean value loss: 0.0389
+                    Mean surrogate loss: -0.0835
+                      Mean entropy loss: 52.4941
+                            Mean reward: -0.44
+                    Mean episode length: 34.18
+                        Mean action std: 1.00
+           Episode_Reward/pelvis_height: 0.1625
+         Episode_Reward/height_progress: 0.0000
+             Episode_Reward/uprightness: 0.1412
+                Episode_Reward/survival: 0.0420
+           Episode_Reward/forward_glide: 0.0000
+           Episode_Reward/success_bonus: 0.0000
+    Episode_Reward/board_positive_angle: 0.0014
+           Episode_Reward/arms_straight: 0.0038
+          Episode_Reward/handle_at_hips: 0.0335
+      Episode_Reward/lean_back_moderate: 0.0000
+    Episode_Reward/knee_bend_maintained: 0.0672
+      Episode_Reward/pen_stand_too_fast: -0.0004
+   Episode_Reward/pen_pull_against_rope: 0.0000
+              Episode_Reward/pen_torque: -0.3068
+         Episode_Reward/pen_action_rate: -0.0664
+        Episode_Reward/pen_action_accel: -0.0066
+      Episode_Reward/pen_dof_pos_limits: -0.1086
+            Episode_Termination/timeout: 0.0000
+        Episode_Termination/board_range: 0.0000
+               Episode_Termination/fell: 1.0000
+--------------------------------------------------------------------------------
+                         Iteration time: 1.44s
+                           Time elapsed: 00:00:06
+                                    ETA: 00:00:42
+
+################################################################################
+[1m                            Learning iteration 4/30                             [0m 
+
+                            Total steps: 1920 
+                       Steps per second: 265 
+                        Collection time: 1.244s 
+                          Learning time: 0.205s 
+                        Mean value loss: 0.0430
+                    Mean surrogate loss: -0.0820
+                      Mean entropy loss: 52.4916
+                            Mean reward: -0.46
+                    Mean episode length: 35.96
+                        Mean action std: 1.00
+           Episode_Reward/pelvis_height: 0.2195
+         Episode_Reward/height_progress: 0.0002
+             Episode_Reward/uprightness: 0.1979
+                Episode_Reward/survival: 0.0567
+           Episode_Reward/forward_glide: 0.0001
+           Episode_Reward/success_bonus: 0.0000
+    Episode_Reward/board_positive_angle: 0.0019
+           Episode_Reward/arms_straight: 0.0051
+          Episode_Reward/handle_at_hips: 0.0452
+      Episode_Reward/lean_back_moderate: 0.0000
+    Episode_Reward/knee_bend_maintained: 0.0907
+      Episode_Reward/pen_stand_too_fast: -0.0028
+   Episode_Reward/pen_pull_against_rope: 0.0000
+              Episode_Reward/pen_torque: -0.4453
+         Episode_Reward/pen_action_rate: -0.0922
+        Episode_Reward/pen_action_accel: -0.0092
+      Episode_Reward/pen_dof_pos_limits: -0.1347
+            Episode_Termination/timeout: 0.0000
+        Episode_Termination/board_range: 0.0000
+               Episode_Termination/fell: 1.0000
+--------------------------------------------------------------------------------
+                         Iteration time: 1.45s
+                           Time elapsed: 00:00:08
+                                    ETA: 00:00:40
+
+################################################################################
+[1m                            Learning iteration 5/30                             [0m 
+
+                            Total steps: 2304 
+                       Steps per second: 269 
+                        Collection time: 1.204s 
+                          Learning time: 0.219s 
+                        Mean value loss: 0.0320
+                    Mean surrogate loss: -0.0800
+                      Mean entropy loss: 52.4897
+                            Mean reward: -0.43
+                    Mean episode length: 35.98
+                        Mean action std: 1.00
+           Episode_Reward/pelvis_height: 0.1659
+         Episode_Reward/height_progress: 0.0000
+             Episode_Reward/uprightness: 0.1424
+                Episode_Reward/survival: 0.0432
+           Episode_Reward/forward_glide: 0.0000
+           Episode_Reward/success_bonus: 0.0000
+    Episode_Reward/board_positive_angle: 0.0014
+           Episode_Reward/arms_straight: 0.0039
+          Episode_Reward/handle_at_hips: 0.0345
+      Episode_Reward/lean_back_moderate: 0.0000
+    Episode_Reward/knee_bend_maintained: 0.0692
+      Episode_Reward/pen_stand_too_fast: -0.0006
+   Episode_Reward/pen_pull_against_rope: 0.0000
+              Episode_Reward/pen_torque: -0.2872
+         Episode_Reward/pen_action_rate: -0.0642
+        Episode_Reward/pen_action_accel: -0.0064
+      Episode_Reward/pen_dof_pos_limits: -0.1027
+            Episode_Termination/timeout: 0.0000
+        Episode_Termination/board_range: 0.0000
+               Episode_Termination/fell: 1.0000
+--------------------------------------------------------------------------------
+                         Iteration time: 1.42s
+                           Time elapsed: 00:00:09
+                                    ETA: 00:00:37
+
+################################################################################
+[1m                            Learning iteration 6/30                             [0m 
+
+                            Total steps: 2688 
+                       Steps per second: 262 
+                        Collection time: 1.261s 
+                          Learning time: 0.203s 
+                        Mean value loss: 0.0270
+                    Mean surrogate loss: -0.0766
+                      Mean entropy loss: 52.4869
+                            Mean reward: -0.43
+                    Mean episode length: 36.24
+                        Mean action std: 1.00
+           Episode_Reward/pelvis_height: 0.1776
+         Episode_Reward/height_progress: 0.0000
+             Episode_Reward/uprightness: 0.1575
+                Episode_Reward/survival: 0.0462
+           Episode_Reward/forward_glide: 0.0001
+           Episode_Reward/success_bonus: 0.0000
+    Episode_Reward/board_positive_angle: 0.0015
+           Episode_Reward/arms_straight: 0.0041
+          Episode_Reward/handle_at_hips: 0.0368
+      Episode_Reward/lean_back_moderate: 0.0000
+    Episode_Reward/knee_bend_maintained: 0.0739
+      Episode_Reward/pen_stand_too_fast: -0.0026
+   Episode_Reward/pen_pull_against_rope: 0.0000
+              Episode_Reward/pen_torque: -0.3481
+         Episode_Reward/pen_action_rate: -0.0764
+        Episode_Reward/pen_action_accel: -0.0076
+      Episode_Reward/pen_dof_pos_limits: -0.1084
+            Episode_Termination/timeout: 0.0000
+        Episode_Termination/board_range: 0.0000
+               Episode_Termination/fell: 1.0000
+--------------------------------------------------------------------------------
+                         Iteration time: 1.46s
+                           Time elapsed: 00:00:10
+                                    ETA: 00:00:35
+
+################################################################################
+[1m                            Learning iteration 7/30                             [0m 
+
+                            Total steps: 3072 
+                       Steps per second: 256 
+                        Collection time: 1.279s 
+                          Learning time: 0.217s 
+                        Mean value loss: 0.0257
+                    Mean surrogate loss: -0.0815
+                      Mean entropy loss: 52.4848
+                            Mean reward: -0.40
+                    Mean episode length: 36.21
+                        Mean action std: 1.00
+           Episode_Reward/pelvis_height: 0.1559
+         Episode_Reward/height_progress: 0.0000
+             Episode_Reward/uprightness: 0.1350
+                Episode_Reward/survival: 0.0406
+           Episode_Reward/forward_glide: 0.0001
+           Episode_Reward/success_bonus: 0.0000
+    Episode_Reward/board_positive_angle: 0.0014
+           Episode_Reward/arms_straight: 0.0036
+          Episode_Reward/handle_at_hips: 0.0324
+      Episode_Reward/lean_back_moderate: 0.0000
+    Episode_Reward/knee_bend_maintained: 0.0649
+      Episode_Reward/pen_stand_too_fast: -0.0006
+   Episode_Reward/pen_pull_against_rope: 0.0000
+              Episode_Reward/pen_torque: -0.3160
+         Episode_Reward/pen_action_rate: -0.0644
+        Episode_Reward/pen_action_accel: -0.0064
+      Episode_Reward/pen_dof_pos_limits: -0.0924
+            Episode_Termination/timeout: 0.0000
+        Episode_Termination/board_range: 0.0000
+               Episode_Termination/fell: 1.0000
+--------------------------------------------------------------------------------
+                         Iteration time: 1.50s
+                           Time elapsed: 00:00:12
+                                    ETA: 00:00:34
+
+################################################################################
+[1m                            Learning iteration 8/30                             [0m 
+
+                            Total steps: 3456 
+                       Steps per second: 261 
+                        Collection time: 1.268s 
+                          Learning time: 0.202s 
+                        Mean value loss: 0.0269
+                    Mean surrogate loss: -0.0748
+                      Mean entropy loss: 52.4808
+                            Mean reward: -0.38
+                    Mean episode length: 36.18
+                        Mean action std: 1.00
+           Episode_Reward/pelvis_height: 0.1930
+         Episode_Reward/height_progress: 0.0000
+             Episode_Reward/uprightness: 0.1700
+                Episode_Reward/survival: 0.0508
+           Episode_Reward/forward_glide: 0.0000
+           Episode_Reward/success_bonus: 0.0000
+    Episode_Reward/board_positive_angle: 0.0017
+           Episode_Reward/arms_straight: 0.0045
+          Episode_Reward/handle_at_hips: 0.0405
+      Episode_Reward/lean_back_moderate: 0.0000
+    Episode_Reward/knee_bend_maintained: 0.0812
+      Episode_Reward/pen_stand_too_fast: -0.0021
+   Episode_Reward/pen_pull_against_rope: 0.0000
+              Episode_Reward/pen_torque: -0.3871
+         Episode_Reward/pen_action_rate: -0.0832
+        Episode_Reward/pen_action_accel: -0.0083
+      Episode_Reward/pen_dof_pos_limits: -0.0993
+            Episode_Termination/timeout: 0.0000
+        Episode_Termination/board_range: 0.0000
+               Episode_Termination/fell: 1.0000
+--------------------------------------------------------------------------------
+                         Iteration time: 1.47s
+                           Time elapsed: 00:00:13
+                                    ETA: 00:00:32
+
+################################################################################
+[1m                            Learning iteration 9/30                             [0m 
+
+                            Total steps: 3840 
+                       Steps per second: 259 
+                        Collection time: 1.247s 
+                          Learning time: 0.230s 
+                        Mean value loss: 0.0220
+                    Mean surrogate loss: -0.0780
+                      Mean entropy loss: 52.4757
+                            Mean reward: -0.38
+                    Mean episode length: 36.14
+                        Mean action std: 1.00
+           Episode_Reward/pelvis_height: 0.1737
+         Episode_Reward/height_progress: 0.0000
+             Episode_Reward/uprightness: 0.1523
+                Episode_Reward/survival: 0.0456
+           Episode_Reward/forward_glide: 0.0000
+           Episode_Reward/success_bonus: 0.0000
+    Episode_Reward/board_positive_angle: 0.0015
+           Episode_Reward/arms_straight: 0.0041
+          Episode_Reward/handle_at_hips: 0.0364
+      Episode_Reward/lean_back_moderate: 0.0000
+    Episode_Reward/knee_bend_maintained: 0.0730
+      Episode_Reward/pen_stand_too_fast: -0.0020
+   Episode_Reward/pen_pull_against_rope: 0.0000
+              Episode_Reward/pen_torque: -0.3492
+         Episode_Reward/pen_action_rate: -0.0746
+        Episode_Reward/pen_action_accel: -0.0075
+      Episode_Reward/pen_dof_pos_limits: -0.0967
+            Episode_Termination/timeout: 0.0000
+        Episode_Termination/board_range: 0.0000
+               Episode_Termination/fell: 1.0000
+--------------------------------------------------------------------------------
+                         Iteration time: 1.48s
+                           Time elapsed: 00:00:15
+                                    ETA: 00:00:30
+
+################################################################################
+[1m                            Learning iteration 10/30                            [0m 
+
+                            Total steps: 4224 
+                       Steps per second: 260 
+                        Collection time: 1.265s 
+                          Learning time: 0.209s 
+                        Mean value loss: 0.0288
+                    Mean surrogate loss: -0.0774
+                      Mean entropy loss: 52.4731
+                            Mean reward: -0.36
+                    Mean episode length: 36.54
+                        Mean action std: 1.00
+           Episode_Reward/pelvis_height: 0.1722
+         Episode_Reward/height_progress: 0.0000
+             Episode_Reward/uprightness: 0.1537
+                Episode_Reward/survival: 0.0455
+           Episode_Reward/forward_glide: 0.0000
+           Episode_Reward/success_bonus: 0.0000
+    Episode_Reward/board_positive_angle: 0.0015
+           Episode_Reward/arms_straight: 0.0041
+          Episode_Reward/handle_at_hips: 0.0363
+      Episode_Reward/lean_back_moderate: 0.0000
+    Episode_Reward/knee_bend_maintained: 0.0728
+      Episode_Reward/pen_stand_too_fast: -0.0016
+   Episode_Reward/pen_pull_against_rope: 0.0000
+              Episode_Reward/pen_torque: -0.3031
+         Episode_Reward/pen_action_rate: -0.0716
+        Episode_Reward/pen_action_accel: -0.0072
+      Episode_Reward/pen_dof_pos_limits: -0.0950
+            Episode_Termination/timeout: 0.0000
+        Episode_Termination/board_range: 0.0000
+               Episode_Termination/fell: 1.0000
+--------------------------------------------------------------------------------
+                         Iteration time: 1.47s
+                           Time elapsed: 00:00:16
+                                    ETA: 00:00:29
+
+################################################################################
+[1m                            Learning iteration 11/30                            [0m 
+
+                            Total steps: 4608 
+                       Steps per second: 258 
+                        Collection time: 1.277s 
+                          Learning time: 0.208s 
+                        Mean value loss: 0.0238
+                    Mean surrogate loss: -0.0814
+                      Mean entropy loss: 52.4702
+                            Mean reward: -0.32
+                    Mean episode length: 36.33
+                        Mean action std: 1.00
+           Episode_Reward/pelvis_height: 0.1659
+         Episode_Reward/height_progress: 0.0000
+             Episode_Reward/uprightness: 0.1458
+                Episode_Reward/survival: 0.0432
+           Episode_Reward/forward_glide: 0.0000
+           Episode_Reward/success_bonus: 0.0000
+    Episode_Reward/board_positive_angle: 0.0014
+           Episode_Reward/arms_straight: 0.0039
+          Episode_Reward/handle_at_hips: 0.0344
+      Episode_Reward/lean_back_moderate: 0.0000
+    Episode_Reward/knee_bend_maintained: 0.0691
+      Episode_Reward/pen_stand_too_fast: -0.0014
+   Episode_Reward/pen_pull_against_rope: 0.0000
+              Episode_Reward/pen_torque: -0.3171
+         Episode_Reward/pen_action_rate: -0.0717
+        Episode_Reward/pen_action_accel: -0.0072
+      Episode_Reward/pen_dof_pos_limits: -0.0927
+            Episode_Termination/timeout: 0.0000
+        Episode_Termination/board_range: 0.0000
+               Episode_Termination/fell: 1.0000
+--------------------------------------------------------------------------------
+                         Iteration time: 1.48s
+                           Time elapsed: 00:00:18
+                                    ETA: 00:00:27
+
+################################################################################
+[1m                            Learning iteration 12/30                            [0m 
+
+                            Total steps: 4992 
+                       Steps per second: 263 
+                        Collection time: 1.250s 
+                          Learning time: 0.204s 
+                        Mean value loss: 0.0281
+                    Mean surrogate loss: -0.0741
+                      Mean entropy loss: 52.4667
+                            Mean reward: -0.29
+                    Mean episode length: 36.33
+                        Mean action std: 1.00
+           Episode_Reward/pelvis_height: 0.1690
+         Episode_Reward/height_progress: 0.0000
+             Episode_Reward/uprightness: 0.1492
+                Episode_Reward/survival: 0.0443
+           Episode_Reward/forward_glide: 0.0000
+           Episode_Reward/success_bonus: 0.0000
+    Episode_Reward/board_positive_angle: 0.0015
+           Episode_Reward/arms_straight: 0.0040
+          Episode_Reward/handle_at_hips: 0.0354
+      Episode_Reward/lean_back_moderate: 0.0000
+    Episode_Reward/knee_bend_maintained: 0.0709
+      Episode_Reward/pen_stand_too_fast: -0.0017
+   Episode_Reward/pen_pull_against_rope: 0.0000
+              Episode_Reward/pen_torque: -0.3100
+         Episode_Reward/pen_action_rate: -0.0729
+        Episode_Reward/pen_action_accel: -0.0073
+      Episode_Reward/pen_dof_pos_limits: -0.0865
+            Episode_Termination/timeout: 0.0000
+        Episode_Termination/board_range: 0.0000
+               Episode_Termination/fell: 1.0000
+--------------------------------------------------------------------------------
+                         Iteration time: 1.45s
+                           Time elapsed: 00:00:19
+                                    ETA: 00:00:25
+
+################################################################################
+[1m                            Learning iteration 13/30                            [0m 
+
+                            Total steps: 5376 
+                       Steps per second: 244 
+                        Collection time: 1.311s 
+                          Learning time: 0.258s 
+                        Mean value loss: 0.0253
+                    Mean surrogate loss: -0.0757
+                      Mean entropy loss: 52.4632
+                            Mean reward: -0.28
+                    Mean episode length: 36.67
+                        Mean action std: 1.00
+           Episode_Reward/pelvis_height: 0.1550
+         Episode_Reward/height_progress: 0.0000
+             Episode_Reward/uprightness: 0.1344
+                Episode_Reward/survival: 0.0404
+           Episode_Reward/forward_glide: 0.0000
+           Episode_Reward/success_bonus: 0.0000
+    Episode_Reward/board_positive_angle: 0.0013
+           Episode_Reward/arms_straight: 0.0036
+          Episode_Reward/handle_at_hips: 0.0323
+      Episode_Reward/lean_back_moderate: 0.0000
+    Episode_Reward/knee_bend_maintained: 0.0647
+      Episode_Reward/pen_stand_too_fast: -0.0012
+   Episode_Reward/pen_pull_against_rope: 0.0000
+              Episode_Reward/pen_torque: -0.3061
+         Episode_Reward/pen_action_rate: -0.0650
+        Episode_Reward/pen_action_accel: -0.0065
+      Episode_Reward/pen_dof_pos_limits: -0.0845
+            Episode_Termination/timeout: 0.0000
+        Episode_Termination/board_range: 0.0000
+               Episode_Termination/fell: 1.0000
+--------------------------------------------------------------------------------
+                         Iteration time: 1.57s
+                           Time elapsed: 00:00:21
+                                    ETA: 00:00:24
+
+################################################################################
+[1m                            Learning iteration 14/30                            [0m 
+
+                            Total steps: 5760 
+                       Steps per second: 261 
+                        Collection time: 1.252s 
+                          Learning time: 0.216s 
+                        Mean value loss: 0.0301
+                    Mean surrogate loss: -0.0810
+                      Mean entropy loss: 52.4590
+                            Mean reward: -0.25
+                    Mean episode length: 36.37
+                        Mean action std: 1.00
+           Episode_Reward/pelvis_height: 0.1928
+         Episode_Reward/height_progress: 0.0000
+             Episode_Reward/uprightness: 0.1714
+                Episode_Reward/survival: 0.0495
+           Episode_Reward/forward_glide: 0.0002
+           Episode_Reward/success_bonus: 0.0000
+    Episode_Reward/board_positive_angle: 0.0017
+           Episode_Reward/arms_straight: 0.0044
+          Episode_Reward/handle_at_hips: 0.0395
+      Episode_Reward/lean_back_moderate: 0.0000
+    Episode_Reward/knee_bend_maintained: 0.0792
+      Episode_Reward/pen_stand_too_fast: -0.0018
+   Episode_Reward/pen_pull_against_rope: 0.0000
+              Episode_Reward/pen_torque: -0.3759
+         Episode_Reward/pen_action_rate: -0.0808
+        Episode_Reward/pen_action_accel: -0.0081
+      Episode_Reward/pen_dof_pos_limits: -0.1044
+            Episode_Termination/timeout: 0.0000
+        Episode_Termination/board_range: 0.0000
+               Episode_Termination/fell: 1.0000
+--------------------------------------------------------------------------------
+                         Iteration time: 1.47s
+                           Time elapsed: 00:00:22
+                                    ETA: 00:00:22
+
+################################################################################
+[1m                            Learning iteration 15/30                            [0m 
+
+                            Total steps: 6144 
+                       Steps per second: 266 
+                        Collection time: 1.229s 
+                          Learning time: 0.213s 
+                        Mean value loss: 0.0336
+                    Mean surrogate loss: -0.0746
+                      Mean entropy loss: 52.4552
+                            Mean reward: -0.22
+                    Mean episode length: 36.61
+                        Mean action std: 1.00
+           Episode_Reward/pelvis_height: 0.1808
+         Episode_Reward/height_progress: 0.0000
+             Episode_Reward/uprightness: 0.1581
+                Episode_Reward/survival: 0.0464
+           Episode_Reward/forward_glide: 0.0001
+           Episode_Reward/success_bonus: 0.0000
+    Episode_Reward/board_positive_angle: 0.0015
+           Episode_Reward/arms_straight: 0.0042
+          Episode_Reward/handle_at_hips: 0.0370
+      Episode_Reward/lean_back_moderate: 0.0000
+    Episode_Reward/knee_bend_maintained: 0.0742
+      Episode_Reward/pen_stand_too_fast: -0.0022
+   Episode_Reward/pen_pull_against_rope: 0.0000
+              Episode_Reward/pen_torque: -0.3352
+         Episode_Reward/pen_action_rate: -0.0749
+        Episode_Reward/pen_action_accel: -0.0075
+      Episode_Reward/pen_dof_pos_limits: -0.1038
+            Episode_Termination/timeout: 0.0000
+        Episode_Termination/board_range: 0.0000
+               Episode_Termination/fell: 1.0000
+--------------------------------------------------------------------------------
+                         Iteration time: 1.44s
+                           Time elapsed: 00:00:24
+                                    ETA: 00:00:21
+
+################################################################################
+[1m                            Learning iteration 16/30                            [0m 
+
+                            Total steps: 6528 
+                       Steps per second: 247 
+                        Collection time: 1.320s 
+                          Learning time: 0.230s 
+                        Mean value loss: 0.0336
+                    Mean surrogate loss: -0.0782
+                      Mean entropy loss: 52.4538
+                            Mean reward: -0.21
+                    Mean episode length: 36.71
+                        Mean action std: 1.00
+           Episode_Reward/pelvis_height: 0.1614
+         Episode_Reward/height_progress: 0.0000
+             Episode_Reward/uprightness: 0.1409
+                Episode_Reward/survival: 0.0422
+           Episode_Reward/forward_glide: 0.0001
+           Episode_Reward/success_bonus: 0.0000
+    Episode_Reward/board_positive_angle: 0.0014
+           Episode_Reward/arms_straight: 0.0038
+          Episode_Reward/handle_at_hips: 0.0337
+      Episode_Reward/lean_back_moderate: 0.0000
+    Episode_Reward/knee_bend_maintained: 0.0676
+      Episode_Reward/pen_stand_too_fast: -0.0020
+   Episode_Reward/pen_pull_against_rope: 0.0000
+              Episode_Reward/pen_torque: -0.3040
+         Episode_Reward/pen_action_rate: -0.0700
+        Episode_Reward/pen_action_accel: -0.0070
+      Episode_Reward/pen_dof_pos_limits: -0.0826
+            Episode_Termination/timeout: 0.0000
+        Episode_Termination/board_range: 0.0000
+               Episode_Termination/fell: 1.0000
+--------------------------------------------------------------------------------
+                         Iteration time: 1.55s
+                           Time elapsed: 00:00:25
+                                    ETA: 00:00:19
+
+################################################################################
+[1m                            Learning iteration 17/30                            [0m 
+
+                            Total steps: 6912 
+                       Steps per second: 260 
+                        Collection time: 1.269s 
+                          Learning time: 0.205s 
+                        Mean value loss: 0.0451
+                    Mean surrogate loss: -0.0748
+                      Mean entropy loss: 52.4527
+                            Mean reward: -0.20
+                    Mean episode length: 37.13
+                        Mean action std: 1.00
+           Episode_Reward/pelvis_height: 0.2086
+         Episode_Reward/height_progress: 0.0001
+             Episode_Reward/uprightness: 0.1840
+                Episode_Reward/survival: 0.0541
+           Episode_Reward/forward_glide: 0.0001
+           Episode_Reward/success_bonus: 0.0000
+    Episode_Reward/board_positive_angle: 0.0018
+           Episode_Reward/arms_straight: 0.0048
+          Episode_Reward/handle_at_hips: 0.0432
+      Episode_Reward/lean_back_moderate: 0.0000
+    Episode_Reward/knee_bend_maintained: 0.0866
+      Episode_Reward/pen_stand_too_fast: -0.0028
+   Episode_Reward/pen_pull_against_rope: 0.0000
+              Episode_Reward/pen_torque: -0.3885
+         Episode_Reward/pen_action_rate: -0.0874
+        Episode_Reward/pen_action_accel: -0.0087
+      Episode_Reward/pen_dof_pos_limits: -0.1002
+            Episode_Termination/timeout: 0.0000
+        Episode_Termination/board_range: 0.0000
+               Episode_Termination/fell: 1.0000
+--------------------------------------------------------------------------------
+                         Iteration time: 1.47s
+                           Time elapsed: 00:00:27
+                                    ETA: 00:00:18
+
+################################################################################
+[1m                            Learning iteration 18/30                            [0m 
+
+                            Total steps: 7296 
+                       Steps per second: 261 
+                        Collection time: 1.261s 
+                          Learning time: 0.207s 
+                        Mean value loss: 0.0322
+                    Mean surrogate loss: -0.0796
+                      Mean entropy loss: 52.4494
+                            Mean reward: -0.19
+                    Mean episode length: 37.22
+                        Mean action std: 1.00
+           Episode_Reward/pelvis_height: 0.1843
+         Episode_Reward/height_progress: 0.0000
+             Episode_Reward/uprightness: 0.1611
+                Episode_Reward/survival: 0.0473
+           Episode_Reward/forward_glide: 0.0001
+           Episode_Reward/success_bonus: 0.0000
+    Episode_Reward/board_positive_angle: 0.0016
+           Episode_Reward/arms_straight: 0.0042
+          Episode_Reward/handle_at_hips: 0.0378
+      Episode_Reward/lean_back_moderate: 0.0000
+    Episode_Reward/knee_bend_maintained: 0.0757
+      Episode_Reward/pen_stand_too_fast: -0.0014
+   Episode_Reward/pen_pull_against_rope: 0.0000
+              Episode_Reward/pen_torque: -0.3514
+         Episode_Reward/pen_action_rate: -0.0763
+        Episode_Reward/pen_action_accel: -0.0076
+      Episode_Reward/pen_dof_pos_limits: -0.0909
+            Episode_Termination/timeout: 0.0000
+        Episode_Termination/board_range: 0.0000
+               Episode_Termination/fell: 1.0000
+--------------------------------------------------------------------------------
+                         Iteration time: 1.47s
+                           Time elapsed: 00:00:28
+                                    ETA: 00:00:16
+
+################################################################################
+[1m                            Learning iteration 19/30                            [0m 
+
+                            Total steps: 7680 
+                       Steps per second: 261 
+                        Collection time: 1.254s 
+                          Learning time: 0.216s 
+                        Mean value loss: 0.0436
+                    Mean surrogate loss: -0.0794
+                      Mean entropy loss: 52.4475
+                            Mean reward: -0.19
+                    Mean episode length: 37.66
+                        Mean action std: 1.00
+           Episode_Reward/pelvis_height: 0.1792
+         Episode_Reward/height_progress: 0.0000
+             Episode_Reward/uprightness: 0.1603
+                Episode_Reward/survival: 0.0465
+           Episode_Reward/forward_glide: 0.0000
+           Episode_Reward/success_bonus: 0.0000
+    Episode_Reward/board_positive_angle: 0.0015
+           Episode_Reward/arms_straight: 0.0042
+          Episode_Reward/handle_at_hips: 0.0371
+      Episode_Reward/lean_back_moderate: 0.0000
+    Episode_Reward/knee_bend_maintained: 0.0744
+      Episode_Reward/pen_stand_too_fast: -0.0011
+   Episode_Reward/pen_pull_against_rope: 0.0000
+              Episode_Reward/pen_torque: -0.3112
+         Episode_Reward/pen_action_rate: -0.0751
+        Episode_Reward/pen_action_accel: -0.0075
+      Episode_Reward/pen_dof_pos_limits: -0.0922
+            Episode_Termination/timeout: 0.0000
+        Episode_Termination/board_range: 0.0000
+               Episode_Termination/fell: 1.0000
+--------------------------------------------------------------------------------
+                         Iteration time: 1.47s
+                           Time elapsed: 00:00:30
+                                    ETA: 00:00:15
+
+################################################################################
+[1m                            Learning iteration 20/30                            [0m 
+
+                            Total steps: 8064 
+                       Steps per second: 247 
+                        Collection time: 1.320s 
+                          Learning time: 0.232s 
+                        Mean value loss: 0.0377
+                    Mean surrogate loss: -0.0792
+                      Mean entropy loss: 52.4465
+                            Mean reward: -0.18
+                    Mean episode length: 37.48
+                        Mean action std: 1.00
+           Episode_Reward/pelvis_height: 0.1710
+         Episode_Reward/height_progress: 0.0000
+             Episode_Reward/uprightness: 0.1469
+                Episode_Reward/survival: 0.0450
+           Episode_Reward/forward_glide: 0.0000
+           Episode_Reward/success_bonus: 0.0000
+    Episode_Reward/board_positive_angle: 0.0015
+           Episode_Reward/arms_straight: 0.0040
+          Episode_Reward/handle_at_hips: 0.0359
+      Episode_Reward/lean_back_moderate: 0.0000
+    Episode_Reward/knee_bend_maintained: 0.0721
+      Episode_Reward/pen_stand_too_fast: -0.0007
+   Episode_Reward/pen_pull_against_rope: 0.0000
+              Episode_Reward/pen_torque: -0.3161
+         Episode_Reward/pen_action_rate: -0.0730
+        Episode_Reward/pen_action_accel: -0.0073
+      Episode_Reward/pen_dof_pos_limits: -0.0803
+            Episode_Termination/timeout: 0.0000
+        Episode_Termination/board_range: 0.0000
+               Episode_Termination/fell: 1.0000
+--------------------------------------------------------------------------------
+                         Iteration time: 1.55s
+                           Time elapsed: 00:00:31
+                                    ETA: 00:00:13
+
+################################################################################
+[1m                            Learning iteration 21/30                            [0m 
+
+                            Total steps: 8448 
+                       Steps per second: 267 
+                        Collection time: 1.229s 
+                          Learning time: 0.208s 
+                        Mean value loss: 0.0326
+                    Mean surrogate loss: -0.0810
+                      Mean entropy loss: 52.4439
+                            Mean reward: -0.17
+                    Mean episode length: 37.24
+                        Mean action std: 1.00
+           Episode_Reward/pelvis_height: 0.1535
+         Episode_Reward/height_progress: 0.0000
+             Episode_Reward/uprightness: 0.1309
+                Episode_Reward/survival: 0.0395
+           Episode_Reward/forward_glide: 0.0001
+           Episode_Reward/success_bonus: 0.0000
+    Episode_Reward/board_positive_angle: 0.0013
+           Episode_Reward/arms_straight: 0.0035
+          Episode_Reward/handle_at_hips: 0.0315
+      Episode_Reward/lean_back_moderate: 0.0000
+    Episode_Reward/knee_bend_maintained: 0.0632
+      Episode_Reward/pen_stand_too_fast: -0.0012
+   Episode_Reward/pen_pull_against_rope: 0.0000
+              Episode_Reward/pen_torque: -0.2794
+         Episode_Reward/pen_action_rate: -0.0641
+        Episode_Reward/pen_action_accel: -0.0064
+      Episode_Reward/pen_dof_pos_limits: -0.0701
+            Episode_Termination/timeout: 0.0000
+        Episode_Termination/board_range: 0.0000
+               Episode_Termination/fell: 1.0000
+--------------------------------------------------------------------------------
+                         Iteration time: 1.44s
+                           Time elapsed: 00:00:33
+                                    ETA: 00:00:12
+
+################################################################################
+[1m                            Learning iteration 22/30                            [0m 
+
+                            Total steps: 8832 
+                       Steps per second: 259 
+                        Collection time: 1.263s 
+                          Learning time: 0.219s 
+                        Mean value loss: 0.0258
+                    Mean surrogate loss: -0.0788
+                      Mean entropy loss: 52.4415
+                            Mean reward: -0.15
+                    Mean episode length: 37.16
+                        Mean action std: 1.00
+           Episode_Reward/pelvis_height: 0.1725
+         Episode_Reward/height_progress: 0.0000
+             Episode_Reward/uprightness: 0.1518
+                Episode_Reward/survival: 0.0449
+           Episode_Reward/forward_glide: 0.0000
+           Episode_Reward/success_bonus: 0.0000
+    Episode_Reward/board_positive_angle: 0.0015
+           Episode_Reward/arms_straight: 0.0040
+          Episode_Reward/handle_at_hips: 0.0358
+      Episode_Reward/lean_back_moderate: 0.0000
+    Episode_Reward/knee_bend_maintained: 0.0719
+      Episode_Reward/pen_stand_too_fast: -0.0017
+   Episode_Reward/pen_pull_against_rope: 0.0000
+              Episode_Reward/pen_torque: -0.3288
+         Episode_Reward/pen_action_rate: -0.0726
+        Episode_Reward/pen_action_accel: -0.0073
+      Episode_Reward/pen_dof_pos_limits: -0.0778
+            Episode_Termination/timeout: 0.0000
+        Episode_Termination/board_range: 0.0000
+               Episode_Termination/fell: 1.0000
+--------------------------------------------------------------------------------
+                         Iteration time: 1.48s
+                           Time elapsed: 00:00:34
+                                    ETA: 00:00:10
+
+################################################################################
+[1m                            Learning iteration 23/30                            [0m 
+
+                            Total steps: 9216 
+                       Steps per second: 254 
+                        Collection time: 1.299s 
+                          Learning time: 0.209s 
+                        Mean value loss: 0.0360
+                    Mean surrogate loss: -0.0744
+                      Mean entropy loss: 52.4375
+                            Mean reward: -0.13
+                    Mean episode length: 37.99
+                        Mean action std: 1.00
+           Episode_Reward/pelvis_height: 0.2139
+         Episode_Reward/height_progress: 0.0001
+             Episode_Reward/uprightness: 0.1889
+                Episode_Reward/survival: 0.0553
+           Episode_Reward/forward_glide: 0.0001
+           Episode_Reward/success_bonus: 0.0000
+    Episode_Reward/board_positive_angle: 0.0018
+           Episode_Reward/arms_straight: 0.0050
+          Episode_Reward/handle_at_hips: 0.0441
+      Episode_Reward/lean_back_moderate: 0.0000
+    Episode_Reward/knee_bend_maintained: 0.0884
+      Episode_Reward/pen_stand_too_fast: -0.0018
+   Episode_Reward/pen_pull_against_rope: 0.0000
+              Episode_Reward/pen_torque: -0.3953
+         Episode_Reward/pen_action_rate: -0.0892
+        Episode_Reward/pen_action_accel: -0.0089
+      Episode_Reward/pen_dof_pos_limits: -0.1057
+            Episode_Termination/timeout: 0.0000
+        Episode_Termination/board_range: 0.0000
+               Episode_Termination/fell: 1.0000
+--------------------------------------------------------------------------------
+                         Iteration time: 1.51s
+                           Time elapsed: 00:00:36
+                                    ETA: 00:00:09
+
+################################################################################
+[1m                            Learning iteration 24/30                            [0m 
+
+                            Total steps: 9600 
+                       Steps per second: 267 
+                        Collection time: 1.224s 
+                          Learning time: 0.210s 
+                        Mean value loss: 0.0290
+                    Mean surrogate loss: -0.0799
+                      Mean entropy loss: 52.4304
+                            Mean reward: -0.12
+                    Mean episode length: 37.56
+                        Mean action std: 1.00
+           Episode_Reward/pelvis_height: 0.1825
+         Episode_Reward/height_progress: 0.0001
+             Episode_Reward/uprightness: 0.1631
+                Episode_Reward/survival: 0.0471
+           Episode_Reward/forward_glide: 0.0003
+           Episode_Reward/success_bonus: 0.0000
+    Episode_Reward/board_positive_angle: 0.0016
+           Episode_Reward/arms_straight: 0.0042
+          Episode_Reward/handle_at_hips: 0.0376
+      Episode_Reward/lean_back_moderate: 0.0000
+    Episode_Reward/knee_bend_maintained: 0.0753
+      Episode_Reward/pen_stand_too_fast: -0.0011
+   Episode_Reward/pen_pull_against_rope: 0.0000
+              Episode_Reward/pen_torque: -0.3531
+         Episode_Reward/pen_action_rate: -0.0762
+        Episode_Reward/pen_action_accel: -0.0076
+      Episode_Reward/pen_dof_pos_limits: -0.0884
+            Episode_Termination/timeout: 0.0000
+        Episode_Termination/board_range: 0.0000
+               Episode_Termination/fell: 1.0000
+--------------------------------------------------------------------------------
+                         Iteration time: 1.43s
+                           Time elapsed: 00:00:37
+                                    ETA: 00:00:07
+
+################################################################################
+[1m                            Learning iteration 25/30                            [0m 
+
+                            Total steps: 9984 
+                       Steps per second: 260 
+                        Collection time: 1.265s 
+                          Learning time: 0.210s 
+                        Mean value loss: 0.0264
+                    Mean surrogate loss: -0.0789
+                      Mean entropy loss: 52.4263
+                            Mean reward: -0.10
+                    Mean episode length: 37.87
+                        Mean action std: 1.00
+           Episode_Reward/pelvis_height: 0.2011
+         Episode_Reward/height_progress: 0.0001
+             Episode_Reward/uprightness: 0.1781
+                Episode_Reward/survival: 0.0522
+           Episode_Reward/forward_glide: 0.0003
+           Episode_Reward/success_bonus: 0.0000
+    Episode_Reward/board_positive_angle: 0.0017
+           Episode_Reward/arms_straight: 0.0047
+          Episode_Reward/handle_at_hips: 0.0417
+      Episode_Reward/lean_back_moderate: 0.0000
+    Episode_Reward/knee_bend_maintained: 0.0836
+      Episode_Reward/pen_stand_too_fast: -0.0016
+   Episode_Reward/pen_pull_against_rope: 0.0000
+              Episode_Reward/pen_torque: -0.3830
+         Episode_Reward/pen_action_rate: -0.0843
+        Episode_Reward/pen_action_accel: -0.0084
+      Episode_Reward/pen_dof_pos_limits: -0.0920
+            Episode_Termination/timeout: 0.0000
+        Episode_Termination/board_range: 0.0000
+               Episode_Termination/fell: 1.0000
+--------------------------------------------------------------------------------
+                         Iteration time: 1.47s
+                           Time elapsed: 00:00:39
+                                    ETA: 00:00:06
+
+################################################################################
+[1m                            Learning iteration 26/30                            [0m 
+
+                            Total steps: 10368 
+                       Steps per second: 234 
+                        Collection time: 1.373s 
+                          Learning time: 0.264s 
+                        Mean value loss: 0.0286
+                    Mean surrogate loss: -0.0806
+                      Mean entropy loss: 52.4244
+                            Mean reward: -0.09
+                    Mean episode length: 37.56
+                        Mean action std: 1.00
+           Episode_Reward/pelvis_height: 0.1656
+         Episode_Reward/height_progress: 0.0000
+             Episode_Reward/uprightness: 0.1435
+                Episode_Reward/survival: 0.0428
+           Episode_Reward/forward_glide: 0.0008
+           Episode_Reward/success_bonus: 0.0000
+    Episode_Reward/board_positive_angle: 0.0014
+           Episode_Reward/arms_straight: 0.0038
+          Episode_Reward/handle_at_hips: 0.0342
+      Episode_Reward/lean_back_moderate: 0.0000
+    Episode_Reward/knee_bend_maintained: 0.0685
+      Episode_Reward/pen_stand_too_fast: -0.0013
+   Episode_Reward/pen_pull_against_rope: 0.0000
+              Episode_Reward/pen_torque: -0.3008
+         Episode_Reward/pen_action_rate: -0.0702
+        Episode_Reward/pen_action_accel: -0.0070
+      Episode_Reward/pen_dof_pos_limits: -0.0718
+            Episode_Termination/timeout: 0.0000
+        Episode_Termination/board_range: 0.0000
+               Episode_Termination/fell: 1.0000
+--------------------------------------------------------------------------------
+                         Iteration time: 1.64s
+                           Time elapsed: 00:00:40
+                                    ETA: 00:00:04
+
+################################################################################
+[1m                            Learning iteration 27/30                            [0m 
+
+                            Total steps: 10752 
+                       Steps per second: 256 
+                        Collection time: 1.301s 
+                          Learning time: 0.198s 
+                        Mean value loss: 0.0337
+                    Mean surrogate loss: -0.0816
+                      Mean entropy loss: 52.4231
+                            Mean reward: -0.07
+                    Mean episode length: 37.38
+                        Mean action std: 1.00
+           Episode_Reward/pelvis_height: 0.1661
+         Episode_Reward/height_progress: 0.0000
+             Episode_Reward/uprightness: 0.1466
+                Episode_Reward/survival: 0.0430
+           Episode_Reward/forward_glide: 0.0000
+           Episode_Reward/success_bonus: 0.0000
+    Episode_Reward/board_positive_angle: 0.0014
+           Episode_Reward/arms_straight: 0.0038
+          Episode_Reward/handle_at_hips: 0.0343
+      Episode_Reward/lean_back_moderate: 0.0000
+    Episode_Reward/knee_bend_maintained: 0.0687
+      Episode_Reward/pen_stand_too_fast: -0.0006
+   Episode_Reward/pen_pull_against_rope: 0.0000
+              Episode_Reward/pen_torque: -0.3080
+         Episode_Reward/pen_action_rate: -0.0706
+        Episode_Reward/pen_action_accel: -0.0071
+      Episode_Reward/pen_dof_pos_limits: -0.0665
+            Episode_Termination/timeout: 0.0000
+        Episode_Termination/board_range: 0.0000
+               Episode_Termination/fell: 1.0000
+--------------------------------------------------------------------------------
+                         Iteration time: 1.50s
+                           Time elapsed: 00:00:42
+                                    ETA: 00:00:03
+
+################################################################################
+[1m                            Learning iteration 28/30                            [0m 
+
+                            Total steps: 11136 
+                       Steps per second: 269 
+                        Collection time: 1.232s 
+                          Learning time: 0.191s 
+                        Mean value loss: 0.0346
+                    Mean surrogate loss: -0.0784
+                      Mean entropy loss: 52.4216
+                            Mean reward: -0.05
+                    Mean episode length: 37.17
+                        Mean action std: 1.00
+           Episode_Reward/pelvis_height: 0.1823
+         Episode_Reward/height_progress: 0.0000
+             Episode_Reward/uprightness: 0.1601
+                Episode_Reward/survival: 0.0470
+           Episode_Reward/forward_glide: 0.0000
+           Episode_Reward/success_bonus: 0.0000
+    Episode_Reward/board_positive_angle: 0.0016
+           Episode_Reward/arms_straight: 0.0042
+          Episode_Reward/handle_at_hips: 0.0375
+      Episode_Reward/lean_back_moderate: 0.0000
+    Episode_Reward/knee_bend_maintained: 0.0752
+      Episode_Reward/pen_stand_too_fast: -0.0010
+   Episode_Reward/pen_pull_against_rope: 0.0000
+              Episode_Reward/pen_torque: -0.3183
+         Episode_Reward/pen_action_rate: -0.0779
+        Episode_Reward/pen_action_accel: -0.0078
+      Episode_Reward/pen_dof_pos_limits: -0.0852
+            Episode_Termination/timeout: 0.0000
+        Episode_Termination/board_range: 0.0000
+               Episode_Termination/fell: 1.0000
+--------------------------------------------------------------------------------
+                         Iteration time: 1.42s
+                           Time elapsed: 00:00:43
+                                    ETA: 00:00:01
+
+################################################################################
+[1m                            Learning iteration 29/30                            [0m 
+
+                            Total steps: 11520 
+                       Steps per second: 253 
+                        Collection time: 1.300s 
+                          Learning time: 0.212s 
+                        Mean value loss: 0.0314
+                    Mean surrogate loss: -0.0788
+                      Mean entropy loss: 52.4202
+                            Mean reward: -0.03
+                    Mean episode length: 36.75
+                        Mean action std: 1.00
+           Episode_Reward/pelvis_height: 0.1551
+         Episode_Reward/height_progress: 0.0000
+             Episode_Reward/uprightness: 0.1377
+                Episode_Reward/survival: 0.0403
+           Episode_Reward/forward_glide: 0.0000
+           Episode_Reward/success_bonus: 0.0000
+    Episode_Reward/board_positive_angle: 0.0013
+           Episode_Reward/arms_straight: 0.0036
+          Episode_Reward/handle_at_hips: 0.0322
+      Episode_Reward/lean_back_moderate: 0.0000
+    Episode_Reward/knee_bend_maintained: 0.0645
+      Episode_Reward/pen_stand_too_fast: -0.0025
+   Episode_Reward/pen_pull_against_rope: 0.0000
+              Episode_Reward/pen_torque: -0.3097
+         Episode_Reward/pen_action_rate: -0.0650
+        Episode_Reward/pen_action_accel: -0.0065
+      Episode_Reward/pen_dof_pos_limits: -0.0817
+            Episode_Termination/timeout: 0.0000
+        Episode_Termination/board_range: 0.0000
+               Episode_Termination/fell: 1.0000
+--------------------------------------------------------------------------------
+                         Iteration time: 1.51s
+                           Time elapsed: 00:00:45
+                                    ETA: 00:00:00
+
+time="2026-06-20T15:57:50Z" level=error msg="error waiting for container: context canceled"
+canceled

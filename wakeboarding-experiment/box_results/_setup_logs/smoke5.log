@@ -1,0 +1,48 @@
+[INFO][AppLauncher]: Using device: cuda:0
+[INFO][AppLauncher]: Loading experience file: /workspace/isaaclab/apps/isaaclab.python.headless.kit
+[Info] [carb] Logging to file: /isaac-sim/kit/logs/Kit/Isaac-Sim/5.1/kit_20260620_151725.log
+2026-06-20T15:17:26Z [805ms] [Warning] [omni.platforminfo.plugin] failed to open the default display.  Can't verify X Server version.
+2026-06-20T15:17:26Z [843ms] [Warning] [omni.usd_config.extension] Enable omni.materialx.libs extension to use MaterialX
+2026-06-20T15:17:27Z [2,101ms] [Warning] [carb] Acquiring non optional plugin interface which is not listed as dependency: [omni::physx::IPhysxBenchmarks v1.0] (plugin: <default plugin>), by client: omni.physics.physx.plugin. Add it to CARB_PLUGIN_IMPL_DEPS() macro of a client.
+2026-06-20T15:17:27Z [2,728ms] [Warning] [omni.isaac.dynamic_control] omni.isaac.dynamic_control is deprecated as of Isaac Sim 4.5. No action is needed from end-users.
+
+|---------------------------------------------------------------------------------------------|
+| Driver Version: 580.159.03    | Graphics API: Vulkan
+|=============================================================================================|
+| GPU | Name                             | Active | LDA | GPU Memory | Vendor-ID | LUID       |
+|     |                                  |        |     |            | Device-ID | UUID       |
+|     |                                  |        |     |            | Bus-ID    |            |
+|---------------------------------------------------------------------------------------------|
+| 0   | NVIDIA L4                        | Yes: 0 |     | 23034   MB | 10de      | 0          |
+|     |                                  |        |     |            | 27b8      | 1834a8c7.. |
+|     |                                  |        |     |            | 0         |            |
+|=============================================================================================|
+| OS: 24.04.2 LTS (Noble Numbat) ubuntu, Version: 24.04.2, Kernel: 6.8.0-1007-gcp
+| Processor: Intel(R) Xeon(R) CPU @ 2.20GHz
+| Cores: 4 | Logical Cores: 8
+|---------------------------------------------------------------------------------------------|
+| Total Memory (MB): 32093 | Free Memory: 28240
+| Total Page/Swap (MB): 16383 | Free Page/Swap: 0
+|---------------------------------------------------------------------------------------------|
+cat: '/sys/devices/system/cpu/cpu*/cpufreq/scaling_governor': No such file or directory
+2026-06-20T15:17:36Z [11,044ms] [Warning] [gpu.foundation.plugin] ECC is enabled on physical device 0
+Traceback (most recent call last):
+  File "/workspace/wakeboarding-experiment/train.py", line 122, in <module>
+    main()
+  File "/workspace/wakeboarding-experiment/train.py", line 55, in main
+    env = WakeboardStartEnv(env_cfg)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/wakeboarding-experiment/src/tasks/wakeboard_start_cfg.py", line 186, in __init__
+    super().__init__(cfg, **kwargs)
+  File "/workspace/isaaclab/source/isaaclab/isaaclab/envs/manager_based_rl_env.py", line 80, in __init__
+    super().__init__(cfg=cfg)
+  File "/workspace/isaaclab/source/isaaclab/isaaclab/envs/manager_based_env.py", line 88, in __init__
+    cfg.validate()
+  File "/workspace/isaaclab/source/isaaclab/isaaclab/utils/configclass.py", line 296, in _validate
+    raise TypeError(
+TypeError: Missing values detected in object WakeboardStartEnvCfg for the following fields:
+  - actions
+
+2026-06-20T15:17:43Z [17,900ms] [Warning] [omni.physx.plugin] USD stage detach not called, holding a loose ptr to a stage!
+2026-06-20T15:17:43Z [18,072ms] [Warning] [carb] Recursive unloadAllPlugins() detected!
+SMOKE OK if a model_*.pt was written under runs/wakeboard_smoke/

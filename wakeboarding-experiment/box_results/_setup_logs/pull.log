@@ -1,0 +1,114 @@
+latest: Pulling from sushruths04/humanoid-isaaclab
+489ce25c545c: Pulling fs layer
+88a179c20f7b: Pulling fs layer
+1da7123d9f20: Pulling fs layer
+4f4fb700ef54: Pulling fs layer
+02c044224ab8: Pulling fs layer
+94d1fac93cee: Pulling fs layer
+60a8ce43c0b5: Pulling fs layer
+83e99b1b5b4d: Pulling fs layer
+36b9c1c25bc1: Pulling fs layer
+b6c279fb3d9f: Pulling fs layer
+28be3cd701d4: Pulling fs layer
+21db504e8800: Pulling fs layer
+ccdbb44ded14: Pulling fs layer
+76592f348785: Pulling fs layer
+0956e7e729d4: Pulling fs layer
+02c044224ab8: Waiting
+2c8a144cb946: Pulling fs layer
+a5f517cd5973: Pulling fs layer
+94d1fac93cee: Waiting
+7b4819f60e2a: Pulling fs layer
+60a8ce43c0b5: Waiting
+58e088cdd744: Pulling fs layer
+9d25d9c2bf1c: Pulling fs layer
+83e99b1b5b4d: Waiting
+d44e24e03e3e: Pulling fs layer
+4c98082c5346: Pulling fs layer
+36b9c1c25bc1: Waiting
+26ab8a14b7ad: Pulling fs layer
+50bf04a1ba4e: Pulling fs layer
+b6c279fb3d9f: Waiting
+bbb6bb47c985: Pulling fs layer
+28be3cd701d4: Waiting
+ccdbb44ded14: Waiting
+21db504e8800: Waiting
+76592f348785: Waiting
+0956e7e729d4: Waiting
+2c8a144cb946: Waiting
+a5f517cd5973: Waiting
+7b4819f60e2a: Waiting
+4f4fb700ef54: Waiting
+58e088cdd744: Waiting
+9d25d9c2bf1c: Waiting
+bbb6bb47c985: Waiting
+d44e24e03e3e: Waiting
+4c98082c5346: Waiting
+50bf04a1ba4e: Waiting
+26ab8a14b7ad: Waiting
+88a179c20f7b: Verifying Checksum
+88a179c20f7b: Download complete
+4f4fb700ef54: Download complete
+02c044224ab8: Verifying Checksum
+02c044224ab8: Download complete
+489ce25c545c: Verifying Checksum
+489ce25c545c: Download complete
+94d1fac93cee: Download complete
+83e99b1b5b4d: Download complete
+60a8ce43c0b5: Download complete
+b6c279fb3d9f: Verifying Checksum
+b6c279fb3d9f: Download complete
+36b9c1c25bc1: Verifying Checksum
+36b9c1c25bc1: Download complete
+21db504e8800: Verifying Checksum
+21db504e8800: Download complete
+ccdbb44ded14: Download complete
+1da7123d9f20: Verifying Checksum
+76592f348785: Verifying Checksum
+76592f348785: Download complete
+2c8a144cb946: Download complete
+a5f517cd5973: Download complete
+7b4819f60e2a: Download complete
+489ce25c545c: Pull complete
+88a179c20f7b: Pull complete
+58e088cdd744: Verifying Checksum
+58e088cdd744: Download complete
+9d25d9c2bf1c: Download complete
+d44e24e03e3e: Download complete
+4c98082c5346: Verifying Checksum
+4c98082c5346: Download complete
+0956e7e729d4: Verifying Checksum
+0956e7e729d4: Download complete
+50bf04a1ba4e: Verifying Checksum
+50bf04a1ba4e: Download complete
+bbb6bb47c985: Download complete
+1da7123d9f20: Pull complete
+4f4fb700ef54: Pull complete
+02c044224ab8: Pull complete
+94d1fac93cee: Pull complete
+60a8ce43c0b5: Pull complete
+83e99b1b5b4d: Pull complete
+36b9c1c25bc1: Pull complete
+b6c279fb3d9f: Pull complete
+26ab8a14b7ad: Verifying Checksum
+26ab8a14b7ad: Download complete
+28be3cd701d4: Verifying Checksum
+28be3cd701d4: Download complete
+28be3cd701d4: Pull complete
+21db504e8800: Pull complete
+ccdbb44ded14: Pull complete
+76592f348785: Pull complete
+0956e7e729d4: Pull complete
+2c8a144cb946: Pull complete
+a5f517cd5973: Pull complete
+7b4819f60e2a: Pull complete
+58e088cdd744: Pull complete
+9d25d9c2bf1c: Pull complete
+d44e24e03e3e: Pull complete
+4c98082c5346: Pull complete
+26ab8a14b7ad: Pull complete
+50bf04a1ba4e: Pull complete
+bbb6bb47c985: Pull complete
+Digest: sha256:b6edb1a8ea7bbc3ad77d2b9ae4b1238c3f7b2ccb9da44567ba8916afe7127efa
+Status: Downloaded newer image for ghcr.io/sushruths04/humanoid-isaaclab:latest
+ghcr.io/sushruths04/humanoid-isaaclab:latest

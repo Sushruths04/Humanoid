@@ -1,0 +1,17 @@
+[Warning] Unable to expose 'isaacsim.simulation_app' API: Extension not found
+[INFO][AppLauncher]: Using device: cuda:0
+Traceback (most recent call last):
+  File "/workspace/wakeboarding-experiment/train.py", line 122, in <module>
+    main()
+  File "/workspace/wakeboarding-experiment/train.py", line 42, in main
+    app_launcher = AppLauncher(headless=args.headless or True)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/isaaclab/source/isaaclab/isaaclab/app/app_launcher.py", line 125, in __init__
+    self._config_resolution(launcher_args)
+  File "/workspace/isaaclab/source/isaaclab/isaaclab/app/app_launcher.py", line 497, in _config_resolution
+    self._resolve_experience_file(launcher_args)
+  File "/workspace/isaaclab/source/isaaclab/isaaclab/app/app_launcher.py", line 714, in _resolve_experience_file
+    kit_app_exp_path = os.environ["EXP_PATH"]
+                       ~~~~~~~~~~^^^^^^^^^^^^
+  File "<frozen os>", line 679, in __getitem__
+KeyError: 'EXP_PATH'
