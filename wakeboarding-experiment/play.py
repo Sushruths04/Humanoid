@@ -45,20 +45,25 @@ def main():
     runner.load(args.checkpoint)
     policy = runner.get_inference_policy(device=str(env.device))
 
-    # Setup offscreen camera via omni.replicator BasicWriter (writes PNGs directly to disk)
-    # Use workspace dir (mounted volume) so frames survive container lifecycle
+    # Setup offscreen camera — manually capture each frame so only rollout frames are saved
+    import shutil
     frame_dir = os.path.join(os.path.dirname(os.path.abspath(args.out)), "wb_frames")
-    os.makedirs(frame_dir, exist_ok=True)
+    if os.path.exists(frame_dir):
+        shutil.rmtree(frame_dir)
+    os.makedirs(frame_dir)
     frames_ok = False
+    frame_count = 0
+    rgb_ann = None
     try:
         import omni.replicator.core as rep
-        cam = rep.create.camera(position=(2.0, -3.5, 1.8), look_at=(0.0, 0.0, 0.65))
-        rp = rep.create.render_product(cam, resolution=(640, 480))
-        writer = rep.WriterRegistry.get("BasicWriter")
-        writer.initialize(output_dir=frame_dir, rgb=True)
-        writer.attach([rp])
-        rep.orchestrator.step(delta_time=0.0)  # warm up renderer
-        print(f"[play] BasicWriter attached, output: {frame_dir}", flush=True)
+        cam = rep.create.camera(position=(3.5, -4.5, 2.0), look_at=(0.0, 0.0, 0.85))
+        rp = rep.create.render_product(cam, resolution=(1280, 720))
+        rgb_ann = rep.AnnotatorRegistry.get_annotator("rgb")
+        rgb_ann.attach([rp])
+        # Warmup — do NOT save these frames
+        for _ in range(5):
+            rep.orchestrator.step(delta_time=0.016)
+        print(f"[play] Camera ready at 1280x720, rollout starting...", flush=True)
         frames_ok = True
     except Exception as e:
         print(f"[play] Camera setup failed: {e}", flush=True)
@@ -104,13 +109,22 @@ def main():
         trace["reward"].append(rewards[0].item() if torch.is_tensor(rewards) else float(rewards))
         trace["step"].append(step)
 
-        # Capture frame — BasicWriter writes PNGs automatically on each step
-        if frames_ok and step % 3 == 0:
+        # Capture frame — manually save only rollout frames (every 2 physics steps)
+        if frames_ok and step % 2 == 0:
             try:
                 import omni.replicator.core as rep
                 rep.orchestrator.step(delta_time=0.0)
+                raw = rgb_ann.get_data()
+                img_arr = raw.get("data") if isinstance(raw, dict) else (np.array(raw) if raw is not None else None)
+                if img_arr is not None and img_arr.ndim == 3:
+                    if img_arr.dtype != np.uint8:
+                        img_arr = (np.clip(img_arr, 0, 1) * 255).astype(np.uint8)
+                    from PIL import Image
+                    Image.fromarray(img_arr[..., :3]).save(
+                        os.path.join(frame_dir, f"frame_{frame_count:06d}.png"))
+                    frame_count += 1
             except Exception as e:
-                print(f"[play] render step {step} failed: {e}", flush=True)
+                print(f"[play] frame {step} err: {e}", flush=True)
                 frames_ok = False
 
         # Check done
@@ -129,29 +143,21 @@ def main():
         json.dump(trace, f)
     print(f"[play] Trace saved: {trace_out} ({len(trace['pelvis_z'])} steps)")
 
-    # Encode video if frames exist (BasicWriter saves as rgb/NNNN.png inside frame_dir)
-    rgb_dir = os.path.join(frame_dir, "rgb")
-    search_dir = rgb_dir if os.path.isdir(rgb_dir) else frame_dir
-    pngs = sorted([f for f in os.listdir(search_dir) if f.endswith(".png")])
-    print(f"[play] Frames captured: {len(pngs)} in {search_dir}", flush=True)
+    # Encode video from manually-captured frames
+    pngs = sorted([f for f in os.listdir(frame_dir) if f.endswith(".png")])
+    print(f"[play] Frames captured: {len(pngs)} in {frame_dir}", flush=True)
     if pngs:
-        first = os.path.join(search_dir, pngs[0])
-        # detect pattern from first filename
-        import re
-        m = re.search(r'(\d+)\.png$', pngs[0])
-        digits = len(m.group(1)) if m else 4
-        stem = pngs[0][:pngs[0].rfind(m.group(1))] if m else "rgb_"
-        pattern = os.path.join(search_dir, f"{stem}%0{digits}d.png")
-        cmd = ["ffmpeg", "-y", "-framerate", "20", "-i", pattern,
-               "-vf", "scale=trunc(iw/2)*2:trunc(ih/2)*2",
-               "-c:v", "libx264", "-pix_fmt", "yuv420p", args.out]
+        pattern = os.path.join(frame_dir, "frame_%06d.png")
+        cmd = ["ffmpeg", "-y", "-framerate", "30", "-i", pattern,
+               "-c:v", "libx264", "-crf", "18", "-pix_fmt", "yuv420p",
+               "-vf", "scale=1280:720", args.out]
         result = subprocess.run(cmd, capture_output=True, text=True)
         if result.returncode == 0:
-            print(f"[play] Video saved: {args.out} ({len(pngs)} frames)", flush=True)
+            print(f"[play] Video saved: {args.out} ({len(pngs)} frames at 30fps)", flush=True)
         else:
-            print(f"[play] ffmpeg failed: {result.stderr[-300:]}", flush=True)
+            print(f"[play] ffmpeg failed: {result.stderr[-500:]}", flush=True)
     else:
-        print("[play] No frames captured — check camera setup", flush=True)
+        print("[play] No frames captured — camera setup may have failed", flush=True)
 
     # Print summary
     print(f"\n=== ROLLOUT SUMMARY (model: {args.checkpoint}) ===")
