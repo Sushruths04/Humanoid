@@ -49,8 +49,9 @@ def main():
         import omni.replicator.core as rep
         cam = rep.create.camera(position=(2.0, -3.5, 1.8), look_at=(0.0, 0.0, 0.65))
         rp = rep.create.render_product(cam, resolution=(640, 480))
-        rgb_annotator = rep.AnnotatorRegistry.get.annotators["rgb"]
+        rgb_annotator = rep.AnnotatorRegistry.get_annotator("rgb")
         rgb_annotator.attach([rp])
+        rep.orchestrator.step(delta_time=0.0)  # warm up renderer
         print(f"[play] Offscreen camera attached to render product", flush=True)
         frames_ok = True
     except Exception as e:
@@ -86,7 +87,7 @@ def main():
         if frames_ok and step % 3 == 0:
             try:
                 import omni.replicator.core as rep
-                rep.step.render()
+                rep.orchestrator.step(delta_time=0.0)
                 frame_data = rgb_annotator.get_data()
                 if frame_data is not None:
                     from PIL import Image

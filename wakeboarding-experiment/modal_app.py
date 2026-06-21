@@ -97,10 +97,37 @@ def evaluate(checkpoint: str, v_pull_kmh: float = 30.0, episodes: int = 200):
     ckpts.commit()
 
 
+@app.function(gpu=GPU, volumes={"/ckpts": ckpts}, timeout=60 * 60)
+def render_video(checkpoint: str, v_pull_kmh: float = 10.0, episodes: int = 3, steps: int = 400):
+    import subprocess
+    out = f"/ckpts/videos/rollout_{checkpoint.split('/')[-1].replace('.pt','')}.mp4"
+    cmd = ["python", "play.py", "--checkpoint", checkpoint,
+           "--v_pull_kmh", str(v_pull_kmh), "--episodes", str(episodes),
+           "--steps", str(steps), "--out", out]
+    shell_cmd = (
+        "pip install -q Pillow && "
+        "apt-get install -y -q ffmpeg && "
+        "ln -sf /isaac-sim/kit/python/bin/python3 /usr/local/bin/python && "
+        "export ISAAC_PATH=/isaac-sim EXP_PATH=/isaac-sim/apps "
+        "CARB_APP_PATH=/isaac-sim/kit LD_PRELOAD=/isaac-sim/kit/libcarb.so "
+        "RESOURCE_NAME=IsaacSim && "
+        "source /isaac-sim/setup_python_env.sh && "
+        + " ".join(cmd)
+    )
+    subprocess.run(["bash", "-c", shell_cmd], check=True, cwd=_REMOTE_DIR)
+    ckpts.commit()
+    return out
+
+
 @app.local_entrypoint()
 def main(action: str = "train", config: str = "configs/stage1.yaml",
-         checkpoint: str = "", v_pull_kmh: float = 30.0):
+         checkpoint: str = "", v_pull_kmh: float = 10.0):
     if action == "train":
         train.remote(config=config)
     elif action == "eval":
         evaluate.remote(checkpoint=checkpoint, v_pull_kmh=v_pull_kmh)
+    elif action == "render":
+        ckpt = checkpoint or "/ckpts/wakeboard_stage1/model_latest.pt"
+        out = render_video.remote(checkpoint=ckpt, v_pull_kmh=v_pull_kmh)
+        print(f"[render] video saved to Modal volume: {out}")
+        print(f"[render] download with: modal volume get wakeboard-ckpts {out} ./rollout.mp4")
