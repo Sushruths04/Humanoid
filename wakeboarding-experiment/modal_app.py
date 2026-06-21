@@ -39,6 +39,7 @@ image = (
         "ghcr.io/sushruths04/humanoid-isaaclab:latest",
         add_python="3.10",
     )
+    .entrypoint([])
     .pip_install("rsl-rl-lib>=2.0.0", "pyyaml", "wandb", "tensorboard")
     .env({"NVIDIA_DRIVER_CAPABILITIES": "all", "ACCEPT_EULA": "Y", "OMNI_KIT_ACCEPT_EULA": "YES"})
     # bake the experiment code into the image so cwd=_REMOTE_DIR exists at runtime
@@ -99,6 +100,6 @@ def evaluate(checkpoint: str, v_pull_kmh: float = 30.0, episodes: int = 200):
 def main(action: str = "train", config: str = "configs/stage1.yaml",
          checkpoint: str = "", v_pull_kmh: float = 30.0):
     if action == "train":
-        train.remote(config=config)
+        train.spawn(config=config)
     elif action == "eval":
-        evaluate.remote(checkpoint=checkpoint, v_pull_kmh=v_pull_kmh)
+        evaluate.spawn(checkpoint=checkpoint, v_pull_kmh=v_pull_kmh)
