@@ -37,6 +37,12 @@ def _pelvis_height(env) -> torch.Tensor:
     return _robot(env).data.root_pos_w[:, 2]  # VERIFY: pelvis/root height
 
 
+def _clamp_penalty(x: torch.Tensor, max_value: float) -> torch.Tensor:
+    """Keep penalty terms finite and in a sane range for PPO stability."""
+    x = torch.nan_to_num(x, nan=0.0, posinf=max_value, neginf=0.0)
+    return torch.clamp(x, min=0.0, max=max_value)
+
+
 # ---------------------------------------------------------------- task rewards (§5.1)
 def pelvis_height(env, h_target: float = 0.6) -> torch.Tensor:
     return torch.clamp(_pelvis_height(env), 0.0, h_target) / h_target
@@ -121,26 +127,27 @@ def pen_stand_too_fast(env, vmax: float = 0.6, early_phase: float = 0.4) -> torc
     """Penalize high pelvis vertical velocity early in the episode (rule #1)."""
     vz = _robot(env).data.root_lin_vel_w[:, 2]
     early = (env.episode_length_buf * env.step_dt / env._t_success < early_phase).float()
-    return early * torch.clamp(vz - vmax, min=0.0)
+    return early * _clamp_penalty(vz - vmax, max_value=3.0)
 
 
 def pen_pull_against_rope(env) -> torch.Tensor:
     """Penalize elbow-flexion effort while the rope force is high (rule #4)."""
-    rope_mag = env._rope_force.norm(dim=-1)
-    flex = torch.clamp(env._elbow_flexion, min=0.0)
-    return (rope_mag / (env.rope.f_max + 1e-6)) * flex
+    rope_mag = torch.nan_to_num(env._rope_force.norm(dim=-1), nan=0.0, posinf=env.rope.f_max, neginf=0.0)
+    flex = torch.nan_to_num(env._elbow_flexion, nan=0.0, posinf=2.0, neginf=0.0)
+    raw = (rope_mag / (env.rope.f_max + 1e-6)) * torch.clamp(flex, min=0.0, max=2.0)
+    return _clamp_penalty(raw, max_value=4.0)
 
 
 def pen_torque(env) -> torch.Tensor:
     t = _robot(env).data.applied_torque
     t = torch.nan_to_num(t, nan=0.0, posinf=1e4, neginf=-1e4)
-    return torch.sum(t ** 2, dim=-1)
+    return _clamp_penalty(torch.sum(t ** 2, dim=-1), max_value=1e4)
 
 
 def pen_action_rate(env) -> torch.Tensor:
     d = env.action_manager.action - env.action_manager.prev_action
     d = torch.nan_to_num(d, nan=0.0, posinf=1e4, neginf=-1e4)
-    return torch.sum(d ** 2, dim=-1)
+    return _clamp_penalty(torch.sum(d ** 2, dim=-1), max_value=1e4)
 
 
 def pen_action_accel(env) -> torch.Tensor:
@@ -148,7 +155,7 @@ def pen_action_accel(env) -> torch.Tensor:
     p = env.action_manager.prev_action
     pp = getattr(env, "_prev_prev_action", p)
     env._prev_prev_action = p.detach()
-    return torch.sum((a - 2 * p + pp) ** 2, dim=-1)
+    return _clamp_penalty(torch.sum((a - 2 * p + pp) ** 2, dim=-1), max_value=1e4)
 
 
 def pen_dof_pos_limits(env) -> torch.Tensor:
@@ -163,7 +170,8 @@ def pen_dof_pos_limits(env) -> torch.Tensor:
     j = torch.nan_to_num(j, nan=0.0)
     below = torch.clamp(lo - j, min=0.0)
     above = torch.clamp(j - hi, min=0.0)
-    return torch.sum(below + above, dim=-1)
+    span = torch.clamp(hi - lo, min=1e-6)
+    return _clamp_penalty(torch.sum((below + above) / span, dim=-1), max_value=10.0)
 
 
 def pen_fall(env) -> torch.Tensor:
