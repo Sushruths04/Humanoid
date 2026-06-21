@@ -45,25 +45,28 @@ def main():
     runner.load(args.checkpoint)
     policy = runner.get_inference_policy(device=str(env.device))
 
-    # Setup offscreen camera — manually capture each frame so only rollout frames are saved
-    import shutil
+    # Setup offscreen camera via BasicWriter (proven to write frames)
+    # Clear frame dir before rollout so only motion frames are captured
+    import shutil, glob as _glob
     frame_dir = os.path.join(os.path.dirname(os.path.abspath(args.out)), "wb_frames")
     if os.path.exists(frame_dir):
         shutil.rmtree(frame_dir)
     os.makedirs(frame_dir)
     frames_ok = False
-    frame_count = 0
-    rgb_ann = None
     try:
         import omni.replicator.core as rep
         cam = rep.create.camera(position=(3.5, -4.5, 2.0), look_at=(0.0, 0.0, 0.85))
         rp = rep.create.render_product(cam, resolution=(1280, 720))
-        rgb_ann = rep.AnnotatorRegistry.get_annotator("rgb")
-        rgb_ann.attach([rp])
-        # Warmup — do NOT save these frames
+        writer = rep.WriterRegistry.get("BasicWriter")
+        writer.initialize(output_dir=frame_dir, rgb=True)
+        writer.attach([rp])
+        # Warmup — clears these frames right after
         for _ in range(5):
             rep.orchestrator.step(delta_time=0.016)
-        print(f"[play] Camera ready at 1280x720, rollout starting...", flush=True)
+        # Clear all warmup frames so only rollout motion is captured
+        for f in _glob.glob(os.path.join(frame_dir, "*.png")):
+            os.remove(f)
+        print(f"[play] BasicWriter ready, warmup frames cleared, rollout starting...", flush=True)
         frames_ok = True
     except Exception as e:
         print(f"[play] Camera setup failed: {e}", flush=True)
@@ -109,22 +112,13 @@ def main():
         trace["reward"].append(rewards[0].item() if torch.is_tensor(rewards) else float(rewards))
         trace["step"].append(step)
 
-        # Capture frame — manually save only rollout frames (every 2 physics steps)
+        # Capture frame — BasicWriter auto-saves on each orchestrator step
         if frames_ok and step % 2 == 0:
             try:
                 import omni.replicator.core as rep
                 rep.orchestrator.step(delta_time=0.0)
-                raw = rgb_ann.get_data()
-                img_arr = raw.get("data") if isinstance(raw, dict) else (np.array(raw) if raw is not None else None)
-                if img_arr is not None and img_arr.ndim == 3:
-                    if img_arr.dtype != np.uint8:
-                        img_arr = (np.clip(img_arr, 0, 1) * 255).astype(np.uint8)
-                    from PIL import Image
-                    Image.fromarray(img_arr[..., :3]).save(
-                        os.path.join(frame_dir, f"frame_{frame_count:06d}.png"))
-                    frame_count += 1
             except Exception as e:
-                print(f"[play] frame {step} err: {e}", flush=True)
+                print(f"[play] render step {step} failed: {e}", flush=True)
                 frames_ok = False
 
         # Check done
@@ -143,21 +137,26 @@ def main():
         json.dump(trace, f)
     print(f"[play] Trace saved: {trace_out} ({len(trace['pelvis_z'])} steps)")
 
-    # Encode video from manually-captured frames
+    # Encode video — rename frames sequentially then ffmpeg
     pngs = sorted([f for f in os.listdir(frame_dir) if f.endswith(".png")])
     print(f"[play] Frames captured: {len(pngs)} in {frame_dir}", flush=True)
     if pngs:
-        pattern = os.path.join(frame_dir, "frame_%06d.png")
-        cmd = ["ffmpeg", "-y", "-framerate", "30", "-i", pattern,
+        # Rename to sequential frame_%06d.png for ffmpeg
+        for idx, fname in enumerate(pngs):
+            src = os.path.join(frame_dir, fname)
+            dst = os.path.join(frame_dir, f"seq_{idx:06d}.png")
+            os.rename(src, dst)
+        cmd = ["ffmpeg", "-y", "-framerate", "30", "-i",
+               os.path.join(frame_dir, "seq_%06d.png"),
                "-c:v", "libx264", "-crf", "18", "-pix_fmt", "yuv420p",
                "-vf", "scale=1280:720", args.out]
         result = subprocess.run(cmd, capture_output=True, text=True)
         if result.returncode == 0:
-            print(f"[play] Video saved: {args.out} ({len(pngs)} frames at 30fps)", flush=True)
+            print(f"[play] Video saved: {args.out} ({len(pngs)} frames, 30fps, 1280x720)", flush=True)
         else:
             print(f"[play] ffmpeg failed: {result.stderr[-500:]}", flush=True)
     else:
-        print("[play] No frames captured — camera setup may have failed", flush=True)
+        print("[play] No frames captured — check camera setup log above", flush=True)
 
     # Print summary
     print(f"\n=== ROLLOUT SUMMARY (model: {args.checkpoint}) ===")
