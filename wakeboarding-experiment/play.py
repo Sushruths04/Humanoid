@@ -22,7 +22,7 @@ def main():
     os.makedirs(os.path.dirname(args.out) or ".", exist_ok=True)
 
     from isaaclab.app import AppLauncher
-    app_launcher = AppLauncher(headless=True)
+    app_launcher = AppLauncher(headless=True, enable_cameras=True)
     app = app_launcher.app
 
     import torch

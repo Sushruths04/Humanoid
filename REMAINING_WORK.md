@@ -14,23 +14,23 @@ shared structure: keep `class="rv"`, the sidebar (`HSite.init`), and the pager s
 each page. Add content as new `<section>`/`<h2>` blocks, SVG `.diagram`s, tables, and `<pre>` code peeks.
 
 ### Global additions
-- [ ] 🟢 Add a new page `chapters/13_references.html` (papers + links: HumanUP, AMP, Isaac Lab, GR00T, π0, OpenVLA, DreamerV3) and register it in `assets/site.js` `CHAPTERS` array + add a sidebar entry.
-- [ ] 🟢 Add a **"📂 Code peek"** block to chapters 4, 5, 8 showing the *real* snippet from the repo (copy the actual function, e.g. `wakeboard_rewards.board_positive_angle`, `rope_model.compute_force`). Wrap in `<pre>`.
-- [ ] 🟢 Add **cross-links**: every "Interview answer" box should link to the relevant deeper chapter.
+- [x] 🟢 Add a new page `chapters/13_references.html` (papers + links: HumanUP, AMP, Isaac Lab, GR00T, π0, OpenVLA, DreamerV3) and register it in `assets/site.js` `CHAPTERS` array + add a sidebar entry.
+- [x] 🟢 Add a **"📂 Code peek"** block to chapters 4, 5, 8 showing the *real* snippet from the repo (copy the actual function, e.g. `wakeboard_rewards.board_positive_angle`, `rope_model.compute_force`). Wrap in `<pre>`.
+- [x] 🟢 Add **cross-links**: every "Interview answer" box should link to the relevant deeper chapter.
 
 ### Per-chapter deepening (what to ADD to each)
-- [ ] 🟢 **01 Big Picture** — add a "What RL actually optimizes" sub-section (return = Σ discounted reward) with a tiny SVG of the trajectory→return idea.
-- [ ] 🟢 **02 The Stack** — add a "data/■control flow" sequence diagram (obs tensor shapes, action dim ~23, PD gains) + a version table (Isaac Sim 5.1, warp-lang 1.4.2, torch cu126).
-- [ ] 🟢 **03 Sit→Stand** — add the **two-stage reward tables** (Stage I discovery terms vs Stage II tracking terms) and a phase-decomposition diagram; explain "8× slowdown" concretely.
-- [ ] 🟢⭐ **04 Rewards** — this is the centerpiece, go deepest: (a) show the **exact math** of 2–3 terms (gaussian tracking `exp(-err²/σ²)`, board-angle band, phase-gating); (b) a **full weights table** pulled from `wakeboarding-experiment/configs/stage1.yaml`; (c) a worked "what happens if weight X is too high" paragraph each; (d) a reward-hacking case study (the PRM +/- marker bug).
-- [ ] 🟢 **05 Simulation** — add: observation vector breakdown (what each entry is + dim), action space (PD targets), episode/termination conditions, and a domain-randomization ranges table copied from `configs/stage2.yaml`.
-- [ ] 🟢 **06 Results** — add the **eval JSON schema** (`eval.py` output fields), the comparison-table templates (speed sweep / ablations / Stage I vs II), and how `separation_score` is computed for language.
-- [ ] 🟢 **07 Language & Vision** — add the CNN architecture table (channels 32/64/64, kernels 8/4/3, strides 4/2/1), the hash-embedding explanation with the actual 16-dim formula, and the frozen-encoder upgrade path.
-- [ ] 🟢⭐ **08 Wakeboarding** — add: the rope **spring-force equation** `F = kp·(x_anchor−x_handle) + kd·(v_anchor−v_handle)` capped at `f_max`, the curriculum ladder table (10→30 km/h), the full reward table, and the checkpoint ladder (ckpt_00→ckpt_40) from `PLAN.md §10`.
-- [ ] 🟢 **09 Model Choices** — add a comparison matrix (rows: GR00T/π0/OpenVLA/Dreamer/PPO; cols: embodiment, data, sample-eff, locomotion-fit) and a 2–3 line "steelman" of each rejected option (be fair, then say why not here).
-- [ ] 🟢 **10 Compute** — add a concrete cost worked-example (e.g. Stage II ≈ 15 h × L40S rate) and the exact `modal run` / `docker_image_portability.sh` commands.
-- [ ] 🟢 **11 Roadmap** — turn the ladder into a table with owner/effort/blocker columns.
-- [ ] 🟢 **12 Glossary** — add 10–15 more terms (GAE, advantage, KL, on-policy, actor-critic, PD control, URDF/USD, contact sensor, articulation, manager-based env, TiledCamera, retargeting).
+- [x] 🟢 **01 Big Picture** — add a "What RL actually optimizes" sub-section (return = Σ discounted reward) with a tiny SVG of the trajectory→return idea.
+- [x] 🟢 **02 The Stack** — add a "data/■control flow" sequence diagram (obs tensor shapes, action dim ~23, PD gains) + a version table (Isaac Sim 5.1, warp-lang 1.4.2, torch cu126).
+- [x] 🟢 **03 Sit→Stand** — add the **two-stage reward tables** (Stage I discovery terms vs Stage II tracking terms) and a phase-decomposition diagram; explain "8× slowdown" concretely.
+- [x] 🟢⭐ **04 Rewards** — this is the centerpiece, go deepest: (a) show the **exact math** of 2–3 terms (gaussian tracking `exp(-err²/σ²)`, board-angle band, phase-gating); (b) a **full weights table** pulled from `wakeboarding-experiment/configs/stage1.yaml`; (c) a worked "what happens if weight X is too high" paragraph each; (d) a reward-hacking case study (the PRM +/- marker bug).
+- [x] 🟢 **05 Simulation** — add: observation vector breakdown (what each entry is + dim), action space (PD targets), episode/termination conditions, and a domain-randomization ranges table copied from `configs/stage2.yaml`.
+- [x] 🟢 **06 Results** — add the **eval JSON schema** (`eval.py` output fields), the comparison-table templates (speed sweep / ablations / Stage I vs II), and how `separation_score` is computed for language.
+- [x] 🟢 **07 Language & Vision** — add the CNN architecture table (channels 32/64/64, kernels 8/4/3, strides 4/2/1), the hash-embedding explanation with the actual 16-dim formula, and the frozen-encoder upgrade path.
+- [x] 🟢⭐ **08 Wakeboarding** — add: the rope **spring-force equation** `F = kp·(x_anchor−x_handle) + kd·(v_anchor−v_handle)` capped at `f_max`, the curriculum ladder table (10→30 km/h), the full reward table, and the checkpoint ladder (ckpt_00→ckpt_40) from `PLAN.md §10`.
+- [x] 🟢 **09 Model Choices** — add a comparison matrix (rows: GR00T/π0/OpenVLA/Dreamer/PPO; cols: embodiment, data, sample-eff, locomotion-fit) and a 2–3 line "steelman" of each rejected option (be fair, then say why not here).
+- [x] 🟢 **10 Compute** — add a concrete cost worked-example (e.g. Stage II ≈ 15 h × L40S rate) and the exact `modal run` / `docker_image_portability.sh` commands.
+- [x] 🟢 **11 Roadmap** — turn the ladder into a table with owner/effort/blocker columns.
+- [x] 🟢 **12 Glossary** — add 10–15 more terms (GAE, advantage, KL, on-policy, actor-critic, PD control, URDF/USD, contact sensor, articulation, manager-based env, TiledCamera, retargeting).
 
 **Acceptance:** every chapter has ≥1 new diagram OR table OR code-peek; `node -c assets/site.js` passes; `<div>` open/close counts balance on every page; all sidebar links resolve.
 
