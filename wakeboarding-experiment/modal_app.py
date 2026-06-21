@@ -64,7 +64,15 @@ def train(config: str, num_envs: int | None = None, max_iterations: int | None =
         cmd += ["--max_iterations", str(max_iterations)]
     if resume:
         cmd += ["--resume", resume]
-    subprocess.run(cmd, check=True, cwd=_REMOTE_DIR)
+    shell_cmd = (
+        "ln -sf /isaac-sim/kit/python/bin/python3 /usr/local/bin/python && "
+        "export ISAAC_PATH=/isaac-sim EXP_PATH=/isaac-sim/apps "
+        "CARB_APP_PATH=/isaac-sim/kit LD_PRELOAD=/isaac-sim/kit/libcarb.so "
+        "RESOURCE_NAME=IsaacSim && "
+        "source /isaac-sim/setup_python_env.sh && "
+        + " ".join(cmd)
+    )
+    subprocess.run(["bash", "-c", shell_cmd], check=True, cwd=_REMOTE_DIR)
     ckpts.commit()
 
 
@@ -72,9 +80,18 @@ def train(config: str, num_envs: int | None = None, max_iterations: int | None =
 def evaluate(checkpoint: str, v_pull_kmh: float = 30.0, episodes: int = 200):
     import subprocess
     out = f"/ckpts/results/eval_{int(v_pull_kmh)}kmh.json"
-    subprocess.run(["python", "eval.py", "--checkpoint", checkpoint,
-                    "--v_pull_kmh", str(v_pull_kmh), "--episodes", str(episodes),
-                    "--out", out], check=True, cwd=_REMOTE_DIR)
+    cmd = ["python", "eval.py", "--checkpoint", checkpoint,
+           "--v_pull_kmh", str(v_pull_kmh), "--episodes", str(episodes),
+           "--out", out]
+    shell_cmd = (
+        "ln -sf /isaac-sim/kit/python/bin/python3 /usr/local/bin/python && "
+        "export ISAAC_PATH=/isaac-sim EXP_PATH=/isaac-sim/apps "
+        "CARB_APP_PATH=/isaac-sim/kit LD_PRELOAD=/isaac-sim/kit/libcarb.so "
+        "RESOURCE_NAME=IsaacSim && "
+        "source /isaac-sim/setup_python_env.sh && "
+        + " ".join(cmd)
+    )
+    subprocess.run(["bash", "-c", shell_cmd], check=True, cwd=_REMOTE_DIR)
     ckpts.commit()
 
 
