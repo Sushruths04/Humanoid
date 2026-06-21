@@ -16,6 +16,7 @@ def parse_args():
     p.add_argument("--out", default="results/rollout.mp4")
     p.add_argument("--steps", type=int, default=600)
     p.add_argument("--no-cameras", action="store_true", help="disable RTX cameras (trace only, works without RTX GPU)")
+    p.add_argument("--ignore-terminations", action="store_true", help="run for full --steps regardless of episode resets")
     return p.parse_args()
 
 def main():
@@ -120,9 +121,9 @@ def main():
         for i in done_idx.tolist():
             collected += 1
             ep_steps[i] = 0
-            if collected >= args.episodes:
+            if not args.ignore_terminations and collected >= args.episodes:
                 break
-        if collected >= args.episodes:
+        if not args.ignore_terminations and collected >= args.episodes:
             break
 
     # Save trace
