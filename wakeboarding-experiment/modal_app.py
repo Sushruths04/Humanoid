@@ -100,10 +100,13 @@ def evaluate(checkpoint: str, v_pull_kmh: float = 30.0, episodes: int = 200):
 @app.function(gpu=GPU, volumes={"/ckpts": ckpts}, timeout=30 * 60)
 def collect_trace(checkpoint: str, v_pull_kmh: float = 10.0, steps: int = 500):
     import subprocess
-    out = f"/ckpts/traces/trace_{checkpoint.split('/')[-1].replace('.pt','')}.json"
+    # play.py writes trace at args.out.replace(".mp4", "_trace.json"), so the mp4 path
+    # must end in .mp4 and the returned trace path must match that derived name.
+    mp4_out = f"/ckpts/traces/trace_{checkpoint.split('/')[-1].replace('.pt','')}.mp4"
+    out = mp4_out.replace(".mp4", "_trace.json")   # matches play.py line 155
     cmd = ["python", "play.py", "--checkpoint", checkpoint,
            "--v_pull_kmh", str(v_pull_kmh), "--steps", str(steps),
-           "--episodes", "99", "--out", out.replace(".json", ".mp4")]
+           "--episodes", "99", "--out", mp4_out]
     shell_cmd = (
         "ln -sf /isaac-sim/kit/python/bin/python3 /usr/local/bin/python && "
         "export ISAAC_PATH=/isaac-sim EXP_PATH=/isaac-sim/apps "

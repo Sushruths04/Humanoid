@@ -126,10 +126,18 @@ def main():
 
 def apply_reward_weights(env_cfg, weights: dict):
     """Set RewTerm weights on the cfg object (must be called BEFORE env construction)."""
+    unknown = []
     for name, w in weights.items():
         term = getattr(env_cfg.rewards, name, None)
         if term is not None:
             term.weight = float(w)
+        else:
+            unknown.append(name)
+    if unknown:
+        raise ValueError(
+            f"[train] Unknown reward names in config (not in RewardsCfg): {unknown}\n"
+            f"Fix stage yaml or add the reward term to RewardsCfg before training."
+        )
 
 
 def build_rsl_rl_cfg(cfg: dict) -> dict:

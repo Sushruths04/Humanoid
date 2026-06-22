@@ -3,10 +3,6 @@
 Usage:
     python eval.py --checkpoint runs/.../model_latest.pt --v_pull_kmh 30 --episodes 200 \
                    --out results/eval_30kmh.json
-Speed sweep (Table A) is just this over several --v_pull_kmh via 31_eval_speed_sweep.sh.
-
-Metrics: success_rate, fall_rate, mean_time_to_stand, mean_episode_length,
-board_angle_adherence, arm_straightness, smoothness, energy.
 """
 from __future__ import annotations
 
@@ -32,39 +28,42 @@ def main():
 
     import torch
     from rsl_rl.runners import OnPolicyRunner
+    from rsl_rl.env import RslRlVecEnvWrapper
     from src.tasks.wakeboard_start_cfg import WakeboardStartEnv, WakeboardStartEnvCfg, T_SUCCESS
     from src.rope_model import kmh_to_ms
 
     env_cfg = WakeboardStartEnvCfg()
     env_cfg.scene.num_envs = args.num_envs
-    env = WakeboardStartEnv(env_cfg)
-    env.rope.set_v_pull(kmh_to_ms(args.v_pull_kmh))
+    base_env = WakeboardStartEnv(env_cfg)
+    base_env.rope.set_v_pull(kmh_to_ms(args.v_pull_kmh))
+    env = RslRlVecEnvWrapper(base_env)
 
-    runner = OnPolicyRunner(env, _min_cfg(), log_dir=None, device=str(env.device))
+    runner = OnPolicyRunner(env, _min_cfg(), log_dir=None, device=str(base_env.device))
     runner.load(args.checkpoint)
-    policy = runner.get_inference_policy(device=env.device)
+    policy = runner.get_inference_policy(device=base_env.device)
 
     # rollout
     n_succ = n_fall = 0
-    t_stand, ep_len, board_adh, arm_str, smooth, energy = [], [], [], [], [], []
+    t_stand, ep_len, board_adh, arm_str = [], [], [], []
     obs, _ = env.reset()
     collected = 0
-    ep_steps = torch.zeros(env.num_envs, device=env.device)
+    ep_steps = torch.zeros(base_env.num_envs, device=base_env.device)
     while collected < args.episodes:
         with torch.no_grad():
             act = policy(obs)
-        obs, _, dones, _ = env.step(act)
+        result = env.step(act)
+        obs, _, dones = result[0], result[1], result[2]
         ep_steps += 1
-        board_adh.append(((env._board_pitch > 10 * 3.14159 / 180) &
-                          (env._board_pitch < 20 * 3.14159 / 180)).float().mean().item())
-        arm_str.append((-env._elbow_flexion).exp().mean().item())
-        done_idx = dones.nonzero().flatten()
+        board_adh.append(((base_env._board_pitch > 10 * 3.14159 / 180) &
+                          (base_env._board_pitch < 20 * 3.14159 / 180)).float().mean().item())
+        arm_str.append((-base_env._elbow_flexion).exp().mean().item())
+        done_idx = dones.nonzero(as_tuple=False).flatten()
         for i in done_idx.tolist():
             collected += 1
-            if env._success_event[i]:
+            if base_env._success_event[i]:
                 n_succ += 1
-                t_stand.append(env._stable_time[i].item())
-            if env._fall_event[i]:
+                t_stand.append(base_env._stable_time[i].item())
+            if base_env._fall_event[i]:
                 n_fall += 1
             ep_len.append(ep_steps[i].item())
             ep_steps[i] = 0
@@ -82,7 +81,7 @@ def main():
         "board_angle_adherence": _mean(board_adh),
         "arm_straightness": _mean(arm_str),
     }
-    os.makedirs(os.path.dirname(args.out), exist_ok=True)
+    os.makedirs(os.path.dirname(args.out) or ".", exist_ok=True)
     with open(args.out, "w") as f:
         json.dump(res, f, indent=2)
     print(json.dumps(res, indent=2))
@@ -94,9 +93,28 @@ def _mean(x):
 
 
 def _min_cfg():
-    return {"num_steps_per_env": 24, "policy": {"class_name": "ActorCritic",
-            "actor_hidden_dims": [512, 256, 128], "critic_hidden_dims": [512, 256, 128],
-            "activation": "elu"}, "algorithm": {"class_name": "PPO"}}
+    # rsl_rl >= 4.0 schema used by Isaac Lab
+    try:
+        from isaaclab_rl.rsl_rl import RslRlPpoActorCriticCfg, RslRlPpoAlgorithmCfg, RslRlOnPolicyRunnerCfg
+        return RslRlOnPolicyRunnerCfg(
+            num_steps_per_env=24,
+            policy=RslRlPpoActorCriticCfg(
+                actor_hidden_dims=[512, 256, 128],
+                critic_hidden_dims=[512, 256, 128],
+                activation="elu",
+            ),
+            algorithm=RslRlPpoAlgorithmCfg(),
+        )
+    except Exception:
+        # fallback plain dict for older installs
+        return {
+            "num_steps_per_env": 24,
+            "policy": {"class_name": "ActorCritic",
+                       "actor_hidden_dims": [512, 256, 128],
+                       "critic_hidden_dims": [512, 256, 128],
+                       "activation": "elu"},
+            "algorithm": {"class_name": "PPO"},
+        }
 
 
 if __name__ == "__main__":
