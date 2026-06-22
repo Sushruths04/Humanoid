@@ -56,7 +56,7 @@ G1_HAND_LINKS = ["left_palm_link", "right_palm_link"]  # verified against live g
 # Cannonball wakeboard-start pose — used for BOTH the spawn init state and every reset, so the
 # foot->board weld (created at spawn) is never violated by the reset teleport (was the cause of
 # the PhysX CUDA device-side assert / NaN explosion). Joint-name regexes for the G1.
-CANNONBALL_ROOT_Z = 0.55
+CANNONBALL_ROOT_Z = 0.50
 # Exact joint names (the G1 cfg uses exact names; regexes collide with its keys). Joints not
 # listed default to 0.0 at spawn.
 CANNONBALL_JOINT_POS = {
@@ -157,6 +157,8 @@ if ISAACLAB_AVAILABLE:
         handle_at_hips = RewTerm(func=R.handle_at_hips, weight=0.8)
         lean_back_moderate = RewTerm(func=R.lean_back_moderate, weight=0.7)
         knee_bend_maintained = RewTerm(func=R.knee_bend_maintained, weight=0.8)
+        pose_tracking = RewTerm(func=R.pose_tracking, weight=5.0)
+        pelvis_height_target = RewTerm(func=R.pelvis_height_target, weight=3.0)
         pen_stand_too_fast = RewTerm(func=R.pen_stand_too_fast, weight=-1.0)
         pen_pull_against_rope = RewTerm(func=R.pen_pull_against_rope, weight=-1.0)
         pen_torque = RewTerm(func=R.pen_torque, weight=-1e-4)
@@ -190,6 +192,11 @@ if ISAACLAB_AVAILABLE:
         default_root_state[:, 0:3] += env.scene.env_origins[env_ids]
         # Override z to crouched height (matches the spawn/weld pose CANNONBALL_ROOT_Z)
         default_root_state[:, 2] = env.scene.env_origins[env_ids, 2] + CANNONBALL_ROOT_Z
+        # 90° yaw: robot faces +Y (sideways wakeboard stance); wxyz format
+        default_root_state[:, 3] = 0.7071   # w
+        default_root_state[:, 4] = 0.0      # x
+        default_root_state[:, 5] = 0.0      # y
+        default_root_state[:, 6] = 0.7071   # z
         # Zero velocities
         default_root_state[:, 7:] = 0.0
         robot.write_root_pose_to_sim(default_root_state[:, :7], env_ids=env_ids)
@@ -248,6 +255,8 @@ if ISAACLAB_AVAILABLE:
             # SAME pose the env resets to (weld == spawn == reset). This removes the violent
             # reset-vs-weld conflict that was crashing PhysX.
             g1.init_state.pos = (0.0, 0.0, CANNONBALL_ROOT_Z)
+            # 90° yaw so robot faces +Y (sideways stance on board, board long axis along Y)
+            g1.init_state.rot = (0.7071, 0.0, 0.0, 0.7071)
             g1.init_state.joint_pos = dict(CANNONBALL_JOINT_POS)   # exact names; others -> 0.0
             self.scene.robot = g1
             self.scene.board = make_board_cfg(self.board)

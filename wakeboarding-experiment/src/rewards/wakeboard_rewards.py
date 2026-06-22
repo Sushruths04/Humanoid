@@ -19,6 +19,7 @@ import math
 import torch
 
 DEG = math.pi / 180.0
+T_SUCCESS = 6.0  # seconds; mirrors wakeboard_start_cfg.T_SUCCESS
 
 
 # ---------------------------------------------------------------- helpers
@@ -177,3 +178,42 @@ def pen_dof_pos_limits(env) -> torch.Tensor:
 def pen_fall(env) -> torch.Tensor:
     """Terminal penalty handled via termination; expose as a reward hook if desired."""
     return env._fall_event.float()
+
+
+# ---------------------------------------------------------------- pose tracking (§5.3)
+# Target riding pose: deep-water start posture — crouched, arms forward, leaning back.
+# Joint angles in radians for the G1 (23-DoF). Joints not listed target 0.0.
+TARGET_RIDING_POSE = {
+    "left_hip_pitch_joint":   -0.6,   # hip flexion (less deep than cannonball)
+    "right_hip_pitch_joint":  -0.6,
+    "left_knee_joint":         1.0,   # knees bent
+    "right_knee_joint":        1.0,
+    "left_ankle_pitch_joint":  0.2,
+    "right_ankle_pitch_joint": 0.2,
+    "left_shoulder_pitch_joint":  0.7,  # arms forward reaching rope
+    "right_shoulder_pitch_joint": 0.7,
+    "left_elbow_pitch_joint":  0.5,   # slight elbow bend
+    "right_elbow_pitch_joint": 0.5,
+    "torso_joint":            -0.2,   # torso slightly reclined back
+}
+TARGET_PELVIS_Z = 0.85   # target pelvis height in world frame (riding crouch height)
+
+
+def pose_tracking(env, sigma: float = 0.5, phase_gate: float = 0.25) -> torch.Tensor:
+    """Gaussian reward over distance from TARGET_RIDING_POSE; gated to count only after
+    phase_gate fraction of the episode (lets the start phase play out first)."""
+    robot = _robot(env)
+    joint_names = robot.joint_names
+    jp = robot.data.joint_pos          # (N, num_joints)
+    sq_err = torch.zeros(jp.shape[0], device=jp.device)
+    for i, name in enumerate(joint_names):
+        target = TARGET_RIDING_POSE.get(name, 0.0)
+        sq_err += (jp[:, i] - target) ** 2
+    gate = (env.episode_length_buf * env.step_dt >= phase_gate * T_SUCCESS).float()
+    return gate * torch.exp(-sq_err / (2 * sigma ** 2 * len(joint_names)))
+
+
+def pelvis_height_target(env, sigma: float = 0.12) -> torch.Tensor:
+    """Gaussian reward around TARGET_PELVIS_Z to encourage the riding crouch height."""
+    h = _pelvis_height(env)
+    return torch.exp(-((h - TARGET_PELVIS_Z) ** 2) / (2 * sigma ** 2))

@@ -2,14 +2,16 @@
 # 5000 iterations, 16 envs (L4 stable), proven reward balance.
 seed: 0
 num_envs: 16
-max_iterations: 5000
-save_interval: 100
+max_iterations: 200
+save_interval: 50
 experiment_name: wakeboard_stage1
 rope: {model: "spring", v_pull_kmh: 10.0, k_p: 800.0, k_d: 50.0, f_max: 600.0}
 curriculum: {enabled: false}
 board: {length: 1.4, width: 0.4, mass: 3.0, sand_friction: 0.4}
 dr: {enabled: false}
 rewards:
+  pose_tracking: 8.0
+  pelvis_height_target: 4.0
   pelvis_height: 10.0
   height_progress: 1.5
   uprightness: 10.0
