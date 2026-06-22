@@ -165,6 +165,7 @@ if ISAACLAB_AVAILABLE:
         pen_action_rate = RewTerm(func=R.pen_action_rate, weight=-0.01)
         pen_action_accel = RewTerm(func=R.pen_action_accel, weight=-1e-3)
         pen_dof_pos_limits = RewTerm(func=R.pen_dof_pos_limits, weight=-5.0)
+        pen_fall = RewTerm(func=R.pen_fall, weight=-20.0)
 
     # -------------------------------------------------- terminations (PLAN §4.3)
     def _board_out_of_range(env):

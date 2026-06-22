@@ -20,7 +20,6 @@ rewards:
   handle_at_hips: 0.8
   lean_back_moderate: 0.7
   knee_bend_maintained: 4.0
-  amp_style: 0.0
   pen_stand_too_fast: -0.2
   pen_pull_against_rope: -0.2
   pen_torque: -2.0e-6

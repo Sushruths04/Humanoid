@@ -28,7 +28,7 @@ def main():
 
     import torch
     from rsl_rl.runners import OnPolicyRunner
-    from rsl_rl.env import RslRlVecEnvWrapper
+    from isaaclab_rl.rsl_rl import RslRlVecEnvWrapper
     from src.tasks.wakeboard_start_cfg import WakeboardStartEnv, WakeboardStartEnvCfg, T_SUCCESS
     from src.rope_model import kmh_to_ms
 
@@ -93,28 +93,30 @@ def _mean(x):
 
 
 def _min_cfg():
-    # rsl_rl >= 4.0 schema used by Isaac Lab
-    try:
-        from isaaclab_rl.rsl_rl import RslRlPpoActorCriticCfg, RslRlPpoAlgorithmCfg, RslRlOnPolicyRunnerCfg
-        return RslRlOnPolicyRunnerCfg(
-            num_steps_per_env=24,
-            policy=RslRlPpoActorCriticCfg(
-                actor_hidden_dims=[512, 256, 128],
-                critic_hidden_dims=[512, 256, 128],
-                activation="elu",
-            ),
-            algorithm=RslRlPpoAlgorithmCfg(),
-        )
-    except Exception:
-        # fallback plain dict for older installs
-        return {
-            "num_steps_per_env": 24,
-            "policy": {"class_name": "ActorCritic",
-                       "actor_hidden_dims": [512, 256, 128],
-                       "critic_hidden_dims": [512, 256, 128],
-                       "activation": "elu"},
-            "algorithm": {"class_name": "PPO"},
-        }
+    hidden = [256, 256]
+    from isaaclab_rl.rsl_rl import RslRlMLPModelCfg, RslRlOnPolicyRunnerCfg, RslRlPpoAlgorithmCfg
+    runner = RslRlOnPolicyRunnerCfg(
+        num_steps_per_env=24, max_iterations=1, save_interval=1,
+        experiment_name="eval",
+        obs_groups={"actor": ["policy"], "critic": ["policy"]},
+        actor=RslRlMLPModelCfg(
+            hidden_dims=hidden, activation="elu",
+            distribution_cfg=RslRlMLPModelCfg.GaussianDistributionCfg(init_std=1.0),
+        ),
+        critic=RslRlMLPModelCfg(hidden_dims=hidden, activation="elu"),
+        algorithm=RslRlPpoAlgorithmCfg(
+            value_loss_coef=1.0, use_clipped_value_loss=True, clip_param=0.2,
+            entropy_coef=0.005, num_learning_epochs=5, num_mini_batches=4,
+            learning_rate=5e-4, schedule="adaptive", gamma=0.99, lam=0.95,
+            desired_kl=0.01, max_grad_norm=1.0,
+        ),
+    )
+    rl_cfg = runner.to_dict()
+    for grp in ("actor", "critic"):
+        for dep in ("stochastic", "init_noise_std", "noise_std_type", "state_dependent_std"):
+            if isinstance(rl_cfg.get(grp), dict):
+                rl_cfg[grp].pop(dep, None)
+    return rl_cfg
 
 
 if __name__ == "__main__":
