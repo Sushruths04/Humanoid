@@ -75,22 +75,24 @@ def build_skeleton(hip_pitch, knee, ankle_pitch, shoulder_pitch, elbow_pitch,
 
         # Thigh: hip_pitch bends in robot's sagittal (Y-Z plane)
         # hip_pitch < 0 = forward flex → knee goes toward +Y
+        h = abs(hip_pitch)
         thigh_dir = np.array([
             0.0,
-            math.sin(-hip_pitch),       # negative hip_pitch → +Y component
-            -math.cos(-hip_pitch),       # downward component
+             math.sin(h),    # forward (+Y)
+            -math.cos(h),    # downward (-Z)
         ])
         knee_pos = hip + thigh_dir * thigh_len
         joints[f"knee_{side}"] = knee_pos
 
-        # Shank: knee flexion further bends
-        # Combined angle from vertical = hip_pitch + knee (both in same direction)
-        combined = -hip_pitch + knee
-        shank_dir = np.array([
-            0.0,
-            -math.sin(combined),        # goes back toward -Y at high knee flex
-             -math.cos(combined),
-        ])
+        # Shank: rotate thigh direction further by knee_flex angle.
+        # Use incremental rotation so ankle lands correctly even for deep crouch.
+        # shank_dir = rotate thigh_dir by knee_flex clockwise in Y-Z plane:
+        #   dy_new = dy*cos(knee) + dz*sin(knee)
+        #   dz_new = -dy*sin(knee) + dz*cos(knee)
+        ty, tz = thigh_dir[1], thigh_dir[2]
+        sy = ty * math.cos(knee) + tz * math.sin(knee)
+        sz = -ty * math.sin(knee) + tz * math.cos(knee)
+        shank_dir = np.array([0.0, sy, sz])
         ankle_pos = knee_pos + shank_dir * shank_len
         joints[f"ankle_{side}"] = ankle_pos
 
