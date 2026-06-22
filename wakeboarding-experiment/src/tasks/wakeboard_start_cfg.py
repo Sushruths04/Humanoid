@@ -166,13 +166,21 @@ if ISAACLAB_AVAILABLE:
         pen_action_accel = RewTerm(func=R.pen_action_accel, weight=-1e-3)
         pen_dof_pos_limits = RewTerm(func=R.pen_dof_pos_limits, weight=-5.0)
         pen_fall = RewTerm(func=R.pen_fall, weight=-20.0)
+        pen_board_pitch = RewTerm(func=R.pen_board_pitch, weight=-0.5)
 
     # -------------------------------------------------- terminations (PLAN §4.3)
+    _GRACE_STEPS = int(0.5 / (1.0 / 200.0 / 4))  # 0.5s grace: 25 policy steps
+
     def _board_out_of_range(env):
-        return (env._board_pitch < -40 * DEG) | (env._board_pitch > 60 * DEG)
+        # Widened from ±40/60° — weld snap was launching board to ±87° in <0.1s
+        # killing episodes before any learning. Full flip (|pitch|>90°) is unrecoverable.
+        # Grace period: don't terminate in first 0.5s while PhysX settles the weld.
+        past_grace = env.episode_length_buf >= _GRACE_STEPS
+        return past_grace & ((env._board_pitch < -85 * DEG) | (env._board_pitch > 85 * DEG))
 
     def _fell_over(env):
-        return R.uprightness(env) < 0.3
+        past_grace = env.episode_length_buf >= _GRACE_STEPS
+        return past_grace & (R.uprightness(env) < 0.1)
 
     @configclass
     class TerminationsCfg:

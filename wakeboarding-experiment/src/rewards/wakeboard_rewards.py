@@ -180,6 +180,12 @@ def pen_fall(env) -> torch.Tensor:
     return env._fall_event.float()
 
 
+def pen_board_pitch(env, max_deg: float = 30.0) -> torch.Tensor:
+    """Continuous penalty for board pitch beyond max_deg — softer than hard termination."""
+    excess = torch.clamp(env._board_pitch.abs() - max_deg * DEG, min=0.0)
+    return _clamp_penalty(excess / DEG, max_value=60.0)
+
+
 # ---------------------------------------------------------------- pose tracking (§5.3)
 # Target riding pose: deep-water start posture — crouched, arms forward, leaning back.
 # Joint angles in radians for the G1 (23-DoF). Joints not listed target 0.0.

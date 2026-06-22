@@ -30,6 +30,7 @@ rewards:
   pen_action_accel: -2.0e-5
   pen_dof_pos_limits: -1.0
   pen_fall: -20.0
+  pen_board_pitch: -0.5
 ppo:
   policy_hidden: [256, 256]
   activation: elu
