@@ -55,7 +55,11 @@ def main():
     frames_ok = False
     try:
         import omni.replicator.core as rep
-        cam = rep.create.camera(position=(3.5, -4.5, 2.0), look_at=(0.0, 0.0, 0.85))
+        import omni.usd
+        from pxr import Gf, UsdGeom
+        # Side-view camera — x=0 so we only need to update x each step to track robot
+        cam = rep.create.camera(position=(0.0, -6.0, 1.5), look_at=(0.0, 0.0, 0.85))
+        _cam_path = str(cam.GetPath())
         rp = rep.create.render_product(cam, resolution=(1280, 720))
         writer = rep.WriterRegistry.get("BasicWriter")
         writer.initialize(output_dir=frame_dir, rgb=True)
@@ -118,10 +122,20 @@ def main():
         trace["reward"].append(rewards[0].item() if torch.is_tensor(rewards) else float(rewards))
         trace["step"].append(step)
 
-        # Capture frame — BasicWriter auto-saves on each orchestrator step
+        # Capture frame — move camera to follow robot then render
         if frames_ok and step % 2 == 0:
             try:
                 import omni.replicator.core as rep
+                import omni.usd
+                from pxr import Gf, UsdGeom
+                # Track robot x position so robot stays in frame
+                stage = omni.usd.get_context().get_stage()
+                cam_prim = stage.GetPrimAtPath(_cam_path)
+                for op in UsdGeom.Xformable(cam_prim).GetOrderedXformOps():
+                    if UsdGeom.XformOp.TypeTranslate == op.GetOpType():
+                        cur = op.Get()
+                        op.Set(Gf.Vec3d(px, float(cur[1]), float(cur[2])))
+                        break
                 rep.orchestrator.step(delta_time=0.0)
             except Exception as e:
                 print(f"[play] render step {step} failed: {e}", flush=True)
