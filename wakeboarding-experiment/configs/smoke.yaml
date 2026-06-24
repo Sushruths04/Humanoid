@@ -1,7 +1,7 @@
 # Smoke test — confirm the pipeline builds + reaches PPO. Tiny + fast (PLAN §14 task 6).
 seed: 0
 num_envs: 16
-max_iterations: 2
+max_iterations: 30
 save_interval: 1
 experiment_name: wakeboard_smoke
 rope: {model: "spring", v_pull_kmh: 10.0, k_p: 800.0, k_d: 50.0, f_max: 600.0}
@@ -9,24 +9,23 @@ curriculum: {enabled: false}
 board: {length: 1.4, width: 0.4, mass: 3.0, sand_friction: 0.4}
 dr: {enabled: false}
 rewards:
-  pelvis_height: 2.0
+  pelvis_height: 10.0
   height_progress: 1.5
-  uprightness: 2.0
-  survival: 0.5
-  forward_glide: 1.0
+  uprightness: 10.0
+  survival: 2.5
+  forward_glide: 5.0
   success_bonus: 50.0
-  board_positive_angle: 1.5
+  board_positive_angle: 7.5
   arms_straight: 1.0
   handle_at_hips: 0.8
   lean_back_moderate: 0.7
-  knee_bend_maintained: 0.8
-  amp_style: 0.0
-  pen_stand_too_fast: -1.0
-  pen_pull_against_rope: -1.0
-  pen_torque: -1.0e-4
-  pen_action_rate: -0.01
-  pen_action_accel: -1.0e-3
-  pen_dof_pos_limits: -5.0
+  knee_bend_maintained: 4.0
+  pen_stand_too_fast: -0.2
+  pen_pull_against_rope: -0.2
+  pen_torque: -2.0e-6
+  pen_action_rate: -0.0002
+  pen_action_accel: -2.0e-5
+  pen_dof_pos_limits: -1.0
   pen_fall: -20.0
 ppo:
   policy_hidden: [256, 256]

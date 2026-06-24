@@ -44,7 +44,8 @@ def main():
 
     # 2) now safe to import env + RL
     import torch
-    from rsl_rl.runners import OnPolicyRunner          # VERIFY import path
+    from rsl_rl.runners import OnPolicyRunner
+    from isaaclab_rl.rsl_rl import RslRlVecEnvWrapper   # adapts ManagerBasedRLEnv -> rsl_rl VecEnv
     from src.tasks.wakeboard_start_cfg import WakeboardStartEnv, WakeboardStartEnvCfg, T_SUCCESS
     from src.curriculum import PullSpeedCurriculum
     from src.rope_model import kmh_to_ms
@@ -52,8 +53,8 @@ def main():
     # 3) build env
     env_cfg = WakeboardStartEnvCfg()
     env_cfg.scene.num_envs = cfg["num_envs"]
+    apply_reward_weights(env_cfg, cfg["rewards"])     # set RewTerm weights BEFORE env construction
     env = WakeboardStartEnv(env_cfg)
-    apply_reward_weights(env, cfg["rewards"])         # set RewTerm weights from YAML
     env.rope.model = cfg["rope"]["model"]
     env.rope.set_v_pull(kmh_to_ms(cfg["rope"]["v_pull_kmh"]))
 
@@ -66,56 +67,130 @@ def main():
         enabled=cur_cfg.get("enabled", False),
     )
 
-    # 5) RSL-RL runner
+    # 5) RSL-RL runner (wrap env to the rsl_rl VecEnv interface; keep raw `env` for rope/buffers)
     runner_cfg = build_rsl_rl_cfg(cfg)
     exp_dir = os.path.join(args.experiment_dir, cfg["experiment_name"])
-    runner = OnPolicyRunner(env, runner_cfg, log_dir=exp_dir, device=str(env.device))
+    rl_env = RslRlVecEnvWrapper(env)
+    runner = OnPolicyRunner(rl_env, runner_cfg, log_dir=exp_dir, device=str(env.device))
     if args.resume:
         runner.load(args.resume)
 
-    # 6) train with a per-iteration curriculum callback
+    # 6) train with resilient loop: checkpoint before each chunk, retry on NaN crash
+    import torch as _torch
     total = cfg["max_iterations"]
-    step = max(50, cur_cfg.get("window", 200))
+    step = 50
     done = 0
+    last_good_checkpoint = None
+    max_retries = 50
+    retry_count = 0
     while done < total:
         n = min(step, total - done)
-        runner.learn(num_learning_iterations=n, init_at_random_ep_len=True)
-        done += n
-        succ = float(getattr(env, "_success_event", torch.zeros(1)).float().mean().item())
+        try:
+            runner.learn(num_learning_iterations=n, init_at_random_ep_len=True)
+            done += n
+            retry_count = 0
+        except RuntimeError as e:
+            if "std >= 0" in str(e) or "nan" in str(e).lower():
+                retry_count += 1
+                print(f"[resilient] PPO crash at iter {done}/{total}: {e}")
+                if last_good_checkpoint is None:
+                    print(f"[resilient] no good checkpoint yet, cannot retry")
+                    break
+                print(f"[resilient] retry {retry_count}/{max_retries} from {last_good_checkpoint}")
+                if retry_count > max_retries:
+                    print(f"[resilient] max retries exceeded, stopping at {done} iters")
+                    break
+                runner.load(last_good_checkpoint)
+                if hasattr(runner.alg, 'storage'):
+                    runner.alg.storage.clear()
+                continue
+            else:
+                raise
+        succ = float(getattr(env, "_success_event", _torch.zeros(1)).float().mean().item())
         if curriculum.update(succ):
             env.rope.set_v_pull(curriculum.current_ms)
             print(f"[curriculum] advanced -> {curriculum.current_kmh} km/h")
         runner.save(os.path.join(exp_dir, f"model_{done}.pt"))
+        last_good_checkpoint = os.path.join(exp_dir, f"model_{done}.pt")
+        # Now we can save pre-chunk checkpoints since logger is initialized
+        try:
+            pre = os.path.join(exp_dir, f"model_{done}_pre.pt")
+            runner.save(pre)
+        except Exception:
+            pass
+        print(f"[checkpoint] saved model_{done}.pt | reward={succ:.4f} done={done}/{total}")
 
     runner.save(os.path.join(exp_dir, "model_latest.pt"))
     simulation_app.close()
 
 
-def apply_reward_weights(env, weights: dict):
+def apply_reward_weights(env_cfg, weights: dict):
+    """Set RewTerm weights on the cfg object (must be called BEFORE env construction)."""
+    unknown = []
     for name, w in weights.items():
-        term = getattr(env.cfg.rewards, name, None)
+        term = getattr(env_cfg.rewards, name, None)
         if term is not None:
             term.weight = float(w)
+        else:
+            unknown.append(name)
+    if unknown:
+        raise ValueError(
+            f"[train] Unknown reward names in config (not in RewardsCfg): {unknown}\n"
+            f"Fix stage yaml or add the reward term to RewardsCfg before training."
+        )
 
 
 def build_rsl_rl_cfg(cfg: dict) -> dict:
+    # Use Isaac Lab's own rsl_rl config dataclasses so the emitted dict matches the installed
+    # rsl_rl schema. This image is rsl-rl >= 4.0: the policy is split into separate actor/critic
+    # RslRlMLPModelCfg models with an obs_groups map (see anymal_d/agents/rsl_rl_ppo_cfg.py).
+    # Imported here (not at module top): needs the launched app.
+    from isaaclab_rl.rsl_rl import (
+        RslRlMLPModelCfg,
+        RslRlOnPolicyRunnerCfg,
+        RslRlPpoAlgorithmCfg,
+    )
+
     ppo = cfg["ppo"]
-    return {
-        "num_steps_per_env": ppo["num_steps_per_env"],
-        "max_iterations": cfg["max_iterations"],
-        "save_interval": cfg.get("save_interval", 100),
-        "experiment_name": cfg["experiment_name"],
-        "policy": {"class_name": "ActorCritic",
-                   "actor_hidden_dims": ppo["policy_hidden"],
-                   "critic_hidden_dims": ppo["policy_hidden"],
-                   "activation": ppo["activation"]},
-        "algorithm": {"class_name": "PPO",
-                      "clip_param": ppo["clip_param"], "entropy_coef": ppo["entropy_coef"],
-                      "learning_rate": ppo["learning_rate"], "schedule": ppo["schedule"],
-                      "desired_kl": ppo["desired_kl"], "gamma": ppo["gamma"],
-                      "lam": ppo["lam"], "num_learning_epochs": ppo["num_learning_epochs"],
-                      "num_mini_batches": ppo["num_mini_batches"]},
-    }
+    hidden = list(ppo["policy_hidden"])
+    runner = RslRlOnPolicyRunnerCfg(
+        num_steps_per_env=ppo["num_steps_per_env"],
+        max_iterations=cfg["max_iterations"],
+        save_interval=cfg.get("save_interval", 100),
+        experiment_name=cfg["experiment_name"],
+        obs_groups={"actor": ["policy"], "critic": ["policy"]},
+        actor=RslRlMLPModelCfg(
+            hidden_dims=hidden,
+            activation=ppo["activation"],
+            distribution_cfg=RslRlMLPModelCfg.GaussianDistributionCfg(init_std=1.0),
+        ),
+        critic=RslRlMLPModelCfg(
+            hidden_dims=hidden,
+            activation=ppo["activation"],
+        ),
+        algorithm=RslRlPpoAlgorithmCfg(
+            value_loss_coef=1.0,
+            use_clipped_value_loss=True,
+            clip_param=ppo["clip_param"],
+            entropy_coef=ppo["entropy_coef"],
+            num_learning_epochs=ppo["num_learning_epochs"],
+            num_mini_batches=ppo["num_mini_batches"],
+            learning_rate=ppo["learning_rate"],
+            schedule=ppo["schedule"],
+            gamma=ppo["gamma"],
+            lam=ppo["lam"],
+            desired_kl=ppo["desired_kl"],
+            max_grad_norm=1.0,
+        ),
+    )
+    rl_cfg = runner.to_dict()
+    # rsl-rl >= 5.0 MLPModel uses distribution_cfg only; to_dict() still emits the deprecated
+    # scalar fields, which MLPModel.__init__ rejects as unexpected kwargs. Strip them.
+    for grp in ("actor", "critic"):
+        for dep in ("stochastic", "init_noise_std", "noise_std_type", "state_dependent_std"):
+            if isinstance(rl_cfg.get(grp), dict):
+                rl_cfg[grp].pop(dep, None)
+    return rl_cfg
 
 
 if __name__ == "__main__":

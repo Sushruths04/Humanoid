@@ -1,0 +1,18 @@
+[INFO][AppLauncher]: Using device: cuda:0
+[INFO][AppLauncher]: Loading experience file: /workspace/isaaclab/apps/isaaclab.python.headless.kit
+Traceback (most recent call last):
+  File "/workspace/wakeboarding-experiment/train.py", line 122, in <module>
+    main()
+  File "/workspace/wakeboarding-experiment/train.py", line 42, in main
+    app_launcher = AppLauncher(headless=args.headless or True)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/isaaclab/source/isaaclab/isaaclab/app/app_launcher.py", line 131, in __init__
+    self._create_app()
+  File "/workspace/isaaclab/source/isaaclab/isaaclab/app/app_launcher.py", line 823, in _create_app
+    self._app = SimulationApp(self._sim_app_config, experience=self._sim_experience_file)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/isaac-sim/exts/isaacsim.simulation_app/isaacsim/simulation_app/simulation_app.py", line 265, in __init__
+    search_paths=[os.path.abspath(f'{os.environ["CARB_APP_PATH"]}/kernel/plugins')],
+                                     ~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "<frozen os>", line 679, in __getitem__
+KeyError: 'CARB_APP_PATH'

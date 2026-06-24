@@ -42,7 +42,7 @@ def make_board_cfg(p: BoardParams):
     return RigidObjectCfg(
         prim_path="{ENV_REGEX_NS}/Board",
         spawn=sim_utils.CuboidCfg(
-            size=(p.length, p.width, p.thickness),
+            size=(p.width, p.length, p.thickness),
             rigid_props=sim_utils.RigidBodyPropertiesCfg(disable_gravity=False),
             mass_props=sim_utils.MassPropertiesCfg(mass=p.mass),
             collision_props=sim_utils.CollisionPropertiesCfg(),
@@ -53,7 +53,7 @@ def make_board_cfg(p: BoardParams):
             ),
             visual_material=sim_utils.PreviewSurfaceCfg(diffuse_color=(0.9, 0.7, 0.1)),
         ),
-        init_state=RigidObjectCfg.InitialStateCfg(pos=(0.0, 0.0, 0.05)),
+        init_state=RigidObjectCfg.InitialStateCfg(pos=(0.0, 0.0, p.thickness * 0.5)),
     )
 
 

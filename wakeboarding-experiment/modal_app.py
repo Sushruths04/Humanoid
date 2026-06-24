@@ -21,18 +21,31 @@ Notes:
 """
 from __future__ import annotations
 
+from pathlib import Path
+
 import modal
 
-# --- container image: Isaac Sim 5.1 base + Isaac Lab + this repo's deps ---
-# VERIFY: the simplest path is to reuse YOUR existing GHCR image that already has Isaac Lab:
+# Repo code must live INSIDE the image — unlike the local docker-compose path (which mounts
+# the code), Modal has no mount, so we copy this experiment dir to /workspace/wakeboarding-experiment
+# (the same path train()/evaluate() cd into below).
+_LOCAL_DIR = Path(__file__).parent.resolve()
+_REMOTE_DIR = "/workspace/wakeboarding-experiment"
+
+# --- container image: Isaac Sim 5.1 base + Isaac Lab + this repo's deps + this repo's code ---
+# Reuse YOUR existing GHCR image that already has Isaac Lab:
 #   ghcr.io/sushruths04/humanoid-isaaclab:latest
 image = (
     modal.Image.from_registry(
         "ghcr.io/sushruths04/humanoid-isaaclab:latest",
         add_python="3.10",
     )
-    .pip_install("rsl-rl-lib>=2.0.0", "pyyaml", "wandb", "tensorboard")
+    .entrypoint([])
+    .run_commands("apt-get update -qq && apt-get install -y -q ffmpeg || true")
+    .pip_install("rsl-rl-lib>=2.0.0", "pyyaml", "wandb", "tensorboard", "Pillow")
     .env({"NVIDIA_DRIVER_CAPABILITIES": "all", "ACCEPT_EULA": "Y", "OMNI_KIT_ACCEPT_EULA": "YES"})
+    # bake the experiment code into the image so cwd=_REMOTE_DIR exists at runtime
+    .add_local_dir(str(_LOCAL_DIR), _REMOTE_DIR, copy=True,
+                   ignore=["runs", "checkpoints", "__pycache__", "*.pt", "vault"])
 )
 
 app = modal.App("wakeboard-rl", image=image)
@@ -53,7 +66,15 @@ def train(config: str, num_envs: int | None = None, max_iterations: int | None =
         cmd += ["--max_iterations", str(max_iterations)]
     if resume:
         cmd += ["--resume", resume]
-    subprocess.run(cmd, check=True, cwd="/workspace/wakeboarding-experiment")  # VERIFY cwd
+    shell_cmd = (
+        "ln -sf /isaac-sim/kit/python/bin/python3 /usr/local/bin/python && "
+        "export ISAAC_PATH=/isaac-sim EXP_PATH=/isaac-sim/apps "
+        "CARB_APP_PATH=/isaac-sim/kit LD_PRELOAD=/isaac-sim/kit/libcarb.so "
+        "RESOURCE_NAME=IsaacSim && "
+        "source /isaac-sim/setup_python_env.sh && "
+        + " ".join(cmd)
+    )
+    subprocess.run(["bash", "-c", shell_cmd], check=True, cwd=_REMOTE_DIR)
     ckpts.commit()
 
 
@@ -61,16 +82,73 @@ def train(config: str, num_envs: int | None = None, max_iterations: int | None =
 def evaluate(checkpoint: str, v_pull_kmh: float = 30.0, episodes: int = 200):
     import subprocess
     out = f"/ckpts/results/eval_{int(v_pull_kmh)}kmh.json"
-    subprocess.run(["python", "eval.py", "--checkpoint", checkpoint,
-                    "--v_pull_kmh", str(v_pull_kmh), "--episodes", str(episodes),
-                    "--out", out], check=True, cwd="/workspace/wakeboarding-experiment")
+    cmd = ["python", "eval.py", "--checkpoint", checkpoint,
+           "--v_pull_kmh", str(v_pull_kmh), "--episodes", str(episodes),
+           "--out", out]
+    shell_cmd = (
+        "ln -sf /isaac-sim/kit/python/bin/python3 /usr/local/bin/python && "
+        "export ISAAC_PATH=/isaac-sim EXP_PATH=/isaac-sim/apps "
+        "CARB_APP_PATH=/isaac-sim/kit LD_PRELOAD=/isaac-sim/kit/libcarb.so "
+        "RESOURCE_NAME=IsaacSim && "
+        "source /isaac-sim/setup_python_env.sh && "
+        + " ".join(cmd)
+    )
+    subprocess.run(["bash", "-c", shell_cmd], check=True, cwd=_REMOTE_DIR)
     ckpts.commit()
+
+
+@app.function(gpu=GPU, volumes={"/ckpts": ckpts}, timeout=30 * 60)
+def collect_trace(checkpoint: str, v_pull_kmh: float = 10.0, steps: int = 500):
+    import subprocess
+    # play.py writes trace at args.out.replace(".mp4", "_trace.json"), so the mp4 path
+    # must end in .mp4 and the returned trace path must match that derived name.
+    mp4_out = f"/ckpts/traces/trace_{checkpoint.split('/')[-1].replace('.pt','')}.mp4"
+    out = mp4_out.replace(".mp4", "_trace.json")   # matches play.py line 155
+    cmd = ["python", "play.py", "--checkpoint", checkpoint,
+           "--v_pull_kmh", str(v_pull_kmh), "--steps", str(steps),
+           "--episodes", "99", "--out", mp4_out]
+    shell_cmd = (
+        "ln -sf /isaac-sim/kit/python/bin/python3 /usr/local/bin/python && "
+        "export ISAAC_PATH=/isaac-sim EXP_PATH=/isaac-sim/apps "
+        "CARB_APP_PATH=/isaac-sim/kit LD_PRELOAD=/isaac-sim/kit/libcarb.so "
+        "RESOURCE_NAME=IsaacSim && "
+        "source /isaac-sim/setup_python_env.sh && "
+        + " ".join(cmd)
+    )
+    subprocess.run(["bash", "-c", shell_cmd], check=True, cwd=_REMOTE_DIR)
+    ckpts.commit()
+    return out
+
+
+@app.function(gpu=GPU, volumes={"/ckpts": ckpts}, timeout=60 * 60)
+def render_video(checkpoint: str, v_pull_kmh: float = 10.0, episodes: int = 3, steps: int = 400):
+    import subprocess
+    out = f"/ckpts/videos/rollout_{checkpoint.split('/')[-1].replace('.pt','')}.mp4"
+    cmd = ["python", "play.py", "--checkpoint", checkpoint,
+           "--v_pull_kmh", str(v_pull_kmh), "--episodes", str(episodes),
+           "--steps", str(steps), "--out", out]
+    shell_cmd = (
+        "ln -sf /isaac-sim/kit/python/bin/python3 /usr/local/bin/python && "
+        "export ISAAC_PATH=/isaac-sim EXP_PATH=/isaac-sim/apps "
+        "CARB_APP_PATH=/isaac-sim/kit LD_PRELOAD=/isaac-sim/kit/libcarb.so "
+        "RESOURCE_NAME=IsaacSim && "
+        "source /isaac-sim/setup_python_env.sh && "
+        + " ".join(cmd)
+    )
+    subprocess.run(["bash", "-c", shell_cmd], check=True, cwd=_REMOTE_DIR)
+    ckpts.commit()
+    return out
 
 
 @app.local_entrypoint()
 def main(action: str = "train", config: str = "configs/stage1.yaml",
-         checkpoint: str = "", v_pull_kmh: float = 30.0):
+         checkpoint: str = "", v_pull_kmh: float = 10.0, resume: str = ""):
     if action == "train":
-        train.remote(config=config)
+        train.remote(config=config, resume=resume or None)
     elif action == "eval":
         evaluate.remote(checkpoint=checkpoint, v_pull_kmh=v_pull_kmh)
+    elif action == "render":
+        ckpt = checkpoint or "/ckpts/wakeboard_stage1/model_latest.pt"
+        out = render_video.remote(checkpoint=ckpt, v_pull_kmh=v_pull_kmh)
+        print(f"[render] video saved to Modal volume: {out}")
+        print(f"[render] download with: modal volume get wakeboard-ckpts {out} ./rollout.mp4")

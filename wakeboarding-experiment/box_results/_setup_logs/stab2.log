@@ -1,0 +1,79 @@
+[INFO][AppLauncher]: Using device: cuda:0
+[INFO][AppLauncher]: Loading experience file: /workspace/isaaclab/apps/isaaclab.python.headless.kit
+[Info] [carb] Logging to file: /isaac-sim/kit/logs/Kit/Isaac-Sim/5.1/kit_20260620_222741.log
+2026-06-20T22:27:42Z [786ms] [Warning] [omni.platforminfo.plugin] failed to open the default display.  Can't verify X Server version.
+2026-06-20T22:27:42Z [814ms] [Warning] [omni.usd_config.extension] Enable omni.materialx.libs extension to use MaterialX
+2026-06-20T22:27:43Z [2,133ms] [Warning] [carb] Acquiring non optional plugin interface which is not listed as dependency: [omni::physx::IPhysxBenchmarks v1.0] (plugin: <default plugin>), by client: omni.physics.physx.plugin. Add it to CARB_PLUGIN_IMPL_DEPS() macro of a client.
+2026-06-20T22:27:44Z [2,867ms] [Warning] [omni.isaac.dynamic_control] omni.isaac.dynamic_control is deprecated as of Isaac Sim 4.5. No action is needed from end-users.
+
+|---------------------------------------------------------------------------------------------|
+| Driver Version: 580.159.03    | Graphics API: Vulkan
+|=============================================================================================|
+| GPU | Name                             | Active | LDA | GPU Memory | Vendor-ID | LUID       |
+|     |                                  |        |     |            | Device-ID | UUID       |
+|     |                                  |        |     |            | Bus-ID    |            |
+|---------------------------------------------------------------------------------------------|
+| 0   | NVIDIA L4                        | Yes: 0 |     | 23034   MB | 10de      | 0          |
+|     |                                  |        |     |            | 27b8      | 1834a8c7.. |
+|     |                                  |        |     |            | 0         |            |
+|=============================================================================================|
+| OS: 24.04.2 LTS (Noble Numbat) ubuntu, Version: 24.04.2, Kernel: 6.8.0-1007-gcp
+| Processor: Intel(R) Xeon(R) CPU @ 2.20GHz
+| Cores: 4 | Logical Cores: 8
+|---------------------------------------------------------------------------------------------|
+| Total Memory (MB): 32093 | Free Memory: 28209
+| Total Page/Swap (MB): 16383 | Free Page/Swap: 0
+|---------------------------------------------------------------------------------------------|
+cat: '/sys/devices/system/cpu/cpu*/cpufreq/scaling_governor': No such file or directory
+2026-06-20T22:27:53Z [11,683ms] [Warning] [gpu.foundation.plugin] ECC is enabled on physical device 0
+2026-06-20T22:28:00Z [18,775ms] [Warning] [isaaclab.envs.manager_based_env] Seed not set for the environment. The environment creation may not be deterministic.
+
+[36m======================================================================================[0m
+[36m[1m[INFO][IsaacLab]: Logging to file: /tmp/isaaclab/logs/isaaclab_2026-06-20_22-28-00.log[0m
+[36m======================================================================================[0m
+
+[33m22:28:00 [simulation_context.py] WARNING: The `enable_external_forces_every_iteration` parameter in the PhysxCfg is set to False. If you are experiencing noisy velocities, consider enabling this flag. You may need to slightly increase the number of velocity iterations (setting it to 1 or 2 rather than 0), together with this flag, to improve the accuracy of velocity updates.[0m
+[INFO]: Base environment:
+	Environment device    : cuda:0
+	Environment seed      : None
+	Physics step-size     : 0.005
+	Rendering step-size   : 0.005
+	Environment step-size : 0.02
+[33m22:28:00 [manager_based_env.py] WARNING: The render interval (1) is smaller than the decimation (4). Multiple render calls will happen for each environment step. If this is not intended, set the render interval to be equal to the decimation.[0m
+[INFO]: Time taken for scene creation : 1.161161 seconds
+[INFO]: Scene manager:  <class InteractiveScene>
+	Number of environments: 16
+	Environment spacing   : 4.0
+	Source prim name      : /World/envs/env_0
+	Global prim paths     : []
+	Replicate physics     : True
+[INFO]: Starting the simulation. This may take a few seconds. Please wait...
+[INFO]: Time taken for simulation start : 0.922144 seconds
+Traceback (most recent call last):
+  File "/workspace/wakeboarding-experiment/train.py", line 189, in <module>
+    main()
+  File "/workspace/wakeboarding-experiment/train.py", line 57, in main
+    env = WakeboardStartEnv(env_cfg)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/wakeboarding-experiment/src/tasks/wakeboard_start_cfg.py", line 267, in __init__
+    super().__init__(cfg, **kwargs)
+  File "/workspace/isaaclab/source/isaaclab/isaaclab/envs/manager_based_rl_env.py", line 80, in __init__
+    super().__init__(cfg=cfg)
+  File "/workspace/isaaclab/source/isaaclab/isaaclab/envs/manager_based_env.py", line 173, in __init__
+    self.sim.reset()
+  File "/workspace/isaaclab/source/isaaclab/isaaclab/sim/simulation_context.py", line 530, in reset
+    self.render()
+  File "/workspace/isaaclab/source/isaaclab/isaaclab/sim/simulation_context.py", line 601, in render
+    raise exception_to_raise
+  File "/workspace/isaaclab/source/isaaclab/isaaclab/assets/asset_base.py", line 317, in _initialize_callback
+    self._initialize_impl()
+  File "/workspace/isaaclab/source/isaaclab/isaaclab/assets/articulation/articulation.py", line 1583, in _initialize_impl
+    self._process_cfg()
+  File "/workspace/isaaclab/source/isaaclab/isaaclab/assets/articulation/articulation.py", line 1684, in _process_cfg
+    indices_list, _, values_list = string_utils.resolve_matching_names_values(
+                                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/isaaclab/source/isaaclab/isaaclab/utils/string.py", line 328, in resolve_matching_names_values
+    raise ValueError(
+ValueError: Multiple matches for 'left_shoulder_pitch_joint': 'left_shoulder_pitch_joint' and '.*_shoulder_pitch_joint'!
+2026-06-20T22:28:02Z [20,910ms] [Warning] [omni.physx.plugin] USD stage detach not called, holding a loose ptr to a stage!
+2026-06-20T22:28:02Z [21,446ms] [Warning] [carb] Recursive unloadAllPlugins() detected!

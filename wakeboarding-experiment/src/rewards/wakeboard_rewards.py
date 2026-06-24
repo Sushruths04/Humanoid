@@ -19,6 +19,7 @@ import math
 import torch
 
 DEG = math.pi / 180.0
+T_SUCCESS = 6.0  # seconds; mirrors wakeboard_start_cfg.T_SUCCESS
 
 
 # ---------------------------------------------------------------- helpers
@@ -35,6 +36,12 @@ def _gravity_up_proj(env) -> torch.Tensor:
 
 def _pelvis_height(env) -> torch.Tensor:
     return _robot(env).data.root_pos_w[:, 2]  # VERIFY: pelvis/root height
+
+
+def _clamp_penalty(x: torch.Tensor, max_value: float) -> torch.Tensor:
+    """Keep penalty terms finite and in a sane range for PPO stability."""
+    x = torch.nan_to_num(x, nan=0.0, posinf=max_value, neginf=0.0)
+    return torch.clamp(x, min=0.0, max=max_value)
 
 
 # ---------------------------------------------------------------- task rewards (§5.1)
@@ -121,22 +128,27 @@ def pen_stand_too_fast(env, vmax: float = 0.6, early_phase: float = 0.4) -> torc
     """Penalize high pelvis vertical velocity early in the episode (rule #1)."""
     vz = _robot(env).data.root_lin_vel_w[:, 2]
     early = (env.episode_length_buf * env.step_dt / env._t_success < early_phase).float()
-    return early * torch.clamp(vz - vmax, min=0.0)
+    return early * _clamp_penalty(vz - vmax, max_value=3.0)
 
 
 def pen_pull_against_rope(env) -> torch.Tensor:
     """Penalize elbow-flexion effort while the rope force is high (rule #4)."""
-    rope_mag = env._rope_force.norm(dim=-1)
-    flex = torch.clamp(env._elbow_flexion, min=0.0)
-    return (rope_mag / (env.rope.f_max + 1e-6)) * flex
+    rope_mag = torch.nan_to_num(env._rope_force.norm(dim=-1), nan=0.0, posinf=env.rope.f_max, neginf=0.0)
+    flex = torch.nan_to_num(env._elbow_flexion, nan=0.0, posinf=2.0, neginf=0.0)
+    raw = (rope_mag / (env.rope.f_max + 1e-6)) * torch.clamp(flex, min=0.0, max=2.0)
+    return _clamp_penalty(raw, max_value=4.0)
 
 
 def pen_torque(env) -> torch.Tensor:
-    return torch.sum(_robot(env).data.applied_torque ** 2, dim=-1)  # VERIFY attr
+    t = _robot(env).data.applied_torque
+    t = torch.nan_to_num(t, nan=0.0, posinf=1e4, neginf=-1e4)
+    return _clamp_penalty(torch.sum(t ** 2, dim=-1), max_value=1e4)
 
 
 def pen_action_rate(env) -> torch.Tensor:
-    return torch.sum((env.action_manager.action - env.action_manager.prev_action) ** 2, dim=-1)
+    d = env.action_manager.action - env.action_manager.prev_action
+    d = torch.nan_to_num(d, nan=0.0, posinf=1e4, neginf=-1e4)
+    return _clamp_penalty(torch.sum(d ** 2, dim=-1), max_value=1e4)
 
 
 def pen_action_accel(env) -> torch.Tensor:
@@ -144,19 +156,70 @@ def pen_action_accel(env) -> torch.Tensor:
     p = env.action_manager.prev_action
     pp = getattr(env, "_prev_prev_action", p)
     env._prev_prev_action = p.detach()
-    return torch.sum((a - 2 * p + pp) ** 2, dim=-1)
+    return _clamp_penalty(torch.sum((a - 2 * p + pp) ** 2, dim=-1), max_value=1e4)
 
 
 def pen_dof_pos_limits(env) -> torch.Tensor:
-    # VERIFY: Isaac Lab provides a soft dof-limit helper; placeholder L2-over-violation here.
     j = _robot(env).data.joint_pos
-    lo = _robot(env).data.soft_joint_pos_limits[..., 0]
-    hi = _robot(env).data.soft_joint_pos_limits[..., 1]
+    lo_hi = _robot(env).data.soft_joint_pos_limits
+    if lo_hi is None or torch.isnan(lo_hi).all():
+        return torch.zeros(j.shape[0], device=j.device)
+    lo = lo_hi[..., 0]
+    hi = lo_hi[..., 1]
+    lo = torch.nan_to_num(lo, nan=-1e6)
+    hi = torch.nan_to_num(hi, nan=1e6)
+    j = torch.nan_to_num(j, nan=0.0)
     below = torch.clamp(lo - j, min=0.0)
     above = torch.clamp(j - hi, min=0.0)
-    return torch.sum(below + above, dim=-1)
+    span = torch.clamp(hi - lo, min=1e-6)
+    return _clamp_penalty(torch.sum((below + above) / span, dim=-1), max_value=10.0)
 
 
 def pen_fall(env) -> torch.Tensor:
     """Terminal penalty handled via termination; expose as a reward hook if desired."""
     return env._fall_event.float()
+
+
+def pen_board_pitch(env, max_deg: float = 30.0) -> torch.Tensor:
+    """Continuous penalty for board pitch beyond max_deg — softer than hard termination."""
+    excess = torch.clamp(env._board_pitch.abs() - max_deg * DEG, min=0.0)
+    return _clamp_penalty(excess / DEG, max_value=60.0)
+
+
+# ---------------------------------------------------------------- pose tracking (§5.3)
+# Target riding pose: deep-water start posture — crouched, arms forward, leaning back.
+# Joint angles in radians for the G1 (23-DoF). Joints not listed target 0.0.
+TARGET_RIDING_POSE = {
+    "left_hip_pitch_joint":   -0.6,   # hip flexion (less deep than cannonball)
+    "right_hip_pitch_joint":  -0.6,
+    "left_knee_joint":         1.0,   # knees bent
+    "right_knee_joint":        1.0,
+    "left_ankle_pitch_joint":  0.2,
+    "right_ankle_pitch_joint": 0.2,
+    "left_shoulder_pitch_joint":  0.7,  # arms forward reaching rope
+    "right_shoulder_pitch_joint": 0.7,
+    "left_elbow_pitch_joint":  0.5,   # slight elbow bend
+    "right_elbow_pitch_joint": 0.5,
+    "torso_joint":            -0.2,   # torso slightly reclined back
+}
+TARGET_PELVIS_Z = 0.85   # target pelvis height in world frame (riding crouch height)
+
+
+def pose_tracking(env, sigma: float = 0.5, phase_gate: float = 0.25) -> torch.Tensor:
+    """Gaussian reward over distance from TARGET_RIDING_POSE; gated to count only after
+    phase_gate fraction of the episode (lets the start phase play out first)."""
+    robot = _robot(env)
+    joint_names = robot.joint_names
+    jp = robot.data.joint_pos          # (N, num_joints)
+    sq_err = torch.zeros(jp.shape[0], device=jp.device)
+    for i, name in enumerate(joint_names):
+        target = TARGET_RIDING_POSE.get(name, 0.0)
+        sq_err += (jp[:, i] - target) ** 2
+    gate = (env.episode_length_buf * env.step_dt >= phase_gate * T_SUCCESS).float()
+    return gate * torch.exp(-sq_err / (2 * sigma ** 2 * len(joint_names)))
+
+
+def pelvis_height_target(env, sigma: float = 0.12) -> torch.Tensor:
+    """Gaussian reward around TARGET_PELVIS_Z to encourage the riding crouch height."""
+    h = _pelvis_height(env)
+    return torch.exp(-((h - TARGET_PELVIS_Z) ** 2) / (2 * sigma ** 2))

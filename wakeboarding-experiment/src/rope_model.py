@@ -47,7 +47,7 @@ class RopeModel:
         self.anchor_pos = torch.zeros((num_envs, 3), device=self.device)
 
     # ---- lifecycle ----
-    def reset(self, env_ids: torch.Tensor, handle_pos: torch.Tensor, lead: float = 5.0):
+    def reset(self, env_ids: torch.Tensor, handle_pos: torch.Tensor, lead: float = 0.4):
         """Place the anchor `lead` metres ahead of the handle along the pull direction."""
         self.anchor_pos[env_ids] = handle_pos[env_ids] + lead * self.pull_dir
 

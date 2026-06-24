@@ -1,0 +1,458 @@
+[INFO][AppLauncher]: Using device: cuda:0
+[INFO][AppLauncher]: Loading experience file: /workspace/isaaclab/apps/isaaclab.python.headless.kit
+[Info] [carb] Logging to file: /isaac-sim/kit/logs/Kit/Isaac-Sim/5.1/kit_20260620_173619.log
+2026-06-20T17:36:20Z [840ms] [Warning] [omni.platforminfo.plugin] failed to open the default display.  Can't verify X Server version.
+2026-06-20T17:36:20Z [872ms] [Warning] [omni.usd_config.extension] Enable omni.materialx.libs extension to use MaterialX
+2026-06-20T17:36:21Z [2,189ms] [Warning] [carb] Acquiring non optional plugin interface which is not listed as dependency: [omni::physx::IPhysxBenchmarks v1.0] (plugin: <default plugin>), by client: omni.physics.physx.plugin. Add it to CARB_PLUGIN_IMPL_DEPS() macro of a client.
+2026-06-20T17:36:22Z [3,059ms] [Warning] [omni.isaac.dynamic_control] omni.isaac.dynamic_control is deprecated as of Isaac Sim 4.5. No action is needed from end-users.
+
+|---------------------------------------------------------------------------------------------|
+| Driver Version: 580.159.03    | Graphics API: Vulkan
+|=============================================================================================|
+| GPU | Name                             | Active | LDA | GPU Memory | Vendor-ID | LUID       |
+|     |                                  |        |     |            | Device-ID | UUID       |
+|     |                                  |        |     |            | Bus-ID    |            |
+|---------------------------------------------------------------------------------------------|
+| 0   | NVIDIA L4                        | Yes: 0 |     | 23034   MB | 10de      | 0          |
+|     |                                  |        |     |            | 27b8      | 1834a8c7.. |
+|     |                                  |        |     |            | 0         |            |
+|=============================================================================================|
+| OS: 24.04.2 LTS (Noble Numbat) ubuntu, Version: 24.04.2, Kernel: 6.8.0-1007-gcp
+| Processor: Intel(R) Xeon(R) CPU @ 2.20GHz
+| Cores: 4 | Logical Cores: 8
+|---------------------------------------------------------------------------------------------|
+| Total Memory (MB): 32093 | Free Memory: 28240
+| Total Page/Swap (MB): 16383 | Free Page/Swap: 0
+|---------------------------------------------------------------------------------------------|
+cat: '/sys/devices/system/cpu/cpu*/cpufreq/scaling_governor': No such file or directory
+2026-06-20T17:36:31Z [11,856ms] [Warning] [gpu.foundation.plugin] ECC is enabled on physical device 0
+2026-06-20T17:36:38Z [18,818ms] [Warning] [isaaclab.envs.manager_based_env] Seed not set for the environment. The environment creation may not be deterministic.
+
+[36m======================================================================================[0m
+[36m[1m[INFO][IsaacLab]: Logging to file: /tmp/isaaclab/logs/isaaclab_2026-06-20_17-36-38.log[0m
+[36m======================================================================================[0m
+
+[33m17:36:38 [simulation_context.py] WARNING: The `enable_external_forces_every_iteration` parameter in the PhysxCfg is set to False. If you are experiencing noisy velocities, consider enabling this flag. You may need to slightly increase the number of velocity iterations (setting it to 1 or 2 rather than 0), together with this flag, to improve the accuracy of velocity updates.[0m
+[INFO]: Base environment:
+	Environment device    : cuda:0
+	Environment seed      : None
+	Physics step-size     : 0.005
+	Rendering step-size   : 0.005
+	Environment step-size : 0.02
+[33m17:36:38 [manager_based_env.py] WARNING: The render interval (1) is smaller than the decimation (4). Multiple render calls will happen for each environment step. If this is not intended, set the render interval to be equal to the decimation.[0m
+[INFO]: Time taken for scene creation : 2.225253 seconds
+[INFO]: Scene manager:  <class InteractiveScene>
+	Number of environments: 512
+	Environment spacing   : 4.0
+	Source prim name      : /World/envs/env_0
+	Global prim paths     : []
+	Replicate physics     : True
+[INFO]: Starting the simulation. This may take a few seconds. Please wait...
+[INFO]: Time taken for simulation start : 1.937421 seconds
+[INFO] Command Manager:  <CommandManager> contains 0 active terms.
++------------------------+
+|  Active Command Terms  |
++--------+-------+-------+
+| Index  | Name  |  Type |
++--------+-------+-------+
++--------+-------+-------+
+
+[INFO] Event Manager:  <EventManager> contains 1 active terms.
++----------------------------------+
+| Active Event Terms in Mode: 'reset' |
++------------+---------------------+
+|   Index    | Name                |
++------------+---------------------+
+|     0      | reset_pose          |
++------------+---------------------+
+
+[INFO] Recorder Manager:  <RecorderManager> contains 0 active terms.
++---------------------+
+| Active Recorder Terms |
++-----------+---------+
+|   Index   | Name    |
++-----------+---------+
++-----------+---------+
+
+[INFO] Action Manager:  <ActionManager> contains 1 active terms.
++------------------------------------+
+|  Active Action Terms (shape: 37)   |
++--------+-------------+-------------+
+| Index  | Name        |   Dimension |
++--------+-------------+-------------+
+|   0    | joint_pos   |          37 |
++--------+-------------+-------------+
+
+[INFO] Observation Manager: <ObservationManager> contains 1 groups.
++--------------------------------------------------------+
+| Active Observation Terms in Group: 'policy' (shape: (126,)) |
++-------------+----------------------------+-------------+
+|    Index    | Name                       |    Shape    |
++-------------+----------------------------+-------------+
+|      0      | joint_pos                  |    (37,)    |
+|      1      | joint_vel                  |    (37,)    |
+|      2      | base_ang_vel               |     (3,)    |
+|      3      | proj_gravity               |     (3,)    |
+|      4      | last_action                |    (37,)    |
+|      5      | board_pitch                |     (1,)    |
+|      6      | rope_force                 |     (3,)    |
+|      7      | handle_rel                 |     (3,)    |
+|      8      | v_pull                     |     (1,)    |
+|      9      | phase                      |     (1,)    |
++-------------+----------------------------+-------------+
+
+[INFO] Termination Manager:  <TerminationManager> contains 3 active terms.
++--------------------------------+
+|    Active Termination Terms    |
++-------+-------------+----------+
+| Index | Name        | Time Out |
++-------+-------------+----------+
+|   0   | timeout     |   True   |
+|   1   | board_range |  False   |
+|   2   | fell        |  False   |
++-------+-------------+----------+
+
+[INFO] Reward Manager:  <RewardManager> contains 17 active terms.
++-----------------------------------------+
+|           Active Reward Terms           |
++-------+-----------------------+---------+
+| Index | Name                  |  Weight |
++-------+-----------------------+---------+
+|   0   | pelvis_height         |     2.0 |
+|   1   | height_progress       |     1.5 |
+|   2   | uprightness           |     2.0 |
+|   3   | survival              |     0.5 |
+|   4   | forward_glide         |     1.0 |
+|   5   | success_bonus         |    50.0 |
+|   6   | board_positive_angle  |     1.5 |
+|   7   | arms_straight         |     1.0 |
+|   8   | handle_at_hips        |     0.8 |
+|   9   | lean_back_moderate    |     0.7 |
+|   10  | knee_bend_maintained  |     0.8 |
+|   11  | pen_stand_too_fast    |    -1.0 |
+|   12  | pen_pull_against_rope |    -1.0 |
+|   13  | pen_torque            | -0.0001 |
+|   14  | pen_action_rate       |   -0.01 |
+|   15  | pen_action_accel      |  -0.001 |
+|   16  | pen_dof_pos_limits    |    -5.0 |
++-------+-----------------------+---------+
+
+[INFO] Curriculum Manager:  <CurriculumManager> contains 0 active terms.
++----------------------+
+| Active Curriculum Terms |
++-----------+----------+
+|   Index   | Name     |
++-----------+----------+
++-----------+----------+
+
+[INFO]: Completed setting up the environment...
+[wakeboard] board fixed joints configured: count=1024
+--------------------------------------------------------------------------------
+Resolved observation sets: 
+	 actor :  ['policy']
+	 critic :  ['policy']
+--------------------------------------------------------------------------------
+Actor Model: MLPModel(
+  (obs_normalizer): Identity()
+  (distribution): GaussianDistribution()
+  (mlp): MLP(
+    (0): Linear(in_features=126, out_features=256, bias=True)
+    (1): ELU(alpha=1.0)
+    (2): Linear(in_features=256, out_features=256, bias=True)
+    (3): ELU(alpha=1.0)
+    (4): Linear(in_features=256, out_features=37, bias=True)
+  )
+)
+Critic Model: MLPModel(
+  (obs_normalizer): Identity()
+  (mlp): MLP(
+    (0): Linear(in_features=126, out_features=256, bias=True)
+    (1): ELU(alpha=1.0)
+    (2): Linear(in_features=256, out_features=256, bias=True)
+    (3): ELU(alpha=1.0)
+    (4): Linear(in_features=256, out_features=1, bias=True)
+  )
+)
+Could not find git repository in /isaac-sim/kit/python/lib/python3.11/site-packages/rsl_rl/__init__.py. Skipping.
+[33m17:36:44 [articulation.py] WARNING: The function 'set_external_force_and_torque' will be deprecated in a future release. Please use 'permanent_wrench_composer.set_forces_and_torques' instead.[0m
+[wakeboard] rope force configured: force_shape=(512, 2, 3) body_ids=[28, 29] mean_norm=504.935
+################################################################################
+[1m                            Learning iteration 0/100                            [0m 
+
+                            Total steps: 12288 
+                       Steps per second: 2895 
+                        Collection time: 3.901s 
+                          Learning time: 0.343s 
+                        Mean value loss: 16.1157
+                    Mean surrogate loss: 0.2983
+                      Mean entropy loss: 52.5218
+                            Mean reward: -2.93
+                    Mean episode length: 1.64
+                        Mean action std: 1.00
+           Episode_Reward/pelvis_height: 0.0099
+         Episode_Reward/height_progress: 0.0001
+             Episode_Reward/uprightness: 0.0061
+                Episode_Reward/survival: 0.0025
+           Episode_Reward/forward_glide: 0.0007
+           Episode_Reward/success_bonus: 0.0000
+    Episode_Reward/board_positive_angle: 0.0016
+           Episode_Reward/arms_straight: 0.0001
+          Episode_Reward/handle_at_hips: 0.0005
+      Episode_Reward/lean_back_moderate: 0.0001
+    Episode_Reward/knee_bend_maintained: 0.0040
+      Episode_Reward/pen_stand_too_fast: -0.0186
+   Episode_Reward/pen_pull_against_rope: -0.0050
+              Episode_Reward/pen_torque: -0.3526
+         Episode_Reward/pen_action_rate: -0.0298
+        Episode_Reward/pen_action_accel: -0.0030
+      Episode_Reward/pen_dof_pos_limits: -0.0122
+            Episode_Termination/timeout: 0.0002
+        Episode_Termination/board_range: 0.6885
+               Episode_Termination/fell: 0.2431
+--------------------------------------------------------------------------------
+                         Iteration time: 4.24s
+                           Time elapsed: 00:00:04
+                                    ETA: 00:07:00
+
+[33m17:36:49 [articulation.py] WARNING: The function 'set_external_force_and_torque' will be deprecated in a future release. Please use 'permanent_wrench_composer.set_forces_and_torques' instead.[0m
+################################################################################
+[1m                            Learning iteration 1/100                            [0m 
+
+                            Total steps: 24576 
+                       Steps per second: 7342 
+                        Collection time: 1.512s 
+                          Learning time: 0.162s 
+                        Mean value loss: 1.6478
+                    Mean surrogate loss: -0.0084
+                      Mean entropy loss: 52.5310
+                            Mean reward: -2.80
+                    Mean episode length: 1.96
+                        Mean action std: 1.00
+           Episode_Reward/pelvis_height: 0.0095
+         Episode_Reward/height_progress: 0.0000
+             Episode_Reward/uprightness: 0.0050
+                Episode_Reward/survival: 0.0024
+           Episode_Reward/forward_glide: 0.0007
+           Episode_Reward/success_bonus: 0.0000
+    Episode_Reward/board_positive_angle: 0.0014
+           Episode_Reward/arms_straight: 0.0001
+          Episode_Reward/handle_at_hips: 0.0004
+      Episode_Reward/lean_back_moderate: 0.0001
+    Episode_Reward/knee_bend_maintained: 0.0039
+      Episode_Reward/pen_stand_too_fast: -0.0287
+   Episode_Reward/pen_pull_against_rope: -0.0051
+              Episode_Reward/pen_torque: -0.2836
+         Episode_Reward/pen_action_rate: -0.0345
+        Episode_Reward/pen_action_accel: -0.0034
+      Episode_Reward/pen_dof_pos_limits: -0.0128
+            Episode_Termination/timeout: 0.0000
+        Episode_Termination/board_range: 0.6439
+               Episode_Termination/fell: 0.4616
+--------------------------------------------------------------------------------
+                         Iteration time: 1.67s
+                           Time elapsed: 00:00:05
+                                    ETA: 00:04:49
+
+################################################################################
+[1m                            Learning iteration 2/100                            [0m 
+
+                            Total steps: 36864 
+                       Steps per second: 7575 
+                        Collection time: 1.480s 
+                          Learning time: 0.142s 
+                        Mean value loss: 1.4691
+                    Mean surrogate loss: -0.0090
+                      Mean entropy loss: 52.5325
+                            Mean reward: -2.76
+                    Mean episode length: 2.04
+                        Mean action std: 1.00
+           Episode_Reward/pelvis_height: 0.0097
+         Episode_Reward/height_progress: 0.0000
+             Episode_Reward/uprightness: 0.0051
+                Episode_Reward/survival: 0.0025
+           Episode_Reward/forward_glide: 0.0008
+           Episode_Reward/success_bonus: 0.0000
+    Episode_Reward/board_positive_angle: 0.0014
+           Episode_Reward/arms_straight: 0.0001
+          Episode_Reward/handle_at_hips: 0.0004
+      Episode_Reward/lean_back_moderate: 0.0002
+    Episode_Reward/knee_bend_maintained: 0.0039
+      Episode_Reward/pen_stand_too_fast: -0.0272
+   Episode_Reward/pen_pull_against_rope: -0.0052
+              Episode_Reward/pen_torque: -0.2792
+         Episode_Reward/pen_action_rate: -0.0340
+        Episode_Reward/pen_action_accel: -0.0034
+      Episode_Reward/pen_dof_pos_limits: -0.0131
+            Episode_Termination/timeout: 0.0000
+        Episode_Termination/board_range: 0.6324
+               Episode_Termination/fell: 0.4647
+--------------------------------------------------------------------------------
+                         Iteration time: 1.62s
+                           Time elapsed: 00:00:07
+                                    ETA: 00:04:03
+
+################################################################################
+[1m                            Learning iteration 3/100                            [0m 
+
+                            Total steps: 49152 
+                       Steps per second: 7775 
+                        Collection time: 1.449s 
+                          Learning time: 0.131s 
+                        Mean value loss: 1.2954
+                    Mean surrogate loss: -0.0100
+                      Mean entropy loss: 52.5331
+                            Mean reward: -2.68
+                    Mean episode length: 1.89
+                        Mean action std: 1.00
+           Episode_Reward/pelvis_height: 0.0097
+         Episode_Reward/height_progress: 0.0000
+             Episode_Reward/uprightness: 0.0051
+                Episode_Reward/survival: 0.0024
+           Episode_Reward/forward_glide: 0.0008
+           Episode_Reward/success_bonus: 0.0000
+    Episode_Reward/board_positive_angle: 0.0014
+           Episode_Reward/arms_straight: 0.0001
+          Episode_Reward/handle_at_hips: 0.0004
+      Episode_Reward/lean_back_moderate: 0.0002
+    Episode_Reward/knee_bend_maintained: 0.0039
+      Episode_Reward/pen_stand_too_fast: -0.0286
+   Episode_Reward/pen_pull_against_rope: -0.0051
+              Episode_Reward/pen_torque: -0.2750
+         Episode_Reward/pen_action_rate: -0.0337
+        Episode_Reward/pen_action_accel: -0.0034
+      Episode_Reward/pen_dof_pos_limits: -0.0131
+            Episode_Termination/timeout: 0.0000
+        Episode_Termination/board_range: 0.6197
+               Episode_Termination/fell: 0.4743
+--------------------------------------------------------------------------------
+                         Iteration time: 1.58s
+                           Time elapsed: 00:00:09
+                                    ETA: 00:03:38
+
+[33m17:36:54 [articulation.py] WARNING: The function 'set_external_force_and_torque' will be deprecated in a future release. Please use 'permanent_wrench_composer.set_forces_and_torques' instead.[0m
+################################################################################
+[1m                            Learning iteration 4/100                            [0m 
+
+                            Total steps: 61440 
+                       Steps per second: 7423 
+                        Collection time: 1.521s 
+                          Learning time: 0.134s 
+                        Mean value loss: 1.1921
+                    Mean surrogate loss: -0.0097
+                      Mean entropy loss: 52.5335
+                            Mean reward: -2.84
+                    Mean episode length: 2.13
+                        Mean action std: 1.00
+           Episode_Reward/pelvis_height: 0.0097
+         Episode_Reward/height_progress: 0.0000
+             Episode_Reward/uprightness: 0.0051
+                Episode_Reward/survival: 0.0025
+           Episode_Reward/forward_glide: 0.0008
+           Episode_Reward/success_bonus: 0.0000
+    Episode_Reward/board_positive_angle: 0.0015
+           Episode_Reward/arms_straight: 0.0001
+          Episode_Reward/handle_at_hips: 0.0004
+      Episode_Reward/lean_back_moderate: 0.0002
+    Episode_Reward/knee_bend_maintained: 0.0039
+      Episode_Reward/pen_stand_too_fast: -0.0277
+   Episode_Reward/pen_pull_against_rope: -0.0052
+              Episode_Reward/pen_torque: -0.2784
+         Episode_Reward/pen_action_rate: -0.0337
+        Episode_Reward/pen_action_accel: -0.0034
+      Episode_Reward/pen_dof_pos_limits: -0.0132
+            Episode_Termination/timeout: 0.0000
+        Episode_Termination/board_range: 0.6160
+               Episode_Termination/fell: 0.4883
+--------------------------------------------------------------------------------
+                         Iteration time: 1.66s
+                           Time elapsed: 00:00:10
+                                    ETA: 00:03:24
+
+################################################################################
+[1m                            Learning iteration 5/100                            [0m 
+
+                            Total steps: 73728 
+                       Steps per second: 7645 
+                        Collection time: 1.470s 
+                          Learning time: 0.137s 
+                        Mean value loss: 1.1150
+                    Mean surrogate loss: -0.0108
+                      Mean entropy loss: 52.5337
+                            Mean reward: -2.68
+                    Mean episode length: 1.98
+                        Mean action std: 1.00
+           Episode_Reward/pelvis_height: 0.0098
+         Episode_Reward/height_progress: 0.0000
+             Episode_Reward/uprightness: 0.0052
+                Episode_Reward/survival: 0.0025
+           Episode_Reward/forward_glide: 0.0008
+           Episode_Reward/success_bonus: 0.0000
+    Episode_Reward/board_positive_angle: 0.0015
+           Episode_Reward/arms_straight: 0.0001
+          Episode_Reward/handle_at_hips: 0.0004
+      Episode_Reward/lean_back_moderate: 0.0002
+    Episode_Reward/knee_bend_maintained: 0.0040
+      Episode_Reward/pen_stand_too_fast: -0.0281
+   Episode_Reward/pen_pull_against_rope: -0.0052
+              Episode_Reward/pen_torque: -0.2769
+         Episode_Reward/pen_action_rate: -0.0338
+        Episode_Reward/pen_action_accel: -0.0034
+      Episode_Reward/pen_dof_pos_limits: -0.0133
+            Episode_Termination/timeout: 0.0000
+        Episode_Termination/board_range: 0.6073
+               Episode_Termination/fell: 0.4893
+--------------------------------------------------------------------------------
+                         Iteration time: 1.61s
+                           Time elapsed: 00:00:12
+                                    ETA: 00:03:13
+
+################################################################################
+[1m                            Learning iteration 6/100                            [0m 
+
+                            Total steps: 86016 
+                       Steps per second: 7787 
+                        Collection time: 1.432s 
+                          Learning time: 0.146s 
+                        Mean value loss: inf
+                    Mean surrogate loss: 0.0000
+                      Mean entropy loss: 52.5370
+                            Mean reward: -2.74
+                    Mean episode length: 1.98
+                        Mean action std: 1.00
+           Episode_Reward/pelvis_height: 0.0097
+         Episode_Reward/height_progress: 0.0000
+             Episode_Reward/uprightness: 0.0050
+                Episode_Reward/survival: 0.0024
+           Episode_Reward/forward_glide: 0.0008
+           Episode_Reward/success_bonus: 0.0000
+    Episode_Reward/board_positive_angle: 0.0015
+           Episode_Reward/arms_straight: 0.0001
+          Episode_Reward/handle_at_hips: 0.0004
+      Episode_Reward/lean_back_moderate: 0.0002
+    Episode_Reward/knee_bend_maintained: 0.0039
+      Episode_Reward/pen_stand_too_fast: -997809.8750
+   Episode_Reward/pen_pull_against_rope: -4480029.0000
+              Episode_Reward/pen_torque: -0.2740
+         Episode_Reward/pen_action_rate: -181977548277485142016.0000
+        Episode_Reward/pen_action_accel: -18197753068529909760.0000
+      Episode_Reward/pen_dof_pos_limits: -2995580416.0000
+            Episode_Termination/timeout: 0.0000
+        Episode_Termination/board_range: 0.5958
+               Episode_Termination/fell: 0.5053
+--------------------------------------------------------------------------------
+                         Iteration time: 1.58s
+                           Time elapsed: 00:00:13
+                                    ETA: 00:03:05
+
+Traceback (most recent call last):
+  File "/workspace/wakeboarding-experiment/train.py", line 157, in <module>
+    main()
+  File "/workspace/wakeboarding-experiment/train.py", line 84, in main
+    runner.learn(num_learning_iterations=n, init_at_random_ep_len=True)
+  File "/isaac-sim/kit/python/lib/python3.11/site-packages/rsl_rl/runners/on_policy_runner.py", line 90, in learn
+    check_nan(obs, rewards, dones)
+  File "/isaac-sim/kit/python/lib/python3.11/site-packages/rsl_rl/utils/utils.py", line 279, in check_nan
+    raise ValueError(
+ValueError: The observation group 'policy' returned by the environment contains NaN values. This usually indicates a bug in the environment's step() or reset() function.
+2026-06-20T17:36:58Z [39,617ms] [Warning] [omni.physx.plugin] USD stage detach not called, holding a loose ptr to a stage!
+2026-06-20T17:36:59Z [40,224ms] [Warning] [carb] Recursive unloadAllPlugins() detected!
